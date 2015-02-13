@@ -1,0 +1,35 @@
+"remote2.rkt"> (island/start alice)
+"remote2.rkt"> (island/start bob)
+#(info "ingress@bob: saw ENTER" "F2611CD9DA130BBBC549475252DA41A5" ingress@bob)
+#(info "ingress@bob: saw ENTER" "F2611CD9DA130BBBC549475252DA41A5" ingress@bob)
+"remote2.rkt"> #(info "ingress@alice: saw ENTER" "8D1433C725B1822C2D749A1759D8F606" ingress@alice)
+bob: roses are red
+bob: violets are blue
+#(info "reaper@bob: purges" 1 reaper@bob)
+  client.chirp@bob got (#t #t #f #f) back from alice
+bob: roses are red
+bob: violets are blue
+#(info "reaper@bob: purges" 1 reaper@bob)
+  client.chirp@bob got (#t #t #f #f) back from alice
+bob: roses are red
+bob: violets are blue
+#(info "reaper@bob: purges" 1 reaper@bob)
+  client.chirp@bob got (#t #t #f #f) back from alice
+(island/start carol)
+"remote2.rkt"> #(info "ingress@carol: saw ENTER" "F2611CD9DA130BBBC549475252DA41A5" ingress@carol)
+#(info "ingress@bob: saw ENTER" "CE0518CC7B6EAEAD2CE8D2766696A7C4" ingress@bob)
+#(info "ingress@alice: saw ENTER" "CE0518CC7B6EAEAD2CE8D2766696A7C4" ingress@alice)
+#(info "ingress@carol: saw ENTER" "8D1433C725B1822C2D749A1759D8F606" ingress@carol)
+carol: roses are red
+carol: violets are blue
+carol: COAST is wonderful
+carol: but remote are you
+#(info "reaper@carol: purges" 1 reaper@carol)
+  client.chirp@carol got (#t #t #t #t) back from alice
+(island/destroy alice)
+"remote2.rkt"> #(info "ingress@carol: saw EXIT" alice ingress@carol)
+#(info "ingress@bob: saw EXIT" alice ingress@bob)
+(island/destroy bob)
+"remote2.rkt"> #(info "ingress@carol: saw EXIT" bob ingress@carol)
+(island/destroy carol)
+

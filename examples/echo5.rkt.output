@@ -1,0 +1,5 @@
+"echo5.rkt"> (test/start)
+"echo5.rkt"> #(info "ingress@bob: saw ENTER" "205BA7E30C9775595FA604D9D91BFB32" ingress@bob)
+  client.echo@bob got 114 back from alice
+(test/halt)
+

@@ -1,0 +1,14 @@
+crypto_sign/edwards25519sha512batch/libsodium_la-sign_edwards25519sha512batch_api.lo: \
+ crypto_sign/edwards25519sha512batch/sign_edwards25519sha512batch_api.c \
+ /usr/include/stdc-predef.h \
+ include/sodium/crypto_sign_edwards25519sha512batch.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h \
+ include/sodium/export.h
+
+/usr/include/stdc-predef.h:
+
+include/sodium/crypto_sign_edwards25519sha512batch.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h:
+
+include/sodium/export.h:

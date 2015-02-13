@@ -1,0 +1,13 @@
+"remote1.rkt"> (island/start alice)
+"remote1.rkt"> (island/start bob)
+"remote1.rkt"> #(info "ingress@alice: saw ENTER" "31B3E3F5E58DC55FCF229A71C067D0DE" ingress@alice)
+bob: roses are red
+(island/start carol)
+"remote1.rkt"> carol: roses are red
+carol: violets are blue
+carol: COAST is wonderful
+carol: but remote are you
+(island/destroy alice)
+"remote1.rkt"> (island/destroy bob)
+"remote1.rkt"> (island/destroy carol)
+

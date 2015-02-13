@@ -1,0 +1,20 @@
+"echo1.rkt"> (island/start alice)
+"echo1.rkt"> (island/start bob)
+"echo1.rkt"> #(info "ingress@alice: saw ENTER" "5A68982989C74277F3EF79561B79031A" ingress@alice)
+#(info "ingress@alice: saw ENTER" "5A68982989C74277F3EF79561B79031A" ingress@alice)
+#(info "ingress@bob: saw ENTER" "99A07C87ADBD8ADB517F6D63745BF2B0" ingress@bob)
+  server.echo@alice echoing 9999 to bob
+  client.echo@bob got 9999 back from alice
+(island/start carol)
+"echo1.rkt"> #(info "ingress@bob: saw ENTER" "10FD10E5C0C96E06D14627BD4E4B651A" ingress@bob)
+#(info "ingress@carol: saw ENTER" "99A07C87ADBD8ADB517F6D63745BF2B0" ingress@carol)
+#(info "ingress@carol: saw ENTER" "5A68982989C74277F3EF79561B79031A" ingress@carol)
+#(info "ingress@alice: saw ENTER" "10FD10E5C0C96E06D14627BD4E4B651A" ingress@alice)
+  server.echo@alice echoing "thanks for the echo" to carol
+  client.echo@carol got "thanks for the echo" back from alice
+(island/destroy alice)
+"echo1.rkt"> (island/#(info "ingress@bob: saw EXIT" alice ingress@bob)
+#(info "ingress@carol: saw EXIT" alice ingress@carol)
+(island/destroy bob)
+             (island/destroy carol)
+

@@ -1,0 +1,6 @@
+"echo4.rkt"> (test/start)
+"echo4.rkt"> #(info "ingress@bob: saw ENTER" "7B80778B0FB01BD83ED0F57444EC0AFD" ingress@bob)
+  server.echo@alice echoing 114 to bob
+  client.echo@bob got 114 back from alice
+(test/halt)
+

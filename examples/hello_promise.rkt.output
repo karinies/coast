@@ -1,0 +1,27 @@
+"hello_promise.rkt"> (island/start alice)
+"hello_promise.rkt"> alice starting
+(island/start bob)
+"hello_promise.rkt"> #(info "ingress@alice: saw ENTER" "F72CC8AD8C36EDE6C7F44428A41F69B0" ingress@alice)
+#(debug "alice: kp/base64/extract got" (ZYRE/ENTER . #<cpointer:zhash>) alice)
+#(debug "alice: kp/sign/base64/extract got" (ZYRE/ENTER . #<cpointer:zhash>) alice)
+#(info "ingress@bob: saw ENTER" "0A4279F846EC69B9FF10C96C30B27021" ingress@bob)
+#(debug "bob: kp/base64/extract got" (ZYRE/ENTER . #<cpointer:zhash>) bob)
+#(debug "bob: kp/sign/base64/extract got" (ZYRE/ENTER . #<cpointer:zhash>) bob)
+bob: alice entered the network
+bob: waiting for alice to reply
+#(debug "bob: send inter-island" #t bob)
+#(debug "egress@bob: egress to" alice egress@bob)
+#(debug "egress@bob: whispering to" alice egress@bob)
+#(debug "egress@bob: zyre/whisper" alice egress@bob)
+#(debug "alice: frames:2 size:804" #t alice)
+#(debug "alice: send inter-island" #t alice)
+#(debug "egress@alice: egress to" bob egress@alice)
+#(debug "egress@alice: whispering to" bob egress@alice)
+#(debug "egress@alice: zyre/whisper" bob egress@alice)
+#(debug "bob: frames:2 size:366" #t bob)
+hello world from bob
+#(info "reaper@bob: purges" 1 reaper@bob)
+(island/destroy alice)
+"hello_promise.rkt"> (island/destroy bob)
+"hello_promise.rkt"> 
+

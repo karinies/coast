@@ -1,0 +1,23 @@
+Version 0.1 2013-04-27
+
+A Racket Scheme binding for libsodium-0.4.1 (available at http://download.dnscrypt.org/libsodium/releases/).
+libsodium is a machine-independent version of NaCL (Networking and Cryptography Library - http://nacl.cr.yp.to/).
+
+To construct libsodium-0.4.1 simply unpack the *.tar.gz file and incant:
+
+./configure
+make
+make check
+make install
+
+to build the library and install it as /usr/local/lib/libsodium.*
+
+The Racket bindings expect to find libsodium.* in /usr/local/lib and if you
+install it elsewhere change line 11 of sodium.rkt:
+
+        (define sodium (ffi-lib "/usr/local/lib/libsodium" '("4" #f)))
+
+to reflect your choice.
+
+To use the bindings just include the path ".../bindings/libsodium/crypto.rkt" in the (require ...) declaration
+of your module.

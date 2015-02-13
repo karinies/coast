@@ -1,0 +1,18 @@
+"echo3.rkt"> (island/start alice)
+"echo3.rkt"> (island/start bob)
+"echo3.rkt"> #(info "ingress@bob: saw ENTER" "A182A85262D8EEEA60E845846B4E037D" ingress@bob)
+  server.echo@alice echoing 9999 to bob
+  [1] client.echo@bob got 9999 back from alice
+  server.echo@alice echoing 9999 to bob
+  [2] client.echo@bob got 9999 back from alice
+  server.echo@alice echoing 9999 to bob
+  [3] client.echo@bob got 9999 back from alice
+(island/start carol)
+"echo3.rkt">   server.echo@alice echoing "thanks" to carol
+  [1] client.echo@carol got "thanks" back from alice
+  server.echo@alice echoing "thanks" to carol
+  [2] client.echo@carol got "thanks" back from alice
+(island/destroy alice)
+"echo3.rkt"> (island/destroy bob)
+"echo3.rkt"> (island/destroy carol)
+

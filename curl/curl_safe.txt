@@ -1,0 +1,8 @@
+SIGNATURE = "fmJ3ifJfH3p3(dFX?3%GS7ZCiZH:6yRM]&wA+s-0z0}w7s&ewUAp=@$C(5@txAEMLoZ-q{@}O(5QT7m/"
+CURL
+    id = 09098d7a-f92d-4f90-a693-4b63b924418b
+    origin = "Bz)4mh/LBnK0-HZq7m}YwCvK#4ErFLk/UHsUn5*q"
+    path = (a b c)
+    access/id = some-access:send/id
+    created = "2014-03-11T17:35:29Z"
+    metadata = #(struct:motile/flat #(1 0 0) 0 #() () #(struct:environ #(struct:hash eq #(x 33 y "some important string"))))

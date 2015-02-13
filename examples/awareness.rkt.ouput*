@@ -1,0 +1,32 @@
+executed as in instructions:
+
+
+kari@ubuntu:~/COAST/examples$ racket -l racket/base -t awareness.rkt -e '(alice/start)' &
+[1] 4153
+kari@ubuntu:~/COAST/examples$ island/new: arity mismatch;
+ the expected number of arguments does not match the given number
+  expected: 3
+  given: 1
+  arguments...:
+   #<cpointer:zconfig>
+
+
+
+also tried:
+
+
+kari@ubuntu:~/COAST/examples$ racket -l racket/base -t awareness.rkt -e '(alice/start)' &
+[1] 4153
+kari@ubuntu:~/COAST/examples$ island/new: arity mismatch;
+ the expected number of arguments does not match the given number
+  expected: 3
+  given: 1
+  arguments...:
+   #<cpointer:zconfig>
+
+
+
+
+
+
+

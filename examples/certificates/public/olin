@@ -1,0 +1,10 @@
+#   ZeroMQ CURVE Public Certificate
+#   Exchange securely, or use a secure mechanism to verify the contents
+#   of this file after exchange. Store public certificates in your home
+#   directory, in the .curve subdirectory.
+
+metadata
+    created = 2014-01-20T23:46:31Z
+curve
+    public-key = U@J:H7+(/cR$$QL.tjI]FDF^[s[A-m=.oK!G[H7c
+    public-sign-key = hL2<rC3&83Jw%BqviW!4b(hPmR3d[PwZjEaB}YBD

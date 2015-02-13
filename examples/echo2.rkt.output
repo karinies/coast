@@ -1,0 +1,28 @@
+"echo2.rkt"> (island/start alice)
+"echo2.rkt"> (island/start bob)
+"echo2.rkt"> #(info "ingress@alice: saw ENTER" "EB873FCEA3B3A57B0CACAE476AEE12D6" ingress@alice)
+#(info "ingress@alice: saw ENTER" "EB873FCEA3B3A57B0CACAE476AEE12D6" ingress@alice)
+#(info "ingress@bob: saw ENTER" "AA97D94FCD4E4C21B0E69D24DA1E9022" ingress@bob)
+  server.echo@alice echoing 9999 to bob
+  [1] client.echo@bob got 9999 back from alice
+  server.echo@alice echoing 9999 to bob
+  [2] client.echo@bob got 9999 back from alice
+  server.echo@alice echoing 9999 to bob
+  [3] client.echo@bob got 9999 back from alice
+(island/start carol)
+"echo2.rkt"> #(info "ingress@bob: saw ENTER" "D675B09DA356489598283F50644B767E" ingress@bob)
+#(info "ingress@carol: saw ENTER" "EB873FCEA3B3A57B0CACAE476AEE12D6" ingress@carol)
+#(info "ingress@carol: saw ENTER" "AA97D94FCD4E4C21B0E69D24DA1E9022" ingress@carol)
+#(info "ingress@alice: saw ENTER" "D675B09DA356489598283F50644B767E" ingress@alice)
+  server.echo@alice echoing "thanks for the echo" to carol
+  [1] client.echo@carol got "thanks for the echo" back from alice
+  server.echo@alice echoing "thanks for the echo" to carol
+  [2] client.echo@carol got "thanks for the echo" back from alice
+(island/destroy alice)
+"echo2.rkt"> #(info "ingress@bob: saw EXIT" alice ingress@bob)
+#(info "ingress@carol: saw EXIT" alice ingress@carol)
+(island/destroy bob)
+"echo2.rkt"> #(info "ingress@carol: saw EXIT" bob ingress@carol)
+(island/destroy carol)
+"echo2.rkt"> 
+

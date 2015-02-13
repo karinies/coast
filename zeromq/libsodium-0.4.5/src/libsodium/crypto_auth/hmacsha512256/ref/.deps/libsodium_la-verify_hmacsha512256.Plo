@@ -1,0 +1,18 @@
+crypto_auth/hmacsha512256/ref/libsodium_la-verify_hmacsha512256.lo: \
+ crypto_auth/hmacsha512256/ref/verify_hmacsha512256.c \
+ /usr/include/stdc-predef.h crypto_auth/hmacsha512256/ref/api.h \
+ include/sodium/crypto_auth_hmacsha512256.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h \
+ include/sodium/export.h include/sodium/crypto_verify_32.h
+
+/usr/include/stdc-predef.h:
+
+crypto_auth/hmacsha512256/ref/api.h:
+
+include/sodium/crypto_auth_hmacsha512256.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h:
+
+include/sodium/export.h:
+
+include/sodium/crypto_verify_32.h:

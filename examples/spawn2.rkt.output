@@ -1,0 +1,12 @@
+"spawn2.rkt"> (island/start alice)
+"spawn2.rkt"> (island/start bob)
+"spawn2.rkt"> #(info "ingress@alice: saw ENTER" "AD0700EA316D6BAF87DB7B31EA089E86" ingress@alice)
+ client.spawn.echo@bob got curl (server.spawn.echo@alice) back from alice
+  client.spawn.echo@bob got echo (355814042739071 . 1) back from alice
+  client.spawn.echo@bob got echo (355814042778502 . 3) back from alice
+  client.spawn.echo@bob got echo (355814042864022 . 5) back from alice
+  client.spawn.echo@bob got echo (355814042955918 . 7) back from alice
+  client.spawn.echo@bob got echo (355814042996467 . 9) back from alice
+(island/destroy alice)
+"spawn2.rkt"> (island/destroy bob)
+

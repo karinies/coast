@@ -1,0 +1,56 @@
+"spawn3.rkt"> (island/start alice)
+"spawn3.rkt"> (island/start bob)
+"spawn3.rkt"> #(info "ingress@alice: saw ENTER" "F4C88532524A4C33582F708F4F40E4A5" ingress@alice)
+#(info "ingress@alice: saw ENTER" "F4C88532524A4C33582F708F4F40E4A5" ingress@alice)
+#(info "ingress@bob: saw ENTER" "CCE0CD5091CD7E50E52F8F4C978FDFAD" ingress@bob)
+#(info "reaper@bob: purges" 1 reaper@bob)
+  client.spawn.echo@bob got curls (service echo) and (control echo) back from alice
+  client.spawn.echo@bob got echo back from alice in 291 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 277 msecs
+  client.spawn.echo@bob got echo back from alice in 277 msecs
+  client.spawn.echo@bob got echo back from alice in 282 msecs
+  client.spawn.echo@bob got echo back from alice in 313 msecs
+  client.spawn.echo@bob got echo back from alice in 273 msecs
+  client.spawn.echo@bob got echo back from alice in 293 msecs
+  client.spawn.echo@bob got echo back from alice in 293 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 282 msecs
+  client.spawn.echo@bob got echo back from alice in 274 msecs
+  client.spawn.echo@bob got echo back from alice in 282 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 273 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 278 msecs
+  client.spawn.echo@bob got echo back from alice in 286 msecs
+  client.spawn.echo@bob got echo back from alice in 273 msecs
+  client.spawn.echo@bob got echo back from alice in 282 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 282 msecs
+  client.spawn.echo@bob got echo back from alice in 273 msecs
+  client.spawn.echo@bob got echo back from alice in 293 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 272 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 277 msecs
+  client.spawn.echo@bob got echo back from alice in 277 msecs
+  client.spawn.echo@bob got echo back from alice in 282 msecs
+  client.spawn.echo@bob got echo back from alice in 272 msecs
+  client.spawn.echo@bob got echo back from alice in 313 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 273 msecs
+  client.spawn.echo@bob got echo back from alice in 283 msecs
+  client.spawn.echo@bob got echo back from alice in 338 msecs
+  client.spawn.echo@bob got echo back from alice in 359 msecs
+  client.spawn.echo@bob got echo back from alice in 371 msecs
+  client.spawn.echo@bob got echo back from alice in 360 msecs
+  client.spawn.echo@bob got echo back from alice in 370 msecs
+  client.spawn.echo@bob got echo back from alice in 368 msecs
+  client.spawn.echo@bob got echo back from alice in 357 msecs
+  client.spawn.echo@bob got echo back from alice in 346 msecs
+  client.spawn.echo@bob got echo back from alice in 370 msecs
+  client.spawn.echo@bob got echo back from alice in 372 msecs

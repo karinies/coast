@@ -1,0 +1,9 @@
+"spawn1.rkt"> (test/start)
+"spawn1.rkt"> #(info "ingress@alice: saw ENTER" "539462BBD30397077E3FA91B2F41EDB6" ingress@alice)
+ client.spawn.echo@bob got curl (server.spawn.echo@alice) back from alice
+  client.spawn.echo@bob got echo 1 back from alice
+  client.spawn.echo@bob got echo 3 back from alice
+  client.spawn.echo@bob got echo 5 back from alice
+  client.spawn.echo@bob got echo 7 back from alice
+(test/halt)
+"spawn1.rkt"> 
