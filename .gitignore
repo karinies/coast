@@ -1,0 +1,6 @@
+zeromq
+compiled/
+.deps/
+.libs/
+*.o
+*.lo
