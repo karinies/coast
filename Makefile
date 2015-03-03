@@ -24,10 +24,10 @@ clean-racket:
 	find . -name compiled -type d | xargs rm -rf
 
 clean-libs: 
-	find zeromq -name ".deps" -type d | xargs rm -rf
-	find zeromq -name ".libs" -type d | xargs rm -rf
-	find zeromq -name "*.o" -exec rm -rf {} \; 
-	find zeromq -name "*.lo" -exec rm -rf {} \; 
+	cd $(LIBSODIUM); make clean
+	cd $(ZEROMQ); make clean 
+	cd $(CZMQ); make clean 
+	cd $(ZYRE); make clean 
 
 raco-make:
 	for dir in $(SUBDIRS); do \
