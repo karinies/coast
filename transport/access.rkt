@@ -106,12 +106,12 @@ be used for transmission (reception).
 ;; Constructor.
 (define (access:send/new transport nickname gate embargo)
      (access:send
-      (uuid/symbol) nickname transport gate embargo
-      ACCESS/UNREVOKED ACCESS:SEND/SENDS ACCESS:SEND/DENIALS))
+      (uuid/symbol) nickname transport gate ACCESS/UNREVOKED
+      embargo ACCESS:SEND/SENDS ACCESS:SEND/DENIALS))
 (define (access:send/known/new transport nickname gate embargo)
   (access:send
-   nickname nickname transport gate embargo
-   ACCESS/UNREVOKED ACCESS:SEND/SENDS ACCESS:SEND/DENIALS))
+   nickname nickname transport gate ACCESS/UNREVOKED
+    embargo ACCESS:SEND/SENDS ACCESS:SEND/DENIALS))
 
 ;; Evaluate gate predicates.
 ;; Returns #t if all gates permit access and  #f if any single gate denies access.
