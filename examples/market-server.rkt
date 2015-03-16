@@ -2,17 +2,18 @@
 
 
 (require
- "../include/base.rkt"
- "../baseline.rkt"
- "market-server-env.rkt"
- "market-server-register.rkt"
- [only-in "../curl/base.rkt" curl/origin curl/path curl/metadata]
- "../promise.rkt"
- "../remote.rkt"
- "../spawn.rkt"
- "../transport/gate.rkt"
- "../transport/gates/challenge.rkt"
- "../transport/gates/whitelist.rkt")
+  "../include/base.rkt"
+  "../baseline.rkt"
+  "market-server-env.rkt"
+  "market-server-register.rkt"
+  [only-in "../curl/base.rkt" curl/origin curl/path curl/metadata curl/access]
+  "../promise.rkt"
+  "../remote.rkt"
+  "../spawn.rkt"
+  "../transport/access.rkt"
+  "../transport/gate.rkt"
+  "../transport/gates/challenge.rkt"
+  "../transport/gates/whitelist.rkt")
 
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -32,48 +33,51 @@
   (string->symbol
    (format "~a@~a" islet (if (null? rest) (this/island/nickname) (car rest)))))
 
+#|
+This service will notify all CURLs registered in the market when there is an update and the clients are interested in it.
+|#
 (define (service/notification)
   (displayln "Running Notification Service...")
   (define (market/notify/all)
     (if (zero? (market/subs/count))
         (displayln "No clients to notify!")
-        (market/subs/apply (lambda (k v) (send v "Test")))))
-    
+        (market/subs/apply 
+         (lambda (k v)
+           (let ([thunk (format "Oh! Something happened with ~a!" k)])
+             (when (not (send v thunk))
+               (display "Notification could not be sent")))))))
+  
   (let loop ()
-    (sleep 1)
+    (sleep 3.0)
     (market/notify/all)
     (loop)))
 
-(define (service/register) ; Registration service (It spawns computations for registration).
-  (display "Running server's spawned service.\n")
-           (let* ([d (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)])
-           ; Wait for a spawn request.
-             (display "Waiting for a spawn request...\n")
-           (let loop ([m (duplet/block d)])
-             (display "Request received.\n")
-             (let ([payload (murmur/payload m)])
-               (when (procedure? payload)
-                 (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST MARKET/SERVER/ENV #f)])
-                   ; Task and start the worker with a 30.0 second deadline.
-                   (display "Spawning worker for incoming request.\n")
-                   (spawn worker payload 30.0))))
-             (loop (duplet/block d)))))
+(define (service/spawn/registration) ; A Service to spawn computations that will register clients on the market.
+  (display "Running Server's spawning service.\n")
+  (let* ([d (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)]) ; Create a CURL to listen for computations.
+    
+    (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
+      (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
+        (when (procedure? payload) ; Check if the payload is a procedure.
+          (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST MARKET/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
+            (spawn worker payload 90.0)))) ; There shouldn't be a timeout for this.
+      (loop (duplet/block d)))))
 
 (define (server/boot)
-  (define (registration/spawn) ; This function spawns the registration service.
+  (define (registration/spawn) ; This function creates an islet that will receive spawn requests to register for notifications.
     (let* ([server/name (islet/name "server.registration")] ; server.registration@alice
-           [x (islet/new (this/island) server/name TRUST/MODERATE environ/null environ/null)]) ; We create a new islet.
+           [x (islet/new (this/island) server/name TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
       (islet/jumpstart
        x
-       (service/register)))) ; Executes service/register in the new islet.
+       (lambda () (service/spawn/registration))))) ; Executes service/spawn/registration in the new islet.
   
-  (define (notification/spawn) ; This function spawns the registration service.
-    (let* ([server/name (islet/name "server.notification")] ; server.registration@alice
-           [x (islet/new (this/island) server/name TRUST/MODERATE environ/null environ/null)]) ; We create a new islet.
+  (define (notification/spawn) ; This function creates a new islet that will run the notification service.
+    (let* ([server/name (islet/name "server.notification")] ; server.notification@alice
+           [x (islet/new (this/island) server/name TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
       (islet/jumpstart
        x
-       (service/notification)))) ; Executes service/register in the new islet.
-         
+       (lambda () (service/notification))))) ; Executes service/notification in the new islet.
+  
   (display "Running server's boot function\n")
   
   (thread (lambda () (registration/spawn)))  ; Why (thread)??
@@ -85,4 +89,4 @@
 ;;; and any change in the keystore will be seen by all such islands in the
 ;;; address space.
 (island/keystore/set alice KEYSTORE)
-(island/log/level/set 'info)
+(island/log/level/set 'warning)
