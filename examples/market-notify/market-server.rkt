@@ -49,12 +49,13 @@ are interested in it.
              (when (not (send v thunk))
                (display "Notification could not be sent")))))))
   
-  (define (market/notify/event symbol event-type price)
+  (define (market/notify/event event)
     (if (zero? (market/subs/count))
         (displayln "No clients to notify!")
-        (market/subs/apply symbol event-type price
-         (lambda (symb ev-type price v)
-           (let ([thunk (format "~a ~a ~a" symb ev-type (/ (->fl price) 100))])
+        (market/subs/apply event
+         (lambda (event v)
+           (let ([thunk (format "~a ~a ~a ~a ~a ~a" (market-event/symbol event) (market-event/type event) (market-event/quantity event)
+                                (/ (->fl (market-event/price event)) 100) (market-event/seller event) (market-event/buyer event))])
              (when (not (send v thunk))
                (display "Notification could not be sent")))))))
   
@@ -70,7 +71,11 @@ are interested in it.
     (set! goog-price (+ goog-price delta-change))
     (displayln (format "new GOOG price: ~a" (/ (->fl goog-price) 100)))
 
-    (market/notify/event "GOOG" 'sell-event goog-price)
+    ;(market/notify/event "GOOG" 'sell-event goog-price)
+    
+    (define new-event (market-event "GOOG" 'sell-event goog-price 1 'A 'B))
+    
+    (market/notify/event new-event)
     (loop)))
 
 (define (service/spawn/registration) ; A Service to spawn computations that will register clients on the market.
