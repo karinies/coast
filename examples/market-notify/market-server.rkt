@@ -1,6 +1,6 @@
 #lang racket/base
 
-
+(require racket/flonum)
 (require
   "../../include/base.rkt"
   "../../baseline.rkt"
@@ -39,18 +39,38 @@ are interested in it.
 |#
 (define (service/notification)
   (displayln "Running Notification Service...")
+  
   (define (market/notify/all)
     (if (zero? (market/subs/count))
         (displayln "No clients to notify!")
-        (market/subs/apply 
+        (market/subs/apply-all 
          (lambda (k v)
            (let ([thunk (format "Oh! Something happened with ~a!" k)])
              (when (not (send v thunk))
                (display "Notification could not be sent")))))))
   
+  (define (market/notify/event symbol event-type price)
+    (if (zero? (market/subs/count))
+        (displayln "No clients to notify!")
+        (market/subs/apply symbol event-type price
+         (lambda (symb ev-type price v)
+           (let ([thunk (format "~a ~a ~a" symb ev-type (/ (->fl price) 100))])
+             (when (not (send v thunk))
+               (display "Notification could not be sent")))))))
+  
+  (define delta-change 0)
+  (define goog-price 55500) ;; store $ in cents to prevent percision error
+  (define delay 0)
   (let loop ()
-    (sleep 3.0)
-    (market/notify/all)
+    (set! delay (random 10))
+    (sleep delay)
+    ;;(market/notify/all)
+    (set! delta-change (-(random 2000) 1000)) ;; between -10 and 10
+    (displayln (format "delta change: ~a" (/ (->fl delta-change) 100)))
+    (set! goog-price (+ goog-price delta-change))
+    (displayln (format "new GOOG price: ~a" (/ (->fl goog-price) 100)))
+
+    (market/notify/event "GOOG" 'sell-event goog-price)
     (loop)))
 
 (define (service/spawn/registration) ; A Service to spawn computations that will register clients on the market.
