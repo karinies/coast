@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require racket/flonum)
+(require 2htdp/batch-io)
 (require
   "../../include/base.rkt"
   "../../baseline.rkt"
@@ -54,29 +55,37 @@ are interested in it.
         (displayln "No clients to notify!")
         (market/subs/apply event
          (lambda (event v)
-           (let ([thunk (format "~a ~a ~a ~a ~a ~a" (market-event/symbol event) (market-event/type event) (market-event/quantity event)
-                                (/ (->fl (market-event/price event)) 100) (market-event/seller event) (market-event/buyer event))])
+           (let ([thunk (format "~a ~a ~a ~a ~a ~a" 
+                                (market-event/symbol event) 
+                                (market-event/type event)
+                                (market-event/quantity event)
+                                (/ (->fl (string->number(market-event/price event))) 100) 
+                                (market-event/seller event) 
+                                (market-event/buyer event))])
              (when (not (send v thunk))
                (display "Notification could not be sent")))))))
   
-  (define delta-change 0)
-  (define goog-price 55500) ;; store $ in cents to prevent percision error
-  (define delay 0)
-  (let loop ()
-    (set! delay (random 10))
-    (sleep delay)
-    ;;(market/notify/all)
-    (set! delta-change (-(random 2000) 1000)) ;; between -10 and 10
-    (displayln (format "delta change: ~a" (/ (->fl delta-change) 100)))
-    (set! goog-price (+ goog-price delta-change))
-    (displayln (format "new GOOG price: ~a" (/ (->fl goog-price) 100)))
-
-    ;(market/notify/event "GOOG" 'sell-event goog-price)
+  (define (process-stock-event event)
+    (define stock-name (vector-ref event 0))
+    (define event-type (vector-ref event 1))
+    (define price (vector-ref event 2))  
+    (define quantity (vector-ref event 3))
+    (define seller (vector-ref event 4))
+    (define buyer (vector-ref event 5))
+    (define new-market-event (market-event stock-name event-type price quantity seller buyer))
+    (displayln new-market-event)
+    (market/notify/event new-market-event))
+  
+  ; read stock events from an external file
+  (define event-file "events/events.txt")
     
-    (define new-event (market-event "GOOG" 'sell-event goog-price 1 'A 'B))
-    
-    (market/notify/event new-event)
-    (loop)))
+  (for ([line (read-words/line event-file)])
+    (define vline (list->vector line))
+      (cond
+        [(equal? "delay" (vector-ref vline 0))
+         (sleep (string->number (vector-ref vline 1)))] ;sleep for the specified amount
+        [else (process-stock-event vline)])))
+  
 
 (define (service/spawn/registration) ; A Service to spawn computations that will register clients on the market.
   (display "Running Server's spawning service.\n")
@@ -86,7 +95,7 @@ are interested in it.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
         (when (procedure? payload) ; Check if the payload is a procedure.
           (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST MARKET/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
-            (spawn worker payload 90.0)))) ; There shouldn't be a timeout for this.
+            (spawn worker payload 900.0)))) ; There shouldn't be a timeout for this.
       (loop (duplet/block d)))))
 
 (define (server/boot)
@@ -106,8 +115,8 @@ are interested in it.
   
   (display "Running server's boot function\n")
   
-  (thread (lambda () (registration/spawn)))  ; Why (thread)??
-  (thread (lambda () (notification/spawn))))  ; Why (thread)??
+  (thread (lambda () (registration/spawn)))
+  (thread (lambda () (notification/spawn))))                            
 
 (define market-server (island/new 'market-server MARKET-SERVER/CURVE/SECRET server/boot))
 

@@ -60,7 +60,7 @@ CURL
       (lambda ()
         ; Creates a new CURL when it is evaluated (it cannot be passed because it has to be created on the server-side.
         (let ([d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTRA)])
-          (register (list "GOOG" "FB" "IBM") (duplet/resolver d))
+          (register (list "GOOG" "YHOO" "FB" "IBM") (duplet/resolver d))
           
           (let loop ([m (duplet/block d)])
             (let ([payload (murmur/payload m)])
@@ -97,8 +97,8 @@ CURL
     
     (let loop ([m (duplet/block d)]) ; Wait for an incoming message.
       (let ([payload (murmur/payload m)]) ; Extract the message's payload.
-        (when (string? payload) ; Check it's a string.
-          (displayln payload))) ; Print it into the console.
+        ;(when (string? payload) ; Check it's a string.
+          (displayln payload));) ; Print it into the console.
       (loop (duplet/block d)))))
 
 ;; p/notif/u A CURL where the Notification Service will put the CURL for its service.
