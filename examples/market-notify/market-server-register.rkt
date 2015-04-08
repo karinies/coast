@@ -41,5 +41,7 @@
   (hash-for-each market/registrations proc))
 
 (define (market/subs/apply event proc) ; apply proc to only subs on symbol
-  (define v (hash-ref market/registrations (market-event-symbol event)))
-  (proc event v))
+  (cond 
+    [(hash-has-key? market/registrations (market-event-symbol event))
+     (proc event (hash-ref market/registrations (market-event-symbol event)))]
+    [else (displayln (format "Unregistered symbol ~a" (market-event-symbol event)))]))
