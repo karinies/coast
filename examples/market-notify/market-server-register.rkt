@@ -32,7 +32,14 @@
 (define market/registrations (make-hash)) ; The "Database".
 
 (define (market/subscribe symbols curl)
-  (for-each (lambda (symbol) (hash-set! market/registrations symbol curl)) symbols))
+  (for-each
+    (lambda (symbol)
+      (cond 
+        [(hash-has-key? market/registrations symbol) ; is there already a key for this symbol?
+          ; get the curl list, append new curl, update hash
+         (hash-set! market/registrations symbol (append(hash-ref market/registrations symbol)(list curl)))]
+        [else (hash-set! market/registrations symbol (list curl))])) ; otherwise, make a new list with single curl
+      symbols))
 
 (define (market/subs/count) ; Returns the number of entries in the DB.
   (hash-count market/registrations))
@@ -43,5 +50,8 @@
 (define (market/subs/apply event proc) ; apply proc to only subs on symbol
   (cond 
     [(hash-has-key? market/registrations (market-event-symbol event))
-     (proc event (hash-ref market/registrations (market-event-symbol event)))]
+     ; loop through curl list on hash calling (proc event curl) for each
+     (for-each (lambda (curl)
+       (proc event curl))
+       (hash-ref market/registrations (market-event-symbol event)))]
     [else (displayln (format "Unregistered symbol ~a" (market-event-symbol event)))]))
