@@ -4,12 +4,13 @@
          json)
 
 (provide (contract-out
-          [como:log (-> como:logger? como:event? void?)]
+          [como:log (-> como:logger? como:event? any/c)]
           [como:event->jsexpr (-> como:event? jsexpr?)])
-         como:event
-         como:logger
-         struct:como:transport-messenger
-         como:protocol/VERSION)
+         (struct-out como:transport-messenger)
+         (struct-out como:logger)
+         (struct-out como:event)
+         como:protocol/0.1
+         como:protocol/LATEST)
 
 #|
  | Accountability Logging.
@@ -18,22 +19,29 @@
   (source
    type
    protocol-version
-   value)
+   value
+   time)
   )
 
 (struct como:transport-messenger
-  (sender))
+  (sender)
+  #:transparent)
 
 (struct como:logger
-  (messenger))
+  (messenger)
+  #:transparent)
 
 (define (como:log logger event)
-  (como:transport-messenger-sender (como:logger-messenger logger)) event)
+  (let* ([messenger (como:logger-messenger logger)]
+         [sender (como:transport-messenger-sender messenger)])
+    (sender event)))
 
-(define como:protocol/VERSION 0.1)
+(define como:protocol/0.1 0.1)
+(define como:protocol/LATEST como:protocol/0.1)
 
 (define (como:event->jsexpr event)
   (hasheq 'source (como:event-source event)
           'type (como:event-type event)
           'protocol-version (como:event-protocol-version event)
-          'value (como:event-value event)))
+          'value (como:event-value event)
+          'time (como:event-time event)))

@@ -17,13 +17,13 @@
  |#
 
 (struct stomp-messenger
-  (session) #:super struct:como:transport-messenger)
+  (session) #:super struct:como:transport-messenger #:transparent)
 
 (define (stomp-messenger-new #:host host #:login login #:pass pass #:destination destination #:vhost [vhost "/"])
   (let* ([s (stomp-connect host
-                          #:login login
-                          #:passcode pass
-                          #:virtual-host vhost)]
+                           #:login login
+                           #:passcode pass
+                           #:virtual-host vhost)]
          [messenger (stomp-messenger (lambda (payload) (stomp-send s destination (jsexpr->bytes (como:event->jsexpr payload)))) s)])
     messenger))
 

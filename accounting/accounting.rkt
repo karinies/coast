@@ -7,13 +7,15 @@
  | Application.
  |#
 
-(let* ([messenger (stomp-messenger-new #:host "128.195.59.247"
+(let* ([messenger (stomp-messenger-new #:host "peru.local"
                                        #:login "coastdev"
                                        #:pass "Hi123"
-                                       #:destination "/exchange/coast")]
+                                       #:destination "/queue/coast")]
        [logger (como:logger messenger)])
   (let loop ()
-    (define anEvent (como:event "argentina" "test-type" como:protocol/VERSION "TestValue"))
-    (como:log logger anEvent) (loop))
+    (define anEvent (como:event "argentina" "test-type" como:protocol/LATEST "TestValue" (current-inexact-milliseconds)))
+    (como:log logger anEvent) 
+    ;(sleep 1.0)
+    (loop))
   (stomp-messenger-shutdown messenger)
   )
