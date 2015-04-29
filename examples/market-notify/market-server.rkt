@@ -1,6 +1,5 @@
 #lang racket/base
 
-(require racket/flonum)
 (require 2htdp/batch-io)
 (require
   "../../include/base.rkt"
@@ -59,7 +58,7 @@ are interested in it.
                                 (market-event/symbol event) 
                                 (market-event/type event)
                                 (market-event/quantity event)
-                                (/ (->fl (string->number(market-event/price event))) 100) 
+                                (/ (string->number(market-event/price event)) 100.0) 
                                 (market-event/seller event) 
                                 (market-event/buyer event))])
              (when (not (send v thunk))
