@@ -1,3 +1,47 @@
+'''
+This module generates stock events for the COAST market-notify example
+It takes an input file of the format:
+
+<number of events to generate>
+<min time delay> <max time delay>
+<min purchase quantity> <max purchase quantity>
+[<stock symbol> <start price> <delta change> <list of possible buyers> <list of posssible sellers>]*
+
+e.g.
+
+200
+1 5
+1 500
+GOOG 555 10 [A,B] [A,B]
+YHOO 300 5 [A] [B]
+FB 82 2 [A] [B]
+IBM 161 3 [A] [B]
+
+Sample generated output will look like this:
+
+delay 3
+IBM order 16150 139 A B
+delay 3
+GOOG order 55242 172 B A
+delay 2
+IBM order 15977 417 A B
+delay 1
+GOOG order 55842 256 A A
+delay 4
+FB order 8371 444 A B
+delay 2
+GOOG order 56301 446 A B
+delay 2
+FB order 8425 214 A B
+delay 5
+IBM order 16187 440 A B
+delay 3
+GOOG order 56154 120 B B
+delay 5
+YHOO order 30248 484 A B
+
+'''
+
 import random
 import time
 
@@ -9,19 +53,23 @@ def init_stock_data(infile):
     # read event count
     event_count = int(infile.readline()[:-1]);
     # read min and max delays
-    min_delay, max_delay = infile.readline()[:-1].split(" ");
-    min_quantity, max_quantity= infile.readline()[:-1].split(" ");
+    min_delay_str, max_delay_str = infile.readline()[:-1].split(" ");
+    min_delay = int(min_delay_str)
+    max_delay = int(max_delay_str)
+    min_quantity_str, max_quantity_str = infile.readline()[:-1].split(" ");
+    min_quantity = int(min_quantity_str)
+    max_quantity = int(max_quantity_str)
 
     for line in infile:
-        stock_info = line.replace("\n", "").split(" ");
+        stock_info = line[:-1].split(" "); # shave \n off end of line
         sellers = (stock_info[3][1:-1]).split(",")
         buyers = (stock_info[4][1:-1]).split(",")
         init_price = int(stock_info[1])*100 # convert to cents
         delta_change = int(stock_info[2])*100 # convert to cents
         stocks[stock_info[0]] = [init_price, delta_change, sellers, buyers]
 
-    return event_count, int(min_delay), int(max_delay), \
-           int(min_quantity), int(max_quantity), stocks
+    return event_count, min_delay, max_delay, \
+           min_quantity, max_quantity, stocks
 
 def generate_stock_events(outfile, event_count, min_delay, max_delay, \
                           min_quantity, max_quantity, stocks):
