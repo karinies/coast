@@ -7,8 +7,7 @@
 
 (provide
  (contract-out 
-  [stomp-messenger-new (->* (#:host string? #:login string? #:pass string? #:destination string?) (#:vhost string?) stomp-messenger?)]
-  [stomp-messenger-shutdown (-> stomp-messenger? void?)])
+  [stomp-messenger-new (->* (#:host string? #:login string? #:pass string? #:destination string?) (#:vhost string?) stomp-messenger?)])
  stomp-messenger
  )
 
@@ -24,8 +23,9 @@
                            #:login login
                            #:passcode pass
                            #:virtual-host vhost)]
-         [messenger (stomp-messenger (lambda (payload) (stomp-send s destination (jsexpr->bytes (como:event->jsexpr payload)))) s)])
+         [sender (lambda (payload) 
+                   (stomp-send s destination (jsexpr->bytes (como:event->jsexpr payload)))
+                   (stomp-flush s))]
+         [stopper (lambda () (stomp-disconnect s))]
+         [messenger (stomp-messenger sender stopper s)])
     messenger))
-
-(define (stomp-messenger-shutdown messenger)
-  (stomp-disconnect (stomp-messenger-session messenger)))

@@ -3,12 +3,14 @@
 (require
   "../../include/base.rkt"
   "../../baseline.rkt"
+  "../../island.rkt"
   [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
   "../../promise.rkt"
   "../../remote.rkt"
   "../../transport/gate.rkt"
   "../../transport/gates/challenge.rkt"
-  "../../transport/gates/whitelist.rkt")
+  "../../transport/gates/whitelist.rkt"
+  "../../accounting/stomp-transport.rkt")
 
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -126,6 +128,12 @@ CURL
 (define market-server/curl/spawn (curl/zpl/safe-to-curl MARKET-SERVER/CURL/SPAWN KEYSTORE))
 
 (define market-client   (island/new 'market-client   MARKET-CLIENT/CURVE/SECRET   (lambda () (client/boot market-server/curl/spawn))))
+
+(let ([messenger (stomp-messenger-new #:host "peru.local"
+                                       #:login "coastdev"
+                                       #:pass "Hi123"
+                                       #:destination "/queue/coast")])
+  (island/monitoring/start messenger))
 
 ;;; Multiple islands in the same address space can share the exact same keystore
 ;;; and any change in the keystore will be seen by all such islands in the

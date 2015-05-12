@@ -21,7 +21,9 @@
  "bindings/libzyre/peer.rkt"
  "persistent/environ.rkt"
  "curve.rkt"
- "islet.rkt")
+ "islet.rkt"
+ 
+ "accounting/como.rkt")
 
 (provide 
  (contract-out
@@ -34,7 +36,12 @@
   [islands/enter/wait (-> (listof kp/base64/c) void?)]
   [island/start (-> island? void?)]
   [island/destroy (-> island? void?)]
-  [island/compile (-> any/c procedure?)]))
+  [island/compile (-> any/c procedure?)]
+  [island/monitoring/start (-> como:transport-messenger? void?)]
+  [island/monitoring/shutdown (-> void?)]
+  [island/monitoring/log (->* (#:type string? #:value any/c) void?)])
+ (rename-out
+  [logger island/como/logger]))
 
 (define (jumpstart)
   (let loop ((x (thread-receive)))
@@ -195,13 +202,18 @@
 (define CURL/BYTES/MAX    (* 128 1024))
 (define PAYLOAD/BYTES/MAX (* 256 1024))
 
-           
+;; Coast Monitoring stuff.
+(define logger #f)
 
-           
-           
+(define (island/monitoring/start messenger)
+  (set! logger (como:logger messenger)))
 
+;(define (island/monitoring/pause)
+;  logger (como:logger messenger))
 
+(define (island/monitoring/shutdown)
+  (let ([messenger (como:logger-messenger logger)])
+  (como:transport-messenger/shutdown messenger)))
 
-
-
-
+(define (island/monitoring/log #:type type #:value value)
+  (como:log logger #:source (symbol->string (this/island/nickname)) #:type type #:version como:protocol/LATEST #:value value))

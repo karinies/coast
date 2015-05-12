@@ -6,11 +6,13 @@
  "curve.rkt"
  "islet.rkt"
  "murmur.rkt"
+ "island.rkt"
  "persistent/environ.rkt"
  "serialize.rkt"
  "Island/base.rkt"
  "Island/logger.rkt"
- "transport/access.rkt")
+ "transport/access.rkt"
+ "accounting/como-types.rkt")
 
 (provide
  (rename-out [send/strong send])
@@ -63,7 +65,9 @@
                   (and
                    (thread-send (island/egress (this/island)) (rustle destination t/bytes p/bytes) #f)
                    #t))))]))]
-      [else #f])))
+      [else #f]))
+  (island/monitoring/log #:type CURL-SEND
+                         #:value #f))
           
 ;; Note: Should the egress thread have a dedicated transport with specialized access:send
 ;; points to modulate access to interisland transmission? We could generate a custom
