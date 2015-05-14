@@ -54,14 +54,8 @@ are interested in it.
         (displayln "No clients to notify!")
         (market/subs/apply event
          (lambda (event v)
-           (let ([thunk (format "~a ~a ~a ~a ~a ~a" 
-                                (market-event/symbol event) 
-                                (market-event/type event)
-                                (market-event/quantity event)
-                                (/ (string->number(market-event/price event)) 100.0) 
-                                (market-event/seller event) 
-                                (market-event/buyer event))])
-             (when (not (send v thunk))
+           (let ([notify-event event])
+             (when (not (send v (struct->vector notify-event)))
                (display "Notification could not be sent")))))))
   
   (define (process-stock-event event)
