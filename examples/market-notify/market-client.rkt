@@ -10,7 +10,9 @@
   "../../transport/gate.rkt"
   "../../transport/gates/challenge.rkt"
   "../../transport/gates/whitelist.rkt"
-  "../../accounting/stomp-transport.rkt")
+  "../../accounting/stomp-transport.rkt"
+  "../../Island/island-como.rkt"
+  "../../accounting/como.rkt")
 
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -133,7 +135,7 @@ CURL
                                        #:login "coastdev"
                                        #:pass "Hi123"
                                        #:destination "/queue/coast")])
-  (island/monitoring/start messenger))
+  (island/monitoring/start (island-nickname market-client) messenger))
 
 ;;; Multiple islands in the same address space can share the exact same keystore
 ;;; and any change in the keystore will be seen by all such islands in the

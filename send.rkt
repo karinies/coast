@@ -1,18 +1,19 @@
 #lang racket/base
 
 (require
- racket/contract/base
- "curl/base.rkt"
- "curve.rkt"
- "islet.rkt"
- "murmur.rkt"
- "island.rkt"
- "persistent/environ.rkt"
- "serialize.rkt"
- "Island/base.rkt"
- "Island/logger.rkt"
- "transport/access.rkt"
- "accounting/como-types.rkt")
+  racket/contract/base
+  "curl/base.rkt"
+  "curve.rkt"
+  "islet.rkt"
+  "murmur.rkt"
+  "island.rkt"
+  "persistent/environ.rkt"
+  "serialize.rkt"
+  "Island/base.rkt"
+  "Island/logger.rkt"
+  "transport/access.rkt"
+  "accounting/como-types.rkt"
+  "Island/island-como.rkt")
 
 (provide
  (rename-out [send/strong send])
@@ -32,9 +33,12 @@
         [kp/base64 (curve/kp/base64 (this/curve))]) ; Public key of this island
     (cond
       [(access:send? a) ; Transmission is intra-island.
-       (and
-        (bytes=? kp/base64 (curl/origin target)); Paranoia. Ensure CURL originated on this island.
-        (access/send a (murmur (curl/origin target) target payload)))]
+       (let ([send-result (and
+                           (bytes=? kp/base64 (curl/origin target)); Paranoia. Ensure CURL originated on this island.
+                           (access/send a (murmur (curl/origin target) target payload)))])
+         (island/monitoring/log #:type COMO/CURL/SEND
+                                #:value #f)
+         send-result)]
       
       [(symbol? a) ; Transmission is inter-island
        (log/debug (this/island/nickname) "send inter-island" #t)
@@ -62,13 +66,15 @@
                         (log/fatal (this/islet/nickname) "committing suicide" #f)
                         (kill-thread (islet/thread (this/islet))) ; Is this the right response?
                         #f)])
-                  (and
-                   (thread-send (island/egress (this/island)) (rustle destination t/bytes p/bytes) #f)
-                   #t))))]))]
-      [else #f]))
-  (island/monitoring/log #:type CURL-SEND
-                         #:value #f))
-          
+                  (let ([send-result (and
+                                      (thread-send (island/egress (this/island)) (rustle destination t/bytes p/bytes) #f)
+                                      #t)])
+                    (island/monitoring/log #:type COMO/CURL/SEND
+                                           #:value #t)
+                    send-result
+                    ))))]))]
+      [else #f])))
+
 ;; Note: Should the egress thread have a dedicated transport with specialized access:send
 ;; points to modulate access to interisland transmission? We could generate a custom
 ;; version of send for each binding environment where it was appropriate.
@@ -80,7 +86,6 @@
     (and a/receive (access/receive a/receive #f))))
 
 (define (receive/try)
-    (let* ([e (islet/environ (this/islet))]
-           [a/receive (environ/ref e 'this/access:receive #f)])
-      (and a/receive (access/receive/try a/receive #f))))
-       
+  (let* ([e (islet/environ (this/islet))]
+         [a/receive (environ/ref e 'this/access:receive #f)])
+    (and a/receive (access/receive/try a/receive #f))))

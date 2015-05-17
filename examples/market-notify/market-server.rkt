@@ -13,7 +13,9 @@
   "../../transport/access.rkt"
   "../../transport/gate.rkt"
   "../../transport/gates/challenge.rkt"
-  "../../transport/gates/whitelist.rkt")
+  "../../transport/gates/whitelist.rkt"
+  "../../accounting/stomp-transport.rkt"
+  "../../Island/island-como.rkt")
 
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -118,6 +120,12 @@ are interested in it.
   (thread (lambda () (notification/spawn))))                            
 
 (define market-server (island/new 'market-server MARKET-SERVER/CURVE/SECRET server/boot))
+
+(let ([messenger (stomp-messenger-new #:host "peru.local"
+                                       #:login "coastdev"
+                                       #:pass "Hi123"
+                                       #:destination "/queue/coast")])
+  (island/monitoring/start (island-nickname market-server) messenger))
 
 ;;; Multiple islands in the same address space can share the exact same keystore
 ;;; and any change in the keystore will be seen by all such islands in the

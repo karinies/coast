@@ -40,7 +40,10 @@
  "persistent/hash.rkt"
  "persistent/environ.rkt"
  "persistent/set.rkt"
- (only-in "persistent/vector.rkt" vector/persist? vector/length vector/fold/left vector/racket=>vector/persist))
+ (only-in "persistent/vector.rkt" vector/persist? vector/length vector/fold/left vector/racket=>vector/persist)
+ "accounting/como.rkt"
+ "accounting/como-types.rkt"
+ "Island/island-como.rkt")
  
 (provide 
  motile/serializable?
@@ -459,7 +462,10 @@
         [(curl? v)
          (unless (or (symbol? (curl/access v)) (curl/embargo? v))
            (accessor/add (this/accessors) (curl/access v)))
-         (vector-immutable 'struct:curl (reloop (curl/origin v)) (reloop (curl/zpl/signed v)))]
+         (let ([flat-curl (vector-immutable 'struct:curl (reloop (curl/origin v)) (reloop (curl/zpl/signed v)))])
+           (island/monitoring/log #:type COMO/CURL/TRANSFER
+                                           #:value #f)
+           flat-curl)]
 
         [(time/utc? v) (time/flatten  v)]
         [(date? v)     (date/flatten  v)]

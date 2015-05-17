@@ -1,27 +1,29 @@
 #lang racket/base
 
 (require
- racket/contract/base
- "Island/accessor.rkt"
- [only-in "curl/base.rkt" curl/access]
- "curl/curl.rkt"
- "curve.rkt"
- "getters.rkt"
- "islet.rkt"
- "murmur.rkt"
- "persistent/environ.rkt"
- "transport/access.rkt"
- "transport/transport.rkt"
- "transport/gate.rkt"
- "transport/gates/whitelist.rkt"
- "transport/transports/bankers.rkt"
- "transport/transports/promise.rkt")
+  racket/contract/base
+  "Island/accessor.rkt"
+  [only-in "curl/base.rkt" curl/access]
+  "curl/curl.rkt"
+  "curve.rkt"
+  "getters.rkt"
+  "islet.rkt"
+  "murmur.rkt"
+  "persistent/environ.rkt"
+  "transport/access.rkt"
+  "transport/transport.rkt"
+  "transport/gate.rkt"
+  "transport/gates/whitelist.rkt"
+  "transport/transports/bankers.rkt"
+  "transport/transports/promise.rkt"
+  "Island/island-como.rkt"
+  "accounting/como-types.rkt")
 
 (provide
  (rename-out
   [duplet:promise? promise?]
   [islet/curl/new islet/curl]) ; DEPRECATED.
-  
+ 
  duplet?
  duplet/receiver
  duplet/resolver
@@ -34,7 +36,7 @@
   [duplet/block (-> duplet? (or/c murmur? #f))]
   [duplet/try   (-> duplet? (or/c murmur? #f))]
   [duplet/wait  (-> duplet? (>=/c 0) (or/c murmur? #f))]
-
+  
   [promise/new (-> duplet:promise?)]
   [promise/block (-> duplet:promise? (or/c murmur? #f))]
   [promise/wait (-> duplet:promise? (>=/c 0)(or/c murmur? #f))]
@@ -44,7 +46,7 @@
   [promise/receiver (-> duplet:promise? access:receive?)]
   [promise/resolver (-> duplet:promise? curl?)]
   
-
+  
   [place/intra? (-> place/c boolean?)]
   [place/inter? (-> place/c boolean?)]
   [place/anywhere? (-> place/c boolean?)]
@@ -63,7 +65,7 @@
 
 (define (duplet/new a/receive u)
   (duplet a/receive u duplet/event/generate))
-  
+
 (struct duplet:promise duplet ())
 (define (promise/receiver p) (duplet/receiver p))
 (define (promise/resolver p) (duplet/resolver p))
@@ -106,12 +108,20 @@
     (duplet:promise a/receive (curl/new* c keys) duplet/event/generate)))
 
 ;; Blocking read of the resolution of a promise.
-(define (promise/block p) (access/receive (duplet/receiver p) #f))
+(define (promise/block p) 
+  (let ([result (access/receive (duplet/receiver p) #f)])
+    (island/monitoring/log #:type COMO/CURL/RECEIVE
+                            #:value #f)
+    result))
 
 ;; Attempt to read the promise without blocking while hiding all of the machinery underneath.
 ;; Returns the payload of the transmitted murmur (as described above)
 ;; on success and the failure value if the access:receive? would block.
-(define (promise/try p) (access/receive/try (duplet/receiver p) #f))
+(define (promise/try p) 
+  (let ([result (access/receive/try (duplet/receiver p) #f)])
+    (island/monitoring/log #:type COMO/CURL/RECEIVE
+                            #:value #f)
+    result))
 
 ;; A blocking read with timeout again while hiding as much machinery as possible.
 ;; If the wait timeouts before the promise is resolved then the failure value
@@ -178,12 +188,21 @@
             (curl/core/new* keys path (if (place/inter? place) (access/id a/send) a/send) metadata)])
       (when (place/inter? place) (accessor/add (this/accessors) a/send))
       (duplet/new a/receive (curl/new core (curve/kp/sign keys) (curve/ks/sign keys))))))
-  
-(define (duplet/block d) (access/receive (duplet/receiver d) #f))
-(define (duplet/try d) (access/receive/try (duplet/receiver d) #f))
+
+(define (duplet/block d)
+  (let ([result (access/receive (duplet/receiver d) #f)])
+    (island/monitoring/log #:type COMO/CURL/RECEIVE
+                            #:value #f)
+    result))
+
+(define (duplet/try d)
+  (let ([result (access/receive/try (duplet/receiver d) #f)])
+    (island/monitoring/log #:type COMO/CURL/RECEIVE
+                           #:value #f)
+    result))
+
 (define (duplet/wait d timeout)
-    (let ([x (sync/timeout timeout d)])
+  (let ([x (sync/timeout timeout d)])
     (and x (access/receive (duplet/receiver x) #f))))
 (define (duplet/backlog? d) (transport/nonempty? (access/transport (duplet/receiver d))))
-  
-    
+

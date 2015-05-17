@@ -13,7 +13,9 @@
  "../time.rkt"
  "../transport/access.rkt"
  "../uuid.rkt"
- "../zpl.rkt")
+ "../zpl.rkt"
+ "../accounting/como-types.rkt"
+ "../Island/island-como.rkt")
 
 ;; Notation: zpl (in lower case) refers to a byte string that is a legal zpl text
 ;; (in the sense of the zpl parser defined in zpl.rkt). ZPL (in upper case) refers
@@ -92,10 +94,16 @@
 
 ;; curl/core constructor
 (define (curl/core/new kp/base64 path access metadata) ; (struct curl/core (id origin path access/id created metadata) #:transparent)
-  (curl/core (uuid/symbol) kp/base64 path access (time/now) metadata))
+  (let ([curl (curl/core (uuid/symbol) kp/base64 path access (time/now) metadata)])
+    (island/monitoring/log #:type COMO/CURL/NEW
+                         #:value #f)
+    curl))
 
 (define (curl/core/new* keys path access metadata)
-  (curl/core (uuid/symbol) (curve/kp/base64 keys) path access (time/now) metadata))
+  (let ([curl (curl/core (uuid/symbol) (curve/kp/base64 keys) path access (time/now) metadata)])
+      (island/monitoring/log #:type COMO/CURL/NEW
+                         #:value #f)
+    curl))
 
 ;(define (curl/core/new* kp path access/id metadata)
 ;  (curl/core

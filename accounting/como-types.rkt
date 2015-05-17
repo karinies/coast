@@ -1,12 +1,12 @@
 #lang racket/base
 
 (provide
- CURL-NEW
- CURL-SEND
- CURL-RECEIVED
- CURL-TRANSFER)
+ COMO/CURL/NEW
+ COMO/CURL/SEND
+ COMO/CURL/RECEIVE
+ COMO/CURL/TRANSFER)
 
-(define CURL-NEW "curl-new") ;; To be implemented.
-(define CURL-SEND "curl-send") ;; To be implemented.
-(define CURL-RECEIVED "curl-received") ;; To be implemented.
-(define CURL-TRANSFER "curl-transfer") ;; To be implemented.
+(define COMO/CURL/NEW "curl-new") ;; To be implemented.
+(define COMO/CURL/SEND "curl-send") ;; To be implemented.
+(define COMO/CURL/RECEIVE "curl-receive") ;; To be implemented.
+(define COMO/CURL/TRANSFER "curl-transfer") ;; To be implemented.
