@@ -4,6 +4,7 @@
   "../../baseline.rkt"
   "../../persistent/environ.rkt"
   "./market-server-register.rkt"
+  "../../promise/base.rkt"
   "../../promise.rkt"
   "../../murmur.rkt"
   "../../send.rkt"

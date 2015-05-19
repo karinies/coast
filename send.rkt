@@ -13,7 +13,8 @@
   "Island/logger.rkt"
   "transport/access.rkt"
   "accounting/como-types.rkt"
-  "Island/island-como.rkt")
+  "promise/base.rkt"
+  [only-in "Island/island-como.rkt" island/monitoring/log island/monitoring/pass?])
 
 (provide
  (rename-out [send/strong send])
@@ -36,8 +37,10 @@
        (let ([send-result (and
                            (bytes=? kp/base64 (curl/origin target)); Paranoia. Ensure CURL originated on this island.
                            (access/send a (murmur (curl/origin target) target payload)))])
+         (when (island/monitoring/pass? #:type COMO/CURL/TRANSFER #:place INTRA) ; If CoMo is configured to log intra-island COMO/CURL/TRANSFER
+             (motile/serialize payload)) ; Serialize the payload so that COMO/CURL/TRANSFER gets captured.
          (island/monitoring/log #:type COMO/CURL/SEND
-                                #:value #f)
+                                #:place INTRA)
          send-result)]
       
       [(symbol? a) ; Transmission is inter-island
@@ -70,7 +73,7 @@
                                       (thread-send (island/egress (this/island)) (rustle destination t/bytes p/bytes) #f)
                                       #t)])
                     (island/monitoring/log #:type COMO/CURL/SEND
-                                           #:value #t)
+                                           #:place INTER)
                     send-result
                     ))))]))]
       [else #f])))

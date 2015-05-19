@@ -35,15 +35,15 @@
  "time.rkt"
  ;"this.rkt"
  "islet.rkt"
+ "promise/base.rkt"
  "zpl.rkt"
 
  "persistent/hash.rkt"
  "persistent/environ.rkt"
  "persistent/set.rkt"
  (only-in "persistent/vector.rkt" vector/persist? vector/length vector/fold/left vector/racket=>vector/persist)
- "accounting/como.rkt"
  "accounting/como-types.rkt"
- "Island/island-como.rkt")
+ [only-in "Island/island-como.rkt" island/monitoring/log])
  
 (provide 
  motile/serializable?
@@ -464,7 +464,7 @@
            (accessor/add (this/accessors) (curl/access v)))
          (let ([flat-curl (vector-immutable 'struct:curl (reloop (curl/origin v)) (reloop (curl/zpl/signed v)))])
            (island/monitoring/log #:type COMO/CURL/TRANSFER
-                                           #:value #f)
+                                           #:place (if (symbol? (curl/access v)) INTER INTRA))
            flat-curl)]
 
         [(time/utc? v) (time/flatten  v)]

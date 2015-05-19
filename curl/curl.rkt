@@ -1,21 +1,21 @@
 #lang racket/base
 
 (require
- racket/contract/base
- racket/bytes
- racket/port
- "base.rkt"
- "../bindings/libsodium/crypto.rkt"
- "../base64.rkt"
- "../curve.rkt"
- "../persistent/environ.rkt"
- "../serialize.rkt"
- "../time.rkt"
- "../transport/access.rkt"
- "../uuid.rkt"
- "../zpl.rkt"
- "../accounting/como-types.rkt"
- "../Island/island-como.rkt")
+  racket/contract/base
+  racket/bytes
+  racket/port
+  "base.rkt"
+  "../bindings/libsodium/crypto.rkt"
+  "../base64.rkt"
+  "../curve.rkt"
+  "../persistent/environ.rkt"
+  "../serialize.rkt"
+  "../time.rkt"
+  "../transport/access.rkt"
+  "../uuid.rkt"
+  "../zpl.rkt"
+  "../accounting/como-types.rkt"
+  (only-in "../Island/island-como.rkt" island/monitoring/log))
 
 ;; Notation: zpl (in lower case) refers to a byte string that is a legal zpl text
 ;; (in the sense of the zpl parser defined in zpl.rkt). ZPL (in upper case) refers
@@ -94,15 +94,17 @@
 
 ;; curl/core constructor
 (define (curl/core/new kp/base64 path access metadata) ; (struct curl/core (id origin path access/id created metadata) #:transparent)
-  (let ([curl (curl/core (uuid/symbol) kp/base64 path access (time/now) metadata)])
+  (let ([curl (curl/core (uuid/symbol) kp/base64 path access (time/now) metadata)]
+        [place (if (symbol? access) 'INTER 'INTRA)])
     (island/monitoring/log #:type COMO/CURL/NEW
-                         #:value #f)
+                           #:place #f)
     curl))
 
 (define (curl/core/new* keys path access metadata)
-  (let ([curl (curl/core (uuid/symbol) (curve/kp/base64 keys) path access (time/now) metadata)])
-      (island/monitoring/log #:type COMO/CURL/NEW
-                         #:value #f)
+  (let ([curl (curl/core (uuid/symbol) (curve/kp/base64 keys) path access (time/now) metadata)]
+        [place (if (symbol? access) 'INTER 'INTRA)])
+    (island/monitoring/log #:type COMO/CURL/NEW
+                           #:place place)
     curl))
 
 ;(define (curl/core/new* kp path access/id metadata)
@@ -315,15 +317,15 @@
              [p (and kp/base64 (keystore/look keystore kp/base64))] ; Keystore entry for origin
              [kp/sign (and p (public/kp/sign p))]                   ; kp/sign of island of origin.
              [z/signed   (curl/zpl/safe-to-curl/zpl/signed z)])     ; CURVE signing of zpl form of CURL
-          ;(display (format "curl/safe/load 1b:~a\n" kp/base64))
-          (if kp/sign
-              (let* ([z/unsigned (crypto/sign/verify z/signed kp/sign)]
-                     [core (and z/unsigned (ZPL-to-curl/core Z))])
-                ;(display (format "curl/safe/load 3:~a\n"  core))
-                (and core (curl core kp/sign z/signed)))
-              (let ([core (ZPL-to-curl/core Z)])
-                (and core (curl core kp/sign z/signed)))))
-        #f)) ; CURL ill-formed.
+        ;(display (format "curl/safe/load 1b:~a\n" kp/base64))
+        (if kp/sign
+            (let* ([z/unsigned (crypto/sign/verify z/signed kp/sign)]
+                   [core (and z/unsigned (ZPL-to-curl/core Z))])
+              ;(display (format "curl/safe/load 3:~a\n"  core))
+              (and core (curl core kp/sign z/signed)))
+            (let ([core (ZPL-to-curl/core Z)])
+              (and core (curl core kp/sign z/signed)))))
+      #f)) ; CURL ill-formed.
 
 (define (ZPL-to-curl/core tree)
   (let ([CURL (zpl/locate tree 'CURL)])
@@ -337,9 +339,9 @@
            [metadata  (metadata/reconstruct (zpl/locate CURL 'metadata))])
        ; Any illegal field value will violate the curl/core contract.
        (curl/core id origin path access/id created metadata)))))
-  
-  
-  (define (curl/file/load path kp/sign)
+
+
+(define (curl/file/load path kp/sign)
   (call-with-input-file* path (lambda (in) (curl/load in kp/sign))))
 
 ;; Without the signature a curl/core instance as a curl/zpl looks like
@@ -351,7 +353,7 @@
 ;;     access/id = some-access:send/id
 ;;     created = "2014-03-07T14:14:10Z"
 ;;     metadata = #(struct:motile/flat #(1 0 0) 0 #() () #(struct:environ #(struct:hash eq #())))
-  
+
 ;; Given a signed textual zpl tree z (as bytes) this function verifies the signature
 ;; with the matching kp/sign key.
 ;; Returns the unsigned ZPL tree z as a bytes string if the signature matches and #f otherwise.
@@ -372,7 +374,7 @@
   (cond
     [(zpl/locate z name) => (lambda (x) (zpl/value x))]
     [else 0]))
-  
+
 ;; In the CURL zpl representation a metadata field must either be #f or a motile/flat?
 ;; that deserializes to an environ.
 ;; If the metadata field is well-formed then the reconstruction will return either #f or an environ?
@@ -380,9 +382,9 @@
 ;; value besides #f or an environ?.
 (define (metadata/reconstruct node)
   (if node
-    (let ([value (zpl/value node)]) ; Either #f or #(struct:motile/flat ...)
-      (and value (motile/deserialize (motile/flat/reconstruct value))))
-    0))
+      (let ([value (zpl/value node)]) ; Either #f or #(struct:motile/flat ...)
+        (and value (motile/deserialize (motile/flat/reconstruct value))))
+      0))
 
 ;; Given a bytes input port whose contents is a curl/zpl/signed that has been stripped
 ;; of its signing hash reconstruct a curl/core instance.
@@ -400,7 +402,7 @@
        ; Any illegal field value will violate the curl/core contract.
        (curl/core id origin path access/id created metadata)))))
 
-     
+
 ;; Given a curl/zpl/signed byte string z return an equivalent curl/zpl/safe
 ;; where the raw 64-byte signature is replaced with SIGNATURE = <base64/url armour signing>
 ;; This form is intended for easy transmission via email or HTTP.
@@ -412,7 +414,7 @@
 (define (curl/core-to-curl/zpl/safe c ks/sign)
   (let ([signed (curl/core-to-curl/zpl/signed c ks/sign)])
     (curl/zpl/signed-to-curl/zpl/safe signed)))
-  
+
 (define-syntax-rule (define/curl/inline name text)
   (define name (string->bytes/latin-1 text)))
 
@@ -470,11 +472,11 @@ CURL
 
 ;; TESTING
 (require
- "../Island/keystore.rkt"
- "../persistent/hash.rkt"
- ;"../this.rkt"
- "../transport/access.rkt"
- "../transport/transports/bankers.rkt")
+  "../Island/keystore.rkt"
+  "../persistent/hash.rkt"
+  ;"../this.rkt"
+  "../transport/access.rkt"
+  "../transport/transports/bankers.rkt")
 
 (define kp/base64 (curve/kp/base64 CURVE/STATIC))
 (define kp/sign (curve/kp/sign CURVE/STATIC))

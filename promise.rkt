@@ -2,6 +2,7 @@
 
 (require
   racket/contract/base
+  "promise/base.rkt"
   "Island/accessor.rkt"
   [only-in "curl/base.rkt" curl/access]
   "curl/curl.rkt"
@@ -16,7 +17,7 @@
   "transport/gates/whitelist.rkt"
   "transport/transports/bankers.rkt"
   "transport/transports/promise.rkt"
-  "Island/island-como.rkt"
+  [only-in "Island/island-como.rkt" island/monitoring/log]
   "accounting/como-types.rkt")
 
 (provide
@@ -27,10 +28,6 @@
  duplet?
  duplet/receiver
  duplet/resolver
- INTER
- INTRA
- ANYWHERE
- place/c
  (contract-out
   [duplet/new (-> access:receive? curl? duplet?)]
   [duplet/block (-> duplet? (or/c murmur? #f))]
@@ -47,9 +44,6 @@
   [promise/resolver (-> duplet:promise? curl?)]
   
   
-  [place/intra? (-> place/c boolean?)]
-  [place/inter? (-> place/c boolean?)]
-  [place/anywhere? (-> place/c boolean?)]
   [islet/curl/new       (-> (listof symbol?)         gate? (or/c environ? #f) place/c duplet?)]
   [islet/curl/known/new (-> (listof symbol?) symbol? gate? (or/c environ? #f)        duplet?)]
   [islet/curl/meta (-> transport? gate? gate? duplet?)]))
@@ -111,7 +105,7 @@
 (define (promise/block p) 
   (let ([result (access/receive (duplet/receiver p) #f)])
     (island/monitoring/log #:type COMO/CURL/RECEIVE
-                            #:value #f)
+                            #:place #f)
     result))
 
 ;; Attempt to read the promise without blocking while hiding all of the machinery underneath.
@@ -120,7 +114,7 @@
 (define (promise/try p) 
   (let ([result (access/receive/try (duplet/receiver p) #f)])
     (island/monitoring/log #:type COMO/CURL/RECEIVE
-                            #:value #f)
+                            #:place #f)
     result))
 
 ;; A blocking read with timeout again while hiding as much machinery as possible.
@@ -134,15 +128,6 @@
 ;; Returns #t if promise has been resolved and #f otherwise.
 (define (promise/resolved? p)
   (not (transport/empty? (access/transport (duplet/receiver p)))))
-
-(define place/c (flat-named-contract 'place (or/c 'INTER 'INTRA 'ANYWHERE)))
-(define (place/intra? place)    (eq? place INTRA))
-(define (place/inter? place)    (eq? place INTER))
-(define (place/anywhere? place) (eq? place ANYWHERE))
-
-(define INTER    'INTER)
-(define INTRA    'INTRA)
-(define ANYWHERE 'ANYWHERE)
 
 ;; Generate a fresh bankers queue transport, its access points, and a CURL that references the
 ;; generated access:send point.
@@ -192,7 +177,7 @@
 (define (duplet/block d)
   (let ([result (access/receive (duplet/receiver d) #f)])
     (island/monitoring/log #:type COMO/CURL/RECEIVE
-                            #:value #f)
+                            #:place #f)
     result))
 
 (define (duplet/try d)

@@ -2,24 +2,24 @@
 
 (require racket/contract
          json
-         "../time.rkt")
+         "../time.rkt"
+         "../promise/base.rkt")
 
 (provide (contract-out
-          ;[como:log/event (-> como:logger? como:event? any/c)]
           [como:log/event/filtered (-> como:logger? como:event? como:filter/c any/c)]
-          [como:log (->* (como:logger? como:filter/c #:source string? #:source-islet string? #:type string? #:version number? #:value any/c #:time real?) any/c)]
+          [como:log (->* (como:logger? como:filter/c #:source string? #:source-islet string? #:type string? #:version number? #:value any/c #:time real? #:place como:place/c) any/c)]
           [como:event->jsexpr (-> como:event? jsexpr?)]
           [como:transport-messenger/shutdown (-> como:transport-messenger? void?)]
           [struct como:logger ((messenger como:transport-messenger?) (filter como:filter/c))]
+          [struct como:event ((source-island string?) (source-islet string?) (type string?) (protocol-version number?) (value jsexpr?) (time real?) (place como:place/c))]
           [como:filter/pass? (-> como:filter/c como:event? boolean?)])
          (struct-out como:transport-messenger)
-         ;(struct-out como:logger)
-         (struct-out como:event)
          como:protocol/0.1
          como:protocol/LATEST
          como:filter/TRUE
          como:filter/FALSE
-         como:filter/c)
+         como:filter/c
+         como:place/c)
 
 #|
  | Accountability Logging.
@@ -30,7 +30,8 @@
    type
    protocol-version
    value
-   time)
+   time
+   place)
   )
 
 (struct como:transport-messenger
@@ -45,6 +46,8 @@
   (messenger
    filter)
   #:transparent)
+
+(define como:place/c (or/c place/c #f))
 
 (define como:filter/c (-> como:event? boolean?))
 
@@ -62,8 +65,8 @@
            [sender (como:transport-messenger-sender messenger)])
       (sender event))))
 
-(define (como:log logger filter #:source island #:source-islet islet #:type type #:version version #:value value #:time time)
-  (let ([event (como:event island islet type version value time)])
+(define (como:log logger filter #:source island #:source-islet islet #:type type #:version version #:value value #:time time #:place place)
+  (let ([event (como:event island islet type version value time place)])
     (como:log/event/filtered logger event filter)))
 
 (define (como:filter/pass? filter event)
@@ -76,6 +79,8 @@
   (hasheq 'source-island (como:event-source-island event)
           'source-islet (como:event-source-islet event)
           'type (como:event-type event)
-          'protocol-version (como:event-protocol-version event)
+          'version (como:event-protocol-version event)
           'value (como:event-value event)
-          'time (como:event-time event)))
+          'time (como:event-time event)
+          'place (let ([place (como:event-place event)])
+                   (if (symbol? place) (symbol->string place) place))))

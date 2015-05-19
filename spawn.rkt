@@ -9,6 +9,7 @@
  "curve.rkt"
  "islet.rkt"
  "persistent/environ.rkt"
+ "promise/base.rkt"
  "promise.rkt"
  "transport/access.rkt"
  "transport/gate.rkt"

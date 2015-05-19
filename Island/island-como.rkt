@@ -2,16 +2,17 @@
 
 (require
   "../time.rkt"
-  "../islet.rkt"
+  (only-in "../islet.rkt" this/island/nickname this/islet/nickname)
   "../accounting/como.rkt"
-  "../Island/base.rkt")
+  "../promise/base.rkt")
 
 (provide
  (contract-out
   [island/monitoring/start (-> symbol? como:transport-messenger? void?)]
   [island/monitoring/shutdown (-> symbol? void?)]
-  [island/monitoring/log (->* (#:type string? #:value any/c) void?)]
-  [island/monitoring/set/filter (-> symbol? como:filter/c void?)]))
+  [island/monitoring/log (->* (#:type string? #:place como:place/c) void?)]
+  [island/monitoring/set/filter (-> symbol? como:filter/c void?)]
+  [island/monitoring/pass? (->* (#:type string? #:place como:place/c) boolean?)]))
 
 ;; Coast Monitoring stuff.
 (define loggers (make-hash)) ; Loggers use to log events. (-> symbol? como:logger?)
@@ -36,17 +37,21 @@
       (let ([messenger (como:logger-messenger logger)])
         (como:transport-messenger/shutdown messenger)))))
 
-(define (island/monitoring/log #:type type #:value value)
+(define (filter/get nickname)
+  (hash-ref filters nickname como:filter/FALSE)) ; If filter hasn't been set, assume #f.
+
+(define (island/monitoring/log #:type type #:place place)
   (let ([logger (hash-ref loggers (this/island/nickname) #f)]
-        [filter (hash-ref filters (this/island/nickname) como:filter/FALSE)]) ; If filter hasn't been set, assume #f.
+        [filter (filter/get (this/island/nickname))])
     (when (como:logger? logger)
       (como:log logger filter #:source (symbol->string (this/island/nickname))
                 #:source-islet (symbol->string (this/islet/nickname)) 
                 #:type type 
                 #:version como:protocol/LATEST 
-                #:value value 
-                #:time (time/now/milliseconds)))))
+                #:value #f 
+                #:time (time/now/milliseconds)
+                #:place place))))
 
-(define (island/monitoring/pass? #:type type #:value value)
-  (let ([event (como:event (symbol->string (this/island/nickname)) (symbol->string (this/islet/nickname)) type como:protocol/LATEST value (time/now/milliseconds))])
-    (como:filter/pass? event)))
+(define (island/monitoring/pass? #:type type #:place place)
+  (let ([event (como:event (symbol->string (this/island/nickname)) (symbol->string (this/islet/nickname)) type como:protocol/LATEST #f (time/now/milliseconds) place)])
+    (como:filter/pass? (filter/get (this/island/nickname)) event)))
