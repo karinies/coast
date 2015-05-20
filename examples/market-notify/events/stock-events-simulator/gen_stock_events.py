@@ -61,7 +61,7 @@ def init_stock_data(infile):
     max_quantity = int(max_quantity_str)
 
     for line in infile:
-        stock_info = line[:-1].split(" "); # shave \n off end of line
+        stock_info = line.replace("\n", "").split(" ");
         sellers = (stock_info[3][1:-1]).split(",")
         buyers = (stock_info[4][1:-1]).split(",")
         init_price = int(stock_info[1])*100 # convert to cents
@@ -94,7 +94,7 @@ def main():
     event_count, min_delay, max_delay, min_quantity, max_quantity, stocks = \
         init_stock_data(infile)
     print("event count:", event_count)
-    print("min delay:", min_delay, "max_delay:", max_delay)
+    print("min delay:", min_delay, "max delay:", max_delay)
     print("min quantity:", min_quantity, "max quantity:", max_quantity)
     
     print("Stock info:", stocks)
@@ -102,7 +102,7 @@ def main():
     out_filename = "stock_events.txt"
     outfile = open(out_filename, "w")
     generate_stock_events(outfile, event_count, min_delay, max_delay, \
-                           min_quantity, max_quantity, stocks)
+                          min_quantity, max_quantity, stocks)
     infile.close()
     outfile.close()
 
