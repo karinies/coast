@@ -26,10 +26,9 @@
    buyer)    ; The buyer ID.
   #:transparent)
 
-(struct/getters/define
- market-event symbol type price quantity seller buyer)
+(struct/getters/define market-event symbol type price quantity seller buyer)
 
-(define market/registrations (make-hash)) ; The "Database".
+(define market/registrations (make-hash)) ; The "Database" for market event registrations
 
 (define (market/subscribe symbols curl)
   (for-each
@@ -55,3 +54,5 @@
        (proc event curl))
        (hash-ref market/registrations (market-event-symbol event)))]
     [else (displayln (format "Unregistered symbol ~a" (market-event-symbol event)))]))
+
+
