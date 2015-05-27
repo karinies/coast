@@ -27,8 +27,8 @@
 
 ;; Returns <islet>@<island> where <islet> is the given name
 ;; and <island> is the island nickname.
-;; For example (islent/name "service.foo") returns the symbol service.foo@market-server
-;; when called on the island market-server.
+;; For example (islent/name "service.foo") returns the symbol service.foo@robot-server
+;; when called on the island robot-server.
 (define (islet/name islet . rest)
   (string->symbol
    (format "~a@~a" islet (if (null? rest) (this/island/nickname) (car rest)))))
@@ -41,13 +41,13 @@
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
         (when (procedure? payload) ; Check if the payload is a procedure.
-          (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST MARKET/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
+          (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST ROBOT/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
             (spawn worker payload 900.0)))) ; There shouldn't be a timeout for this.
       (loop (duplet/block d)))))
 
 (define (server/boot)
   (define (trader/spawn) ; This function creates an islet that will receive spawn requests to register for notifications.
-    (let* ([server/name (islet/name "server.registration")] ; server.registration@market-server
+    (let* ([server/name (islet/name "server.registration")] ; server.registration@robot-server
            [x (islet/new (this/island) server/name TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
       (islet/jumpstart
        x

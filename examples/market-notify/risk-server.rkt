@@ -76,7 +76,7 @@ are interested in it.
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
         (when (procedure? payload) ; Check if the payload is a procedure.
-          (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST MARKET/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
+          (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST RISK/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
             (spawn worker payload 900.0)))) ; There shouldn't be a timeout for this.
       (loop (duplet/block d)))))
 

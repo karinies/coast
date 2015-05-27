@@ -14,10 +14,10 @@
   "../../spawn.rkt")
 
 (provide
- MARKET/SERVER/ENV)
+ RISK/SERVER/ENV)
 
 ;; Still incomplete: time, date, gates.
-(define MARKET/SERVER/ENV
+(define RISK/SERVER/ENV
   (pairs-to-environ
    BASELINE
    (list
