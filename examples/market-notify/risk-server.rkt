@@ -4,7 +4,7 @@
 (require
   "../../include/base.rkt"
   "../../baseline.rkt"
-  "./market-server-env.rkt"
+  "./risk-server-env.rkt"
   "./risk-server-register.rkt"
   [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata curl/access]
   "../../promise.rkt"
