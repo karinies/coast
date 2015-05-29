@@ -61,8 +61,6 @@ CURL
         ; Creates a new CURL when it is evaluated (it cannot be passed because it has to be created on the server-side.
         (let ([d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTRA)])
           (register (list "GOOG" "YHOO" "FB" "IBM") (duplet/resolver d))
-          (register (list "GOOG" "YHOO") (duplet/resolver d))
-          (register (list "GOOG") (duplet/resolver d))
           
           (let loop ([m (duplet/block d)])
             (let ([payload (murmur/payload m)])
