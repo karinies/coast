@@ -42,6 +42,7 @@
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
         (when (procedure? payload) ; Check if the payload is a procedure.
           (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST ROBOT/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
+            (display "Robot Server spawning computation...")
             (spawn worker payload 900.0)))) ; There shouldn't be a timeout for this.
       (loop (duplet/block d)))))
 
