@@ -101,11 +101,13 @@
          [c (curl/core/new* keys '(promise) a/send #f)])
     (duplet:promise a/receive (curl/new* c keys) duplet/event/generate)))
 
+
 ;; Blocking read of the resolution of a promise.
 (define (promise/block p) 
   (let ([result (access/receive (duplet/receiver p) #f)])
     (island/monitoring/log #:type COMO/CURL/RECEIVE
-                            #:place #f)
+                           #:place #f
+                           #:curl (duplet/resolver p))
     result))
 
 ;; Attempt to read the promise without blocking while hiding all of the machinery underneath.
@@ -114,7 +116,8 @@
 (define (promise/try p) 
   (let ([result (access/receive/try (duplet/receiver p) #f)])
     (island/monitoring/log #:type COMO/CURL/RECEIVE
-                            #:place #f)
+                           #:place #f
+                           #:curl (duplet/resolver p))
     result))
 
 ;; A blocking read with timeout again while hiding as much machinery as possible.
@@ -177,13 +180,15 @@
 (define (duplet/block d)
   (let ([result (access/receive (duplet/receiver d) #f)])
     (island/monitoring/log #:type COMO/CURL/RECEIVE
-                            #:place #f)
+                           #:place #f
+                           #:curl (duplet/resolver d))
     result))
 
 (define (duplet/try d)
   (let ([result (access/receive/try (duplet/receiver d) #f)])
     (island/monitoring/log #:type COMO/CURL/RECEIVE
-                           #:value #f)
+                           #:value #f
+                           #:curl (duplet/resolver d))
     result))
 
 (define (duplet/wait d timeout)

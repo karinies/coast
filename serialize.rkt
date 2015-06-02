@@ -464,7 +464,8 @@
            (accessor/add (this/accessors) (curl/access v)))
          (let ([flat-curl (vector-immutable 'struct:curl (reloop (curl/origin v)) (reloop (curl/zpl/signed v)))])
            (island/monitoring/log #:type COMO/CURL/TRANSFER
-                                           #:place (if (symbol? (curl/access v)) INTER INTRA))
+                                  #:place (if (symbol? (curl/access v)) INTER INTRA) 
+                                  #:curl v)
            flat-curl)]
 
         [(time/utc? v) (time/flatten  v)]

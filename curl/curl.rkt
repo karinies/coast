@@ -97,14 +97,16 @@
   (let ([curl (curl/core (uuid/symbol) kp/base64 path access (time/now) metadata)]
         [place (if (symbol? access) 'INTER 'INTRA)])
     (island/monitoring/log #:type COMO/CURL/NEW
-                           #:place #f)
+                           #:place #f
+                           #:curl curl)
     curl))
 
 (define (curl/core/new* keys path access metadata)
   (let ([curl (curl/core (uuid/symbol) (curve/kp/base64 keys) path access (time/now) metadata)]
         [place (if (symbol? access) 'INTER 'INTRA)])
     (island/monitoring/log #:type COMO/CURL/NEW
-                           #:place place)
+                           #:place place
+                           #:curl curl)
     curl))
 
 ;(define (curl/core/new* kp path access/id metadata)

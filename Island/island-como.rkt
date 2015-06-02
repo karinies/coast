@@ -2,6 +2,7 @@
 
 (require
   "../time.rkt"
+  "../curl/base.rkt"
   (only-in "../islet.rkt" this/island/nickname this/islet/nickname)
   "../accounting/como.rkt"
   "../promise/base.rkt")
@@ -10,9 +11,9 @@
  (contract-out
   [island/monitoring/start (-> symbol? como:transport-messenger? void?)]
   [island/monitoring/shutdown (-> symbol? void?)]
-  [island/monitoring/log (->* (#:type string? #:place como:place/c) void?)]
+  [island/monitoring/log (->* (#:type string? #:place como:place/c #:curl (or/c curl/core? curl?)) void?)]
   [island/monitoring/set/filter (-> symbol? como:filter/c void?)]
-  [island/monitoring/pass? (->* (#:type string? #:place como:place/c) boolean?)]))
+  [island/monitoring/pass? (->* (#:type string? #:place como:place/c #:curl (or/c curl/core? curl?)) boolean?)]))
 
 ;; Coast Monitoring stuff.
 (define loggers (make-hash)) ; Loggers use to log events. (-> symbol? como:logger?)
@@ -40,7 +41,7 @@
 (define (filter/get nickname)
   (hash-ref filters nickname como:filter/FALSE)) ; If filter hasn't been set, assume #f.
 
-(define (island/monitoring/log #:type type #:place place)
+(define (island/monitoring/log #:type type #:place place #:curl curl)
   (let ([logger (hash-ref loggers (this/island/nickname) #f)]
         [filter (filter/get (this/island/nickname))])
     (when (como:logger? logger)
@@ -50,8 +51,9 @@
                 #:version como:protocol/LATEST 
                 #:value #f 
                 #:time (time/now/milliseconds)
-                #:place place))))
+                #:place place
+                #:curl curl))))
 
-(define (island/monitoring/pass? #:type type #:place place)
-  (let ([event (como:event (symbol->string (this/island/nickname)) (symbol->string (this/islet/nickname)) type como:protocol/LATEST #f (time/now/milliseconds) place)])
+(define (island/monitoring/pass? #:type type #:place place #:curl curl)
+  (let ([event (como:event (symbol->string (this/island/nickname)) (symbol->string (this/islet/nickname)) type como:protocol/LATEST #f (time/now/milliseconds) place curl)])
     (como:filter/pass? (filter/get (this/island/nickname)) event)))
