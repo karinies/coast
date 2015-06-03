@@ -21,6 +21,10 @@
 (define ORDER-ROUTER/SECRET/PATH (string-append CERTIFICATE/SECRET "order_router_secret"))
 (define ORDER-ROUTER/CURVE/SECRET (path-to-curve ORDER-ROUTER/SECRET/PATH))
 
+(define KEYSTORE (keystore/new))
+;; Download all of the predefined public certificates.
+(keystore/load KEYSTORE CERTIFICATE/PUBLIC)
+
 ;; Demonstrate how to generate an inline CURL for market-server:
 ;; Execute
 ;;   (display (curl-as-bytes MARKET-SERVER/CURVE/SECRET '(service spawn) 'access:send.service.spawn #f))
@@ -72,12 +76,12 @@ CURL
 
 
 (define (robot/get-curl/market-server) ; Returns a curl for communicating capability with market server
-  (MARKET-SERVER/CURL/SPAWN))
+  (curl/zpl/safe-to-curl MARKET-SERVER/CURL/SPAWN KEYSTORE))
 
 (define (robot/get-curl/risk-server) ; Returns a curl for communicating capability with risk server
-  (RISK-SERVER/CURL/SPAWN))
+  (curl/zpl/safe-to-curl RISK-SERVER/CURL/SPAWN KEYSTORE))
 
 (define (robot/get-curl/order-router) ; Returns a curl for communicating capability with order router
-  (ORDER-ROUTER/CURL/SPAWN))
+  (curl/zpl/safe-to-curl ORDER-ROUTER/CURL/SPAWN KEYSTORE))
 
 

@@ -14,8 +14,6 @@
 (define CERTIFICATE/SECRET "./certificates/secret/")
 (define MARKET-CLIENT/SECRET/PATH   (string-append CERTIFICATE/SECRET "market_client_secret"))
 
-(define MARKET-CLIENT/KP/BASE64   #"49u_B0VEdFFS3WCPMMX5T5MFQ3SaSHjM8fM63I4L338")
-
 (define KEYSTORE (keystore/new))
 ;; Download all of the predefined public certificates.
 (keystore/load KEYSTORE CERTIFICATE/PUBLIC)
@@ -91,7 +89,7 @@ CURL
 (define (service/notifications u) ; Notification Service: It will print incoming messages into the console.
   (displayln "Starting Client's Service Notification...")
   
-  (let ([d (islet/curl/new '(service notifications) GATE/ALWAYS #f 'INTER)]) ; Creates the CURL that the Notification Service will use to receive messages.
+  (let ([d (islet/curl/new '(service notifications) GATE/ALWAYS #f 'INTER)]) ; Creates the CURL that the Client Notification Service will use to receive messages from the server.
     
     (send u (duplet/resolver d)) ; Send the CURL back so that computations can carry it to other Islands.
     
@@ -114,10 +112,11 @@ CURL
 (define (client/boot server/u)
   (displayln "Client is booting...")
   
-  (let ([p (promise/new)]) ; Creates the CURL that the Notification Service will use to receive messages.
-    (client/setup/notifications (promise/resolver p)) ; Setup the Notification Service.
-    (let* ([m (promise/block p)]
-           [service/notif/curl (murmur/payload m)])
+ ; boot islet creates this CURL to be used only in the Client (INTRA) to receive the Client's Notification Service CURL (INTER) that will be shipped to the other Island.
+  (let ([p (promise/new)])
+    (client/setup/notifications (promise/resolver p)) ; Setup the Client Notification Service.
+    (let* ([m (promise/block p)] ; Wait until the Client Notification Service sends its new (INTER) CURL back to the boot islet.
+           [service/notif/curl (murmur/payload m)]) ; Extract the CURL (payload) from the murmur.
       (client/register server/u service/notif/curl)))) ; Register a computation at the server side to receive market updates.
 
 ; Construct an in-memory CURL instance of the predefined CURL for market-server.

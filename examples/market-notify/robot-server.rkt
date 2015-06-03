@@ -40,6 +40,8 @@
     
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
+        (display "We got something!\nIs it a procedure?")
+        (display (procedure? payload))
         (when (procedure? payload) ; Check if the payload is a procedure.
           (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST ROBOT/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
             (display "Robot Server spawning computation...")
@@ -59,10 +61,10 @@
   
   (thread (lambda () (trader/spawn))))                        
 
-(define robot-server (island/new 'robott-server ROBOT-SERVER/CURVE/SECRET server/boot))
+(define robot-server (island/new 'robot-server ROBOT-SERVER/CURVE/SECRET server/boot))
 
 ;;; Multiple islands in the same address space can share the exact same keystore
 ;;; and any change in the keystore will be seen by all such islands in the
 ;;; address space.
 (island/keystore/set robot-server KEYSTORE)
-(island/log/level/set 'warning)
+(island/log/level/set 'debug)

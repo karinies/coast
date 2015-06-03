@@ -70,7 +70,7 @@ are interested in it.
     (market/notify/event new-market-event))
   
   ; read stock events from an external file
-  (define event-file "events/events.txt")
+  (define event-file "events/stock_events.txt")
     
   (for ([line (read-words/line event-file)])
     (define vline (list->vector line))
