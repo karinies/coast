@@ -50,45 +50,29 @@ CURL
   (keystore/petname/look (this/keystore) (curl/origin u)))
 
 ;; This thunk will be executed on the Robot Server.
-;; It will register for notifications coming from the Market Data Server.
-(define THUNK/REGISTER-ROBOT-MARKET/NEW
+;; It will register for notifications coming from both the Market Data Server and the Risk Server
+(define THUNK/REGISTER-ROBOT/NEW
   (island/compile
-   '(lambda (motile/register/market)
+   '(lambda (motile/register/market motile/register/risk)
       (lambda ()
-        (display "Executing trader's computation (market registration) on the Robot Server\n")
-        (let* ([robot/notif/u (islet/curl/new '(robot notif) GATE/ALWAYS #f 'INTER)] ; We create a CURL on the Robot Server to receive notifications from the MD Server.
+        (display "Executing trader's computation (market and risk registration) on the Robot Server\n")
+        (let* ([robot/notif/u (islet/curl/new '(robot notif) GATE/ALWAYS #f 'INTER)] ; We create a CURL on the Robot Server to receive notifications from both the MD Server and Risk Server. 
                [market/curl (robot/get-curl/market-server)]  ; Get the Market Data Server Notification CURL.
-               [thunk (motile/call motile/register/market environ/null (duplet/resolver robot/notif/u))])
-          (send market/curl thunk) ; Send the registration thunk to the Market Data Server.
+               [risk/curl (robot/get-curl/risk-server)]  ; Get the Risk Server Notification CURL.
+               [market-thunk (motile/call motile/register/market environ/null (duplet/resolver robot/notif/u))]
+               [risk-thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))])
+          (send market/curl market-thunk) ; Send the registration thunk to the Market Data Server.
+          (send risk/curl risk-thunk) ; Send the registration thunk to the Risk Server.
           
-          ; We should listen for notifications coming from the Market Data Server through robot/notif/u.
+          ; We now listen for notifications coming from the Market Data Server and the Risk Server through robot/notif/u.
+          ; THIS BLOCKING LOOP WILL NOW RECIEVE BOTH KINDS OF MESSAGES
+          ; MUST DISCERN BETWEEN THE TWO
           (let loop ([m (duplet/block robot/notif/u)]) ; Wait for an incoming message.
             (let ([payload (murmur/payload m)]) ; Extract the message's payload.
               ;(when (string? payload) ; Check it's a string.
               (display payload)
               (display "\n")) ; Print it into the console.
             (loop (duplet/block robot/notif/u))))))))
-
-;; This thunk will be executed on the Robot Server.
-;; It will register for notifications coming from the Risk Server.
-(define THUNK/REGISTER-ROBOT-RISK/NEW
-  (island/compile
-   '(lambda (motile/register/risk)
-      (lambda ()
-        (display "Executing trader's computation (risk registration) on the Robot Server\n")
-        (let* ([robot/notif/u (islet/curl/new '(robot notif) GATE/ALWAYS #f 'INTER)] ; We create a CURL on the Robot Server to receive notifications from the Risk Server.
-               [market/curl (robot/get-curl/risk-server)]  ; Get the Market Data Server Notification CURL.
-               [thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))])
-          (send market/curl thunk) ; Send the registration thunk to the Market Data Server.
-          
-          ; We should listen for notifications coming from the Market Data Server through robot/notif/u.
-          (let loop ([m (duplet/block robot/notif/u)]) ; Wait for an incoming message.
-            (let ([payload (murmur/payload m)]) ; Extract the message's payload.
-              ;(when (string? payload) ; Check it's a string.
-              (display payload)
-              (display "\n")) ; Print it into the console.
-            (loop (duplet/block robot/notif/u))))))))
-
 
 
 ;; Generate the spawn definition that trader sends to market notifications service.
@@ -113,7 +97,6 @@ CURL
 ;; Generate the spawn definition that trader sends to risk notifications service.
 (define THUNK/REGISTER-RISK/NEW
   (island/compile
-   ; name - trader's nickname the spawned computation.
    ; client/notif/u - The Traders's Notification Service's CURL.
    ; Returns a thunk
    '(lambda (client/notif/u)
@@ -141,13 +124,8 @@ CURL
 ;; server/u - CURL for spawn service on Robot Server.
 (define (trader/boot server/u)
   (displayln "Trader is booting...")
-  
-  (let ([thunk (motile/call THUNK/REGISTER-ROBOT-MARKET/NEW environ/null THUNK/REGISTER-MARKET/NEW)])
-    (displayln "Sending market registration thunk to Market Server...")
-    (send server/u thunk))
-
-  (let ([thunk (motile/call THUNK/REGISTER-ROBOT-RISK/NEW environ/null THUNK/REGISTER-RISK/NEW)])
-    (displayln "Sending risk registration thunk to Robot Server...")
+  (let ([thunk (motile/call THUNK/REGISTER-ROBOT/NEW environ/null THUNK/REGISTER-MARKET/NEW THUNK/REGISTER-RISK/NEW)])
+    (displayln "Sending registrations thunk to Robot Server...")
     (send server/u thunk)))
 
 ; Construct an in-memory CURL instance of the predefined CURL for robot-server.
