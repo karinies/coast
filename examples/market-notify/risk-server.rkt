@@ -51,12 +51,12 @@ are interested in it.
                (display "Notification could not be sent")))))))
   
   (define (process-risk-event event)
-    (define stock-name (vector-ref event 0))
-    (define risk-type (vector-ref event 1))
-    (define risk (vector-ref event 2))
-    (define new-risk-event (risk-event stock-name risk-type risk))
-    (displayln new-risk-event)
-    (risk/notify/event new-risk-event))
+    (let* ([ stock-name (vector-ref event 0)]
+           [risk-type (vector-ref event 1)]
+           [risk (vector-ref event 2)]
+           [new-risk-event (risk-event stock-name risk-type risk)])
+      (displayln new-risk-event)
+      (risk/notify/event new-risk-event)))
   
   ; read stock events from an external file
   (define risk-event-file "events/risk_events.txt")

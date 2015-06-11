@@ -59,15 +59,15 @@ are interested in it.
                (display "Notification could not be sent")))))))
   
   (define (process-stock-event event)
-    (define stock-name (vector-ref event 0))
-    (define event-type (vector-ref event 1))
-    (define price (vector-ref event 2))  
-    (define quantity (vector-ref event 3))
-    (define seller (vector-ref event 4))
-    (define buyer (vector-ref event 5))
-    (define new-market-event (market-event stock-name event-type price quantity seller buyer))
-    (displayln new-market-event)
-    (market/notify/event new-market-event))
+    (let* ([stock-name (vector-ref event 0)]
+           [event-type (vector-ref event 1)]
+           [price (vector-ref event 2)]  
+           [quantity (vector-ref event 3)]
+           [seller (vector-ref event 4)]
+           [buyer (vector-ref event 5)]
+           [new-market-event (market-event stock-name event-type price quantity seller buyer)])
+      (displayln new-market-event)
+      (market/notify/event new-market-event)))
   
   ; read stock events from an external file
   (define event-file "events/market_events.txt")
