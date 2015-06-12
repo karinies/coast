@@ -1,14 +1,14 @@
 #lang racket/base
 
 (require
-  "../../include/base.rkt"
-  "../../baseline.rkt"
-  [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
-  "../../promise.rkt"
-  "../../remote.rkt"
-  "../../transport/gate.rkt"
-  "../../transport/gates/challenge.rkt"
-  "../../transport/gates/whitelist.rkt")
+ "../../include/base.rkt"
+ "../../baseline.rkt"
+ [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
+ "../../promise.rkt"
+ "../../remote.rkt"
+ "../../transport/gate.rkt"
+ "../../transport/gates/challenge.rkt"
+ "../../transport/gates/whitelist.rkt")
 
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -51,6 +51,7 @@ CURL
 
 ;; This thunk will be executed on the Robot Server.
 ;; It will register for notifications coming from both the Market Data Server and the Risk Server
+;; For each stock symbol, it keeps track of the current price and risk values.
 (define THUNK/REGISTER-ROBOT/NEW
   (island/compile
    '(lambda (motile/register/market motile/register/risk)
@@ -60,18 +61,40 @@ CURL
                [market/curl (robot/get-curl/market-server)]  ; Get the Market Data Server Notification CURL.
                [risk/curl (robot/get-curl/risk-server)]  ; Get the Risk Server Notification CURL.
                [market-thunk (motile/call motile/register/market environ/null (duplet/resolver robot/notif/u))]
-               [risk-thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))])
+               [risk-thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))]
+               [stock/values (make-hash)]) ; maps stock symbols to (price,risk) pairs, price is in cents
           (send market/curl market-thunk) ; Send the registration thunk to the Market Data Server.
           (send risk/curl risk-thunk) ; Send the registration thunk to the Risk Server.
-          
+
           ; We now listen for notifications coming from the Market Data Server and the Risk Server through robot/notif/u.
-          ; THIS BLOCKING LOOP WILL NOW RECIEVE BOTH KINDS OF MESSAGES
-          ; MUST DISCERN BETWEEN THE TWO
           (let loop ([m (duplet/block robot/notif/u)]) ; Wait for an incoming message.
             (let ([payload (murmur/payload m)]) ; Extract the message's payload.
-              ;(when (string? payload) ; Check it's a string.
-              (display payload)
-              (display "\n")) ; Print it into the console.
+              (display payload)(display "\n") ; Print it into the console.
+              (cond 
+                [(equal? (vector-ref payload 0) 'struct:market-event)
+                 (let ([stock-symbol (vector-ref payload 1)]
+                       [stock-price (string->number(vector-ref payload 3))])
+                   (cond 
+                     [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
+                      ; get the (price,risk) vector, change the price, update hash
+                      (vector-set! (hash-ref stock/values stock-symbol) 0 stock-price)]
+                     [else 
+                      (hash-set! stock/values stock-symbol (vector stock-price -1))])) ; -1 means no value seen
+                 (display stock/values)(display "\n") ; DEBUG
+                 ]
+                [(equal? (vector-ref payload 0) 'struct:risk-event)
+                 (let ([stock-symbol (vector-ref payload 1)]
+                       [stock-risk (string->number(vector-ref payload 3))])
+                   (cond 
+                     [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
+                      ; get the (price,risk) vector, change the risk, update hash
+                      (vector-set! (hash-ref stock/values stock-symbol) 1 stock-risk)]
+                     [else 
+                      (hash-set! stock/values stock-symbol (vector -1 stock-risk))])) ; -1 means no value seen
+                 (display stock/values)(display "\n") ; DEBUG
+                 ]
+                [else
+                 (display "UNKNOWN EVENT")(display "\n")]))
             (loop (duplet/block robot/notif/u))))))))
 
 

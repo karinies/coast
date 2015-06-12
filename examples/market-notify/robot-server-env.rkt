@@ -22,7 +22,15 @@
    BASELINE
    (list
     ; Hack for now.
-    (define/global/1 'display display) ; HACK, HACK, HACK.f
+    (define/global/1 'display display) ; HACK, HACK, HACK.
+    (define/global/1 'vector? vector)
+    (define/global/2 'vector vector)
+    (define/global/2 'vector-ref vector-ref)
+    (define/global/3 'vector-set! vector-set!)
+    (define/global/0 'make-hash make-hash)
+    (define/global/2 'hash-has-key? hash-has-key?)
+    (define/global/2 'hash-ref hash-ref)
+    (define/global/3 'hash-set! hash-set!)
     (define/global/0 'robot/get-curl/market-server robot/get-curl/market-server)
     (define/global/0 'robot/get-curl/risk-server robot/get-curl/risk-server)
     (define/global/0 'robot/get-curl/order-router robot/get-curl/order-router)
