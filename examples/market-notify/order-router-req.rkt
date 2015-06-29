@@ -19,6 +19,10 @@
          order-exec-report/qnty-filled        
          )
 
+(provide vector->order-request
+         vector->order-exec-report)
+
+
 (struct order-request
   (sender     ; The buyer making request
    target     ; The broker
@@ -37,6 +41,33 @@
    qnty-requested ; The total amount of shares to be traded
    qnty-filled)   ; The amount of shares that are traded so far
   #:transparent)
+
+
+(define (vector->order-request v)
+  (cond 
+    [(equal? (vector-ref v 0) 'struct:order-request)
+     (let ([sender (vector-ref v 1)]
+           [target (vector-ref v 2)]
+           [symbol (vector-ref v 3)]
+           [unit-price (vector-ref v 4)]
+           [quantity (vector-ref v 5)]
+           [uid (vector-ref v 6)])
+       (order-request sender target symbol unit-price quantity uid))]
+    [else
+     (display "VECTOR IS NOT ORDER REQUEST")(display "\n")]))
+
+(define (vector->order-exec-report v)
+    (cond 
+    [(equal? (vector-ref v 0) 'struct:order-exec-report)
+     (let ([uid (vector-ref v 1)]
+           [symbol (vector-ref v 2)]
+           [status (vector-ref v 3)]
+           [unit-price (vector-ref v 4)]
+           [qnty-requested (vector-ref v 5)]
+           [qnty-filled (vector-ref v 6)])
+       (order-exec-report uid symbol status unit-price qnty-requested qnty-filled))]
+    [else
+     (display "VECTOR IS NOT ORDER EXECUTION REPORT")(display "\n")]))
 
 
 (struct/getters/define order-request sender target symbol unit-price quantity uid)

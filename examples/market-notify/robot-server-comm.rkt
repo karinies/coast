@@ -31,6 +31,7 @@
 ;; and then copy and paste the text as the body of a
 ;;  (define/curl/inline MARKET-SERVER/CURL/chirp ...)
 ;; as shown below.
+;(display (curl-as-bytes ORDER-ROUTER/CURVE/SECRET '(service request) 'access:send.service.request #f))
 
 (define/curl/inline MARKET-SERVER/CURL/SPAWN
   #<<!!
@@ -60,15 +61,15 @@ CURL
 !!
   )
 
-(define/curl/inline ORDER-ROUTER/CURL/SPAWN
+(define/curl/inline ORDER-ROUTER/CURL/REQUEST
   #<<!!
-SIGNATURE = #"K-0c45TlB_tC5l5UkBJsub9TyRBazVMbUeh2HOCePEBudroFgHy_4kP8ZfE-uW_bytNv_Ge4eTqQEvOw7dASCw"
+SIGNATURE = #"rNMzco6betgLorU-dY7Hf5kBBpNeDDjhM-XQ9YkyL8iEVoXZT5m45oCo8jRPgR6UTa3GByLJKL-I-SKMBwCzBw"
 CURL
-    id = e66966f1-1d86-4ae2-a4c5-721f2370faf5
+    id = feb0741f-4b42-4497-9c46-6205a97fe400
     origin = #"IdXHE05WUxvB291oUXpQYdH2Q8DPi67D4cMgTxOSEiw"
-    path = (service spawn)
-    access/id = access:send.service.spawn
-    created = "2015-05-26T17:17:28Z"
+    path = (service request)
+    access/id = access:send.service.request
+    created = "2015-06-16T13:16:20Z"
     metadata = #f
 
 !!
@@ -82,6 +83,6 @@ CURL
   (curl/zpl/safe-to-curl RISK-SERVER/CURL/SPAWN KEYSTORE))
 
 (define (robot/get-curl/order-router) ; Returns a curl for communicating capability with order router
-  (curl/zpl/safe-to-curl ORDER-ROUTER/CURL/SPAWN KEYSTORE))
+  (curl/zpl/safe-to-curl ORDER-ROUTER/CURL/REQUEST KEYSTORE))
 
 
