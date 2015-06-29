@@ -1,8 +1,6 @@
 #lang racket/base
 
-(require "../../spawn.rkt"
-         "../../getters.rkt"
-         )
+(require "../../getters.rkt")
 
 (provide market/subscribe
          market/subs/count
