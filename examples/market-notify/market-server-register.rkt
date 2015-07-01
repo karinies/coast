@@ -15,6 +15,8 @@
          market-event/buyer
          )
 
+(provide vector->market-event)
+
 (struct market-event
   (symbol    ; Stock symbol.
    type      ; The event type.
@@ -25,6 +27,19 @@
   #:transparent)
 
 (struct/getters/define market-event symbol type price quantity seller buyer)
+
+(define (vector->market-event v)
+  (cond 
+    [(equal? (vector-ref v 0) 'struct:market-event)
+     (let ([symbol (vector-ref v 1)]
+           [type (vector-ref v 2)]
+           [price (string->number(vector-ref v 3))]
+           [quantity (string->number(vector-ref v 4))]
+           [seller (vector-ref v 5)]
+           [buyer (vector-ref v 6)])
+       (market-event symbol type price quantity buyer seller))]
+    [else
+     (display "VECTOR IS NOT MARKET EVENT")(display "\n")]))
 
 (define market/registrations (make-hash)) ; The "Database" for market event registrations
 

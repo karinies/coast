@@ -11,6 +11,8 @@
          risk-event/risk
          )
 
+(provide vector->risk-event)
+
 (struct risk-event
   (symbol    ; Stock symbol.
    type      ; The risk event type.
@@ -18,6 +20,16 @@
   #:transparent)
 
 (struct/getters/define risk-event symbol type risk)
+
+(define (vector->risk-event v)
+  (cond 
+    [(equal? (vector-ref v 0) 'struct:risk-event)
+     (let ([symbol (vector-ref v 1)]
+           [type (vector-ref v 2)]
+           [risk (string->number(vector-ref v 3))])
+       (risk-event symbol type risk))]
+    [else
+     (display "VECTOR IS NOT RISK EVENT")(display "\n")]))
 
 (define risk/registrations (make-hash)) ; The "Database" for risk event registrations
 

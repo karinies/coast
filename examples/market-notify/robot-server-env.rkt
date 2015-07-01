@@ -5,6 +5,8 @@
   "../../persistent/environ.rkt"
   "./robot-server-comm.rkt"
   "./order-router-req.rkt"
+  "./market-server-register.rkt"
+  "./risk-server-register.rkt"
   "../../promise.rkt"
   "../../murmur.rkt"
   "../../send.rkt"
@@ -27,6 +29,8 @@
     (define/global/1 'vector? vector)
     (define/global/2 'vector vector)
     (define/global/1 'struct->vector struct->vector)
+    (define/global/1 'vector->market-event vector->market-event)
+    (define/global/1 'vector->risk-event vector->risk-event)
     (define/global/2 'vector-ref vector-ref)
     (define/global/3 'vector-set! vector-set!)
     (define/global/0 'make-hash make-hash)
