@@ -15,7 +15,7 @@
 
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
-(define ORDER-ROUTER/SECRET/PATH (string-append CERTIFICATE/SECRET "market_server_secret"))
+(define ORDER-ROUTER/SECRET/PATH (string-append CERTIFICATE/SECRET "order_router_secret"))
 
 (define KEYSTORE (keystore/new))
 ;; Download all of the predefined public certificates.
@@ -33,22 +33,31 @@
 
 
 (define (service/order-request) ; A Service to listen for and handle order requests.
-  (define (request/handler request reponse/template) ; runs in own thread and processes request using given response template
+  #|(define (request/handler request template) ; runs in own thread and processes request using given response template
     ; Handle request here!
     (display "Handling request: ")
-    (displayln request))
+    (displayln request)
+      (display "Using template: ")
+    (displayln template))|#
   
   (display "Running order router's request service.\n")
-  (let ([d (islet/curl/known/new '(service request) 'access:send.service.request GATE/ALWAYS environ/null)]) ; Create a CURL to listen for order requests.
-    
+  (let* ([d (islet/curl/known/new '(service request) 'access:send.service.request GATE/ALWAYS environ/null)] ; Create a CURL to listen for order requests.
+        [templates-file "events/response-templates.txt"] ; each line of this file is a template of how to respond to the next request
+        [templates (list->vector (read-words/line templates-file))] ; vector containing all response templates
+        [idx (if (> (vector-length templates) 1) 1 0)]) ; index into current template, 0 is index into default template (first line of templates file)
+              ; in the case where template file only contains default template, set to 0 where it will remain, otherwise it starts at 1
     (let loop ([m (duplet/block d)]) ; Wait for an order request.
       (let* ([payload (murmur/payload m)] ; Extract the murmur's payload.
              [order-req (vector->order-request payload)] ; convert payload from vector back to order-request struct
-             [templates-file "events/response-templates.txt"] ; each line of this file is a template of how to respond to the next request
-             [default-templ (list->vector (read-words/line templates-file))]) ; first line is default template to be used after end of templates file is reached.
-        ; attempt to read new response templates from an external file        
-        (thread (lambda () (request/handler order-req default-templ)) ; run handler in separate thread
-                (loop (duplet/block d)))))))
+             [templ (vector-ref templates idx)] ; idx takes the values of 1 to length of templates vector-1, 
+                                                ; then remains 0 so that the default template will be applied to all subsequent requests
+             [idx (if (or (equal? idx 0)(equal? idx (- (vector-length templates) 1))) 0 (+ idx 1))]) ; set idx for next iteration
+        (display "Received request: ")
+        (displayln order-req)
+        (display "Loaded template: ")
+        (displayln templ)))))
+        ;(thread (lambda () (request/handler order-req templ))))))) ; run handler in separate thread
+               
 
 
 (define (order-router/boot)
@@ -69,4 +78,5 @@
 ;;; and any change in the keystore will be seen by all such islands in the
 ;;; address space.
 (island/keystore/set order-router KEYSTORE)
-(island/log/level/set 'warning)
+;(island/log/level/set 'warning)
+(island/log/level/set 'debug)

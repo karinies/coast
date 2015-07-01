@@ -58,8 +58,9 @@ CURL
       (lambda ()
         (display "Executing trader's computation (market and risk registration) on the Robot Server\n")
         (let* ([robot/notif/u (islet/curl/new '(robot notif) GATE/ALWAYS #f 'INTER)] ; We create a CURL on the Robot Server to receive notifications from both the MD Server and Risk Server. 
-               [market/curl (robot/get-curl/market-server)]  ; Get the Market Data Server Notification CURL.
-               [risk/curl (robot/get-curl/risk-server)]  ; Get the Risk Server Notification CURL.
+               [market/curl (robot/get-curl/market-server)]  ; Get the Market Data Server spawn CURL.
+               [risk/curl (robot/get-curl/risk-server)]  ; Get the Risk Server spawn CURL.
+               [order/curl (robot/get-curl/order-router)] ; Get the Order Router request CURL
                [market-thunk (motile/call motile/register/market environ/null (duplet/resolver robot/notif/u))]
                [risk-thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))]
                [stock/values (make-hash)]) ; maps stock symbols to (price,risk) pairs, price is in cents
@@ -71,17 +72,28 @@ CURL
             (let ([payload (murmur/payload m)]) ; Extract the message's payload.
               (display payload)(display "\n") ; Print it into the console.
               (cond 
+                ; handle market data event
                 [(equal? (vector-ref payload 0) 'struct:market-event)
                  (let ([stock-symbol (vector-ref payload 1)]
-                       [stock-price (string->number(vector-ref payload 3))])
+                       [stock-price (string->number(vector-ref payload 3))]
+                       [quantity (string->number(vector-ref payload 4))])
                    (cond 
                      [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
                       ; get the (price,risk) vector, change the price, update hash
                       (vector-set! (hash-ref stock/values stock-symbol) 0 stock-price)]
                      [else 
-                      (hash-set! stock/values stock-symbol (vector stock-price -1))])) ; -1 means no value seen
-                 (display stock/values)(display "\n") ; DEBUG
-                 ]
+                      (hash-set! stock/values stock-symbol (vector stock-price -1))]) ; -1 means no value seen
+                   ;(display stock/values)(display "\n") ; DEBUG show hash
+                 
+                   ;************** CHANGE THIS ***************************
+                   ; For now we are going to echo back each market notification as a request to the Order Router 
+                   ; just to generate some traffic....
+                   (let ([new-order-request (order-request "trader" "broker" stock-symbol stock-price quantity 0)])
+                     (display "Sending order:")(display new-order-request)(display"\n")
+                     (when (not (send order/curl (struct->vector new-order-request)))
+                       (display "Order request could not be sent"))))
+                ]
+                ; handle risk event
                 [(equal? (vector-ref payload 0) 'struct:risk-event)
                  (let ([stock-symbol (vector-ref payload 1)]
                        [stock-risk (string->number(vector-ref payload 3))])
