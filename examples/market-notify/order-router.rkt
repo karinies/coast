@@ -33,12 +33,12 @@
 
 
 (define (service/order-request) ; A Service to listen for and handle order requests.
-  #|(define (request/handler request template) ; runs in own thread and processes request using given response template
+  (define (request/handler request template) ; runs in own thread and processes request using given response template
     ; Handle request here!
     (display "Handling request: ")
     (displayln request)
       (display "Using template: ")
-    (displayln template))|#
+    (displayln template))
   
   (display "Running order router's request service.\n")
   (let* ([d (islet/curl/known/new '(service request) 'access:send.service.request GATE/ALWAYS environ/null)] ; Create a CURL to listen for order requests.
@@ -49,16 +49,12 @@
     (let loop ([m (duplet/block d)]) ; Wait for an order request.
       (let* ([payload (murmur/payload m)] ; Extract the murmur's payload.
              [order-req (vector->order-request payload)] ; convert payload from vector back to order-request struct
-             [templ (vector-ref templates idx)] ; idx takes the values of 1 to length of templates vector-1, 
+             [templ (vector-ref templates idx)]) ; idx takes the values of 1 to length of templates vector-1, 
                                                 ; then remains 0 so that the default template will be applied to all subsequent requests
-             [idx (if (or (equal? idx 0)(equal? idx (- (vector-length templates) 1))) 0 (+ idx 1))]) ; set idx for next iteration
-        (display "Received request: ")
-        (displayln order-req)
-        (display "Loaded template: ")
-        (displayln templ)))))
-        ;(thread (lambda () (request/handler order-req templ))))))) ; run handler in separate thread
-               
-
+        (set! idx (if (or (equal? idx 0)(equal? idx (- (vector-length templates) 1))) 0 (+ idx 1))) ; set idx for next iteration
+        (thread (lambda () (request/handler order-req templ)))) ; run handler in separate thread
+      (loop (duplet/block d)))))
+       
 
 (define (order-router/boot)
 ;; Code for order-router request service.
@@ -69,8 +65,8 @@
        x
        (lambda () (service/order-request))))) ; Executes service/order-request in the new islet. 
   (display "Running server's boot function\n")
-  
   (thread (lambda () (order-router/listener)))) 
+
 
 (define order-router (island/new 'order-router ORDER-ROUTER/CURVE/SECRET order-router/boot))
 
@@ -78,5 +74,4 @@
 ;;; and any change in the keystore will be seen by all such islands in the
 ;;; address space.
 (island/keystore/set order-router KEYSTORE)
-;(island/log/level/set 'warning)
-(island/log/level/set 'debug)
+(island/log/level/set 'warning)
