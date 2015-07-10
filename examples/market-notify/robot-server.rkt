@@ -37,7 +37,6 @@
 (define (service/spawn/trader) ; A Service to spawn stock trader computations
   (display "Running Robot Server's spawning service.\n")
   (let* ([d (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)]) ; Create a CURL to listen for computations.
-    
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
         (when (procedure? payload) ; Check if the payload is a procedure.
@@ -57,7 +56,7 @@
   
   (display "Running robot server's boot function\n")
   
-  (thread (lambda () (trader/spawn))))                        
+  (thread (lambda () (trader/spawn))))  
 
 (define robot-server (island/new 'robot-server ROBOT-SERVER/CURVE/SECRET server/boot))
 
