@@ -4,3 +4,4 @@ compiled/
 .libs/
 *.o
 *.lo
+*~
