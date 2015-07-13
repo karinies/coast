@@ -4,7 +4,7 @@
 (require
   "../../include/base.rkt"
   "../../baseline.rkt"
-  "./market-server-env.rkt"
+  "./risk-server-env.rkt"
   "./risk-server-register.rkt"
   [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata curl/access]
   "../../promise.rkt"
@@ -51,12 +51,12 @@ are interested in it.
                (display "Notification could not be sent")))))))
   
   (define (process-risk-event event)
-    (define stock-name (vector-ref event 0))
-    (define risk-type (vector-ref event 1))
-    (define risk (vector-ref event 2))
-    (define new-risk-event (risk-event stock-name risk-type risk))
-    (displayln new-risk-event)
-    (risk/notify/event new-risk-event))
+    (let* ([ stock-name (vector-ref event 0)]
+           [risk-type (vector-ref event 1)]
+           [risk (vector-ref event 2)]
+           [new-risk-event (risk-event stock-name risk-type risk)])
+      (displayln new-risk-event)
+      (risk/notify/event new-risk-event)))
   
   ; read stock events from an external file
   (define risk-event-file "events/risk_events.txt")
@@ -76,7 +76,7 @@ are interested in it.
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
         (when (procedure? payload) ; Check if the payload is a procedure.
-          (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST MARKET/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
+          (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST RISK/SERVER/ENV #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
             (spawn worker payload 900.0)))) ; There shouldn't be a timeout for this.
       (loop (duplet/block d)))))
 
