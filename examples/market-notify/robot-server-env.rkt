@@ -63,7 +63,10 @@
     (define/global/N 'islet/curl/new islet/curl/new)
     (define/global/0 'this/islet/nickname this/islet/nickname)
     (define/global/N 'motile/call motile/call)
+    (define/global/1 'thread thread)
+    
     (cons 'GATE/ALWAYS GATE/ALWAYS)
     (cons 'INTRA INTRA)
     (define/global/2 'send send)
+    
     )))
