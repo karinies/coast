@@ -13,8 +13,10 @@
   "../../transport/gate.rkt"
   "../../transport/access.rkt"
   "../../islet.rkt"
+  "../../islet-utils.rkt"
   "../../curl/base.rkt"
-  "../../spawn.rkt")
+  "../../spawn.rkt"
+  "../../uuid.rkt")
 
 (provide
  ROBOT/SERVER/ENV)
@@ -63,8 +65,9 @@
     (define/global/N 'islet/curl/new islet/curl/new)
     (define/global/0 'this/islet/nickname this/islet/nickname)
     (define/global/N 'motile/call motile/call)
-    (define/global/1 'thread thread)
-    
+    (define/global/3 'subislet/callback/new subislet/callback/new)
+    (define/global/0 'uuid/symbol uuid/symbol)
+    (cons 'BASELINE/SPAWN BASELINE/SPAWN)
     (cons 'GATE/ALWAYS GATE/ALWAYS)
     (cons 'INTRA INTRA)
     (define/global/2 'send send)

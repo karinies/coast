@@ -1,14 +1,16 @@
 #lang racket/base
 
 (require
-  "../../include/base.rkt"
-  "../../baseline.rkt"
-  [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
-  "../../promise.rkt"
-  "../../remote.rkt"
-  "../../transport/gate.rkt"
-  "../../transport/gates/challenge.rkt"
-  "../../transport/gates/whitelist.rkt")
+ "../../include/base.rkt"
+ "../../baseline.rkt"
+ [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
+ "../../promise.rkt"
+ "../../remote.rkt"
+ "../../islet-utils.rkt"
+ "../../uuid.rkt"
+ "../../transport/gate.rkt"
+ "../../transport/gates/challenge.rkt"
+ "../../transport/gates/whitelist.rkt")
 
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -49,6 +51,9 @@ CURL
 (define (curl/petname u)
   (keystore/petname/look (this/keystore) (curl/origin u)))
 
+
+
+
 ;; This thunk will be executed on the Robot Server.
 ;; It will register for notifications coming from both the Market Data Server and the Risk Server
 ;; For each stock symbol, it keeps track of the current price and risk values.
@@ -57,6 +62,7 @@ CURL
    '(lambda (motile/register/market motile/register/risk)
       (lambda ()
         (display "Executing trader's computation (market and risk registration) on the Robot Server\n")
+        
         (let* ([robot/notif/u (islet/curl/new '(robot notif) GATE/ALWAYS #f 'INTER)] ; We create a CURL on the Robot Server to receive notifications from both the MD Server and Risk Server. 
                [market/curl (robot/get-curl/market-server)]  ; Get the Market Data Server spawn CURL.
                [risk/curl (robot/get-curl/risk-server)]  ; Get the Risk Server spawn CURL.
@@ -75,24 +81,19 @@ CURL
               ;************** CHANGE THIS ***************************
               ; For now we are going to echo back each market notification as a request to the Order Router 
               ; just to generate some traffic....
-              (let* ([robot/notif-order-exec/u (islet/curl/new '(robot notif-order-exec) GATE/ALWAYS #f 'INTER)]
-                     [order-exec-curl  (duplet/resolver robot/notif-order-exec/u)]; new curl to communicate order-exec-reports
-                     [stock-symbol (vector-ref payload 1)]
-                     [stock-price (string->number(vector-ref payload 3))]
-                     [quantity (string->number(vector-ref payload 4))]
-                     [new-order-request (order-request "trader" "broker" stock-symbol stock-price quantity 0 order-exec-curl)])
-                ;[order (trader-request (struct->vector new-order-request) robot/notif-order-exec/u)])
+              (when (equal? (vector-ref payload 0) 'struct:market-event)
+                (let* ([p (subislet/callback/new (uuid/symbol) BASELINE/SPAWN ; create a new islet to listen for order reports on this order
+                                                 (lambda (report) ;callback function  to handle order execution reports on this order
+                                                   (display "Report received: ")(display report)(display "\n")))]
+                       [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
+                       [symbol (vector-ref payload 1)]
+                       [price (string->number(vector-ref payload 3))]
+                       [quantity (string->number(vector-ref payload 4))]
+                       [new-order-request (order-request "trader" "broker" symbol price quantity 0 order-exec-curl)])
                 (display "Sending order:")(display new-order-request)(display"\n")
-                (if (not (send order/curl (struct->vector new-order-request)))
-                    (display "Order request could not be sent")
-                    ;(thread (lambda ()
-                    ;          (let loop ([m (duplet/block robot/notif-order-exec/u)])
-                    ;            (let ([payload (murmur/payload m)])
-                    ;              (display "event(payload): ") (display payload) (display " received on thread: ") (display (current-thread)) )
-                    ;            )))
-                    (display "sent OK")
-                    ))
-            
+                (when (not (send order/curl (struct->vector new-order-request)))
+                  (display "Order request could not be sent"))))
+                 
             (cond 
               ; handle market data event
               [(equal? (vector-ref payload 0) 'struct:market-event)
