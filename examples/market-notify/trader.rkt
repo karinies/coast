@@ -51,15 +51,12 @@ CURL
 (define (curl/petname u)
   (keystore/petname/look (this/keystore) (curl/origin u)))
 
-
-
-
 ;; This thunk will be executed on the Robot Server.
 ;; It will register for notifications coming from both the Market Data Server and the Risk Server
 ;; For each stock symbol, it keeps track of the current price and risk values.
 (define THUNK/REGISTER-ROBOT/NEW
   (island/compile
-   '(lambda (motile/register/market motile/register/risk)
+   '(lambda (motile/register/market motile/register/risk trader/notif/curl)
       (lambda ()
         (display "Executing trader's computation (market and risk registration) on the Robot Server\n")
         
@@ -69,7 +66,8 @@ CURL
                [order/curl (robot/get-curl/order-router)] ; Get the Order Router request CURL
                [market-thunk (motile/call motile/register/market environ/null (duplet/resolver robot/notif/u))]
                [risk-thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))]
-               [stock/values (make-hash)]) ; maps stock symbols to (price,risk) pairs, price is in cents
+               [stock/values (make-hash)] ; maps stock symbols to (price,risk) pairs, price is in cents
+               )
           (send market/curl market-thunk) ; Send the registration thunk to the Market Data Server.
           (send risk/curl risk-thunk) ; Send the registration thunk to the Risk Server.
           
@@ -82,17 +80,22 @@ CURL
               ; For now we are going to echo back each market notification as a request to the Order Router 
               ; just to generate some traffic....
               (when (equal? (vector-ref payload 0) 'struct:market-event)
-                (let* ([p (subislet/callback/new (uuid/symbol) BASELINE/SPAWN ; create a new islet to listen for order reports on this order
+                (let* ([p (subislet/callback/new (uuid/symbol) BASELINE/SPAWN ; create a new islet to listen for order reports on this order request
                                                  (lambda (report) ;callback function  to handle order execution reports on this order
-                                                   (display "Report received: ")(display report)(display "\n")))]
+                                                   (display "Report received: ")(display report)(display "\n")
+                                                   ))]
                        [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
                        [symbol (vector-ref payload 1)]
                        [price (string->number(vector-ref payload 3))]
                        [quantity (string->number(vector-ref payload 4))]
                        [new-order-request (order-request "trader" "broker" symbol price quantity 0 order-exec-curl)])
                 (display "Sending order:")(display new-order-request)(display"\n")
+                ; send order to order router
                 (when (not (send order/curl (struct->vector new-order-request)))
-                  (display "Order request could not be sent"))))
+                  (display "Order request could not be sent"))
+                ; notify trader of new order request
+                (when (not (send trader/notif/curl (struct->vector new-order-request)))
+                  (display "Order notification could not be sent"))))
                  
             (cond 
               ; handle market data event
@@ -188,7 +191,12 @@ CURL
 ;; server/u - CURL for spawn service on Robot Server.
 (define (trader/boot server/u)
   (displayln "Trader is booting...")
-  (let ([thunk (motile/call THUNK/REGISTER-ROBOT/NEW environ/null THUNK/REGISTER-MARKET/NEW THUNK/REGISTER-RISK/NEW)])
+  (let* ([pr (subislet/callback/new 'trader-notif BASELINE/SPAWN ; create a new islet to listen notifications of order requests made on traders behalf
+                                    (island/compile '(lambda (payload) ;callback function  to handle order notifications to the trader
+                                                       (display "Trader Notification received: ")(display payload)(display "\n")
+                                                       )))]
+         [trader/notif/curl (cdr pr)]
+         [thunk (motile/call THUNK/REGISTER-ROBOT/NEW environ/null THUNK/REGISTER-MARKET/NEW THUNK/REGISTER-RISK/NEW trader/notif/curl)])
     (displayln "Sending registrations thunk to Robot Server...")
     (send server/u thunk)))
 
