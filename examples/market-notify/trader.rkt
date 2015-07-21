@@ -82,8 +82,10 @@ CURL
               (when (equal? (vector-ref payload 0) 'struct:market-event)
                 (let* ([p (subislet/callback/new (uuid/symbol) BASELINE/SPAWN ; create a new islet to listen for order reports on this order request
                                                  (lambda (report) ;callback function  to handle order execution reports on this order
-                                                   (display "Report received: ")(display report)(display "\n")
-                                                   ))]
+                                                   (let ([c trader/notif/curl])
+                                                     (display "Report received: ")(display report)(display "\n")
+                                                       (when (not (send c report)) 
+                                                         (display "Could not notify trader of report.")))))]
                        [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
                        [symbol (vector-ref payload 1)]
                        [price (string->number(vector-ref payload 3))]
@@ -209,4 +211,4 @@ CURL
 ;;; and any change in the keystore will be seen by all such islands in the
 ;;; address space.
 (island/keystore/set trader  KEYSTORE) 
-;(island/log/level/set 'debug)
+(island/log/level/set 'warning)

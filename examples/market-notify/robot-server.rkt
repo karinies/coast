@@ -64,4 +64,4 @@
 ;;; and any change in the keystore will be seen by all such islands in the
 ;;; address space.
 (island/keystore/set robot-server KEYSTORE)
-;(island/log/level/set 'debug)
+(island/log/level/set 'warning)
