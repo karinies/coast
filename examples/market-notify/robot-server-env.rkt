@@ -30,7 +30,7 @@
     ; Hack for now.
     (define/global/1 'display display) ; HACK, HACK, HACK.
     (define/global/1 'vector? vector)
-    (define/global/2 'vector vector)
+    (define/global/N 'vector vector)
     (define/global/1 'struct->vector struct->vector)
     (define/global/N 'vector-append vector-append)
     
