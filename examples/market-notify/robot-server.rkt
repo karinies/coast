@@ -15,6 +15,8 @@
   "../../transport/gates/challenge.rkt"
   "../../transport/gates/whitelist.rkt")
 
+(provide robot-server)
+
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
 (define ROBOT-SERVER/SECRET/PATH (string-append CERTIFICATE/SECRET "robot_server_secret"))
@@ -54,7 +56,7 @@
        (lambda () (service/spawn/trader))))) ; Executes service/spawn/registration in the new islet.
   
   
-  (display "Running robot server's boot function\n")
+  (display "Running Robot server's boot function\n")
   
   (thread (lambda () (trader/spawn))))  
 

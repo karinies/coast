@@ -13,6 +13,8 @@
   "../../transport/gates/challenge.rkt"
   "../../transport/gates/whitelist.rkt")
 
+(provide order-router)
+
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
 (define ORDER-ROUTER/SECRET/PATH (string-append CERTIFICATE/SECRET "order_router_secret"))
@@ -124,7 +126,7 @@
       (islet/jumpstart
        x
        (lambda () (service/order-request))))) ; Executes service/order-request in the new islet. 
-  (display "Running server's boot function\n")
+  (display "Running Order Router's boot function\n")
   (thread (lambda () (order-router/listener)))) 
 
 

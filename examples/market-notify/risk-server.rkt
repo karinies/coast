@@ -15,6 +15,8 @@
   "../../transport/gates/challenge.rkt"
   "../../transport/gates/whitelist.rkt")
 
+(provide risk-server)
+
 ; %%%% COPY CAROL CERTIFICATES
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -95,7 +97,7 @@ are interested in it.
        x
        (lambda () (service/notification))))) ; Executes service/notification in the new islet.
   
-  (display "Running server's boot function\n")
+  (display "Running Risk Server's boot function\n")
   
   (thread (lambda () (registration/spawn)))
   (thread (lambda () (notification/spawn))))                            

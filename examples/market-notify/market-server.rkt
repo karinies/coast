@@ -15,6 +15,8 @@
   "../../transport/gates/challenge.rkt"
   "../../transport/gates/whitelist.rkt")
 
+(provide market-server)
+
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
 (define MARKET-SERVER/SECRET/PATH (string-append CERTIFICATE/SECRET "market_server_secret"))
@@ -38,7 +40,7 @@ This service will notify all CURLs registered in the market when there is an upd
 are interested in it.
 |#
 (define (service/notification)
-  (displayln "Running Notification Service...")
+  (displayln "Running Market Data Notification Service...")
   
   (define (market/notify/all)
     (if (zero? (market/subs/count))
@@ -81,7 +83,7 @@ are interested in it.
   
 
 (define (service/spawn/registration) ; A Service to spawn computations that will register clients on the market.
-  (display "Running Server's spawning service.\n")
+  (display "Running Market Data Server's spawning service.\n")
   (let* ([d (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)]) ; Create a CURL to listen for computations.
     
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
@@ -106,7 +108,7 @@ are interested in it.
        x
        (lambda () (service/notification))))) ; Executes service/notification in the new islet.
   
-  (display "Running server's boot function\n")
+  (display "Running Market Data's boot function\n")
   
   (thread (lambda () (registration/spawn)))
   (thread (lambda () (notification/spawn))))                            

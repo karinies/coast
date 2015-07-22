@@ -12,6 +12,8 @@
  "../../transport/gates/challenge.rkt"
  "../../transport/gates/whitelist.rkt")
 
+(provide trader)
+
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
 (define TRADER/SECRET/PATH   (string-append CERTIFICATE/SECRET "trader_secret"))
