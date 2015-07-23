@@ -9,13 +9,7 @@
          order-request/unit-price
          order-request/quantity
          order-request/uid
-         order-request/curl
-         ; add a curl here?  no, create new struct that has an order request object and a curl
-         )
-
-(provide trader-request
-         trader-request/order
-         trader-request/curl
+         ; add a curl here?  just tack the curl at the end of payload vector and reclaim on the other end
          )
 
 (provide order-exec-report
@@ -37,13 +31,7 @@
    symbol     ; Stock symbol
    unit-price ; The price per share
    quantity   ; The amount of shares to be traded.
-   uid        ; Unique id given to order
-   curl)      ; Curl to used to transmit order-exect-reports back to the trader
-  #:transparent)
-
-(struct trader-request
-  (order ; order-request struct
-   curl) ; curl to used to transmit order-exect-reports back to the trader
+   uid)       ; Unique id given to order
   #:transparent)
    
   
@@ -56,8 +44,7 @@
    qnty-filled)   ; The amount of shares that are traded so far
   #:transparent)
 
-(struct/getters/define order-request sender target symbol unit-price quantity uid curl)
-(struct/getters/define trader-request order curl)
+(struct/getters/define order-request sender target symbol unit-price quantity uid)
 (struct/getters/define order-exec-report uid symbol status unit-price qnty-requested qnty-filled)
 
 
@@ -69,9 +56,8 @@
            [symbol (vector-ref v 3)]
            [unit-price (vector-ref v 4)]
            [quantity (vector-ref v 5)]
-           [uid (vector-ref v 6)]
-           [curl (vector-ref v 7)])
-       (order-request sender target symbol unit-price quantity uid curl))]
+           [uid (vector-ref v 6)])
+       (order-request sender target symbol unit-price quantity uid))]
     [else
      (display "VECTOR IS NOT ORDER REQUEST")(display "\n")]))
 
