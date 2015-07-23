@@ -95,7 +95,7 @@ CURL
                        [new-order-request (order-request "trader" "broker" symbol price quantity 0)])
                 (display "Sending order:")(display new-order-request)(display"\n")
                 ; send order to order router, adding curl to communicate order exec reports back
-                (when (not (send order/curl (vector-append (struct->vector new-order-request) #s(order-exec-curl))))
+                (when (not (send order/curl (vector-append (struct->vector new-order-request) (vector order-exec-curl))))
                   (display "Order request could not be sent"))
                 ; notify trader of new order request
                 (when (not (send trader/notif/curl (struct->vector new-order-request)))

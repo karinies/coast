@@ -1,5 +1,6 @@
 #lang racket/base
 
+(require racket/vector)
 (require
   "../../baseline.rkt"
   "../../persistent/environ.rkt"
@@ -29,8 +30,9 @@
     ; Hack for now.
     (define/global/1 'display display) ; HACK, HACK, HACK.
     (define/global/1 'vector? vector)
-    (define/global/2 'vector vector)
+    (define/global/N 'vector vector)
     (define/global/1 'struct->vector struct->vector)
+    (define/global/N 'vector-append vector-append)
     
     ; market events
     (define/global/N 'market-event market-event)
@@ -58,7 +60,6 @@
     (define/global/0 'robot/get-curl/risk-server robot/get-curl/risk-server)
     (define/global/0 'robot/get-curl/order-router robot/get-curl/order-router)
     (define/global/N 'order-request order-request)
-    (define/global/2 'trader-request trader-request)
     (define/global/1 'duplet/resolver duplet/resolver)
     (define/global/1 'duplet/block duplet/block)
     (define/global/1 'murmur/payload murmur/payload)
