@@ -9,7 +9,7 @@
 
 (define EXAMPLES/ENVIRON
   (pairs-to-environ
-   BASELINE
+   BASELINE/SPAWN
    (list
     (define/global/N 'islet/log/info islet/log/info)
     (define/global/N 'islet/log/error islet/log/error)
