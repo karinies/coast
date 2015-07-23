@@ -49,8 +49,8 @@ CURL
                [order/curl (robot/get-curl/order-router)] ; Get the Order Router request CURL
                [market-thunk (motile/call motile/register/market environ/null (duplet/resolver robot/notif/u))]
                [risk-thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))]
-               [stock/values (make-hash)] ; maps stock symbols to (price,risk) pairs, price is in cents
-               )
+               [stock/values (make-hash)]) ; maps stock symbols to (price,risk) pairs, price is in cents
+          
           (send market/curl market-thunk) ; Send the registration thunk to the Market Data Server.
           (send risk/curl risk-thunk) ; Send the registration thunk to the Risk Server.
           
@@ -58,6 +58,51 @@ CURL
           (let loop ([m (duplet/block robot/notif/u)]) ; Wait for an incoming message.
             (let ([payload (murmur/payload m)]) ; Extract the message's payload.
               (islet/log/info payload) ; Print it into the console.
+              (cond 
+                ; handle market data event
+                [(equal? (vector-ref payload 0) 'struct:market-event)
+                 (let ([stock-symbol (vector-ref payload 1)]
+                       [stock-price (string->number(vector-ref payload 3))]
+                       [quantity (string->number(vector-ref payload 4))])
+                   #| why can't motile find these getters?
+                       [m-event (vector->market-event payload)]
+                       [stock-symbol (market-event/symbol m-event)]
+                       [stock-price (market-event/price m-event)]
+                       [quantity (market-event/quantity m-event)])
+                       |#
+                   (cond 
+                     [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
+                      ; get the (price,risk,prev-price,prev-risk) vector, change the price, update hash
+                      (let ([v (hash-ref stock/values stock-symbol)])
+                        (vector-set! v 2 (vector-ref v 0)) ; remember last price  @ index 2
+                        (vector-set! v 0 stock-price))] ; set new price @ index 0
+                     [else 
+                      (hash-set! stock/values stock-symbol (vector stock-price -1))]) ; -1 means no value seen
+                   )
+                 ;(islet/log/info stock/values) ; DEBUG  show hash
+                 ]
+                ; handle risk event
+                [(equal? (vector-ref payload 0) 'struct:risk-event)
+                 (let ([stock-symbol (vector-ref payload 1)]
+                       [stock-risk (string->number(vector-ref payload 3))])
+                   #| why can't motile find these getters?
+                       [r-event (vector->risk-event payload)]
+                       [stock-symbol (risk-event/symbol r-event)]
+                       [stock-risk (risk-event/risk r-event)]
+                       |#
+                   (cond 
+                     [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
+                      ; get the (price,risk,prev-price,prev-risk) vector, change the risk, update hash
+                      (let ([v (hash-ref stock/values stock-symbol)])
+                        (vector-set! v 3 (vector-ref v 1)) ; remember last risk value @ index 3
+                        (vector-set! v 1 stock-risk))] ; set new risk value @ index 1
+                     [else 
+                      (hash-set! stock/values stock-symbol (vector -1 stock-risk))])) ; -1 means no value seen
+                 ;(islet/log/info stock/values) ; DEBUG  show hash
+                 ]
+                [else
+                 (islet/log/info "UNKNOWN EVENT")])
+              
               
               ;************** CHANGE THIS ***************************
               ; For now we are going to echo back each market notification as a request to the Order Router 
@@ -67,63 +112,22 @@ CURL
                                                  (lambda (report) ;callback function  to handle order execution reports on this order
                                                    (let ([c trader/notif/curl])
                                                      (islet/log/info "Report received ~a: " report)
-                                                       (when (not (send c report)) 
-                                                         (islet/log/info "Could not notify trader of report.")))))]
+                                                     (when (not (send c report)) 
+                                                       (islet/log/info "Could not notify trader of report.")))))]
                        [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
                        [symbol (vector-ref payload 1)]
                        [price (string->number(vector-ref payload 3))]
                        [quantity (string->number(vector-ref payload 4))]
                        [new-order-request (order-request "trader" "broker" symbol price quantity 0)])
-                (islet/log/info "Sending order: ~a" new-order-request)
-                ; send order to order router, adding curl to communicate order exec reports back
-                (when (not (send order/curl (vector-append (struct->vector new-order-request) (vector order-exec-curl))))
-                  (islet/log/info "Order request could not be sent."))
-                ; notify trader of new order request
-                (when (not (send trader/notif/curl (struct->vector new-order-request)))
-                  (islet/log/info "Order notification could not be sent."))))
-            (cond 
-              ; handle market data event
-              [(equal? (vector-ref payload 0) 'struct:market-event)
-               (let ([stock-symbol (vector-ref payload 1)]
-                     [stock-price (string->number(vector-ref payload 3))]
-                     [quantity (string->number(vector-ref payload 4))])
-                 #| why can't motile find these getters?
-                       [m-event (vector->market-event payload)]
-                       [stock-symbol (market-event/symbol m-event)]
-                       [stock-price (market-event/price m-event)]
-                       [quantity (market-event/quantity m-event)])
-                       |#
-                 
-                 (cond 
-                   [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
-                    ; get the (price,risk) vector, change the price, update hash
-                    (vector-set! (hash-ref stock/values stock-symbol) 0 stock-price)]
-                   [else 
-                    (hash-set! stock/values stock-symbol (vector stock-price -1))]) ; -1 means no value seen
-                 ;(display stock/values)(display "\n") ; DEBUG show hash
-                 )
-               ]
-              ; handle risk event
-              [(equal? (vector-ref payload 0) 'struct:risk-event)
-               (let ([stock-symbol (vector-ref payload 1)]
-                     [stock-risk (string->number(vector-ref payload 3))])
-                 #| why can't motile find these getters?
-                       [r-event (vector->risk-event payload)]
-                       [stock-symbol (risk-event/symbol r-event)]
-                       [stock-risk (risk-event/risk r-event)]
-                       |#
-                 (cond 
-                   [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
-                    ; get the (price,risk) vector, change the risk, update hash
-                    (vector-set! (hash-ref stock/values stock-symbol) 1 stock-risk)]
-                   [else 
-                    (hash-set! stock/values stock-symbol (vector -1 stock-risk))])) ; -1 means no value seen
-               (islet/log/info stock/values) ; DEBUG
-               ]
-              [else
-               (islet/log/info "UNKNOWN EVENT")])
-            )
-          (loop (duplet/block robot/notif/u))))))))
+                  (islet/log/info "Sending order: ~a" new-order-request)
+                  ; send order to order router, adding curl to communicate order exec reports back
+                  (when (not (send order/curl (vector-append (struct->vector new-order-request) (vector order-exec-curl))))
+                    (islet/log/info "Order request could not be sent."))
+                  ; notify trader of new order request
+                  (when (not (send trader/notif/curl (struct->vector new-order-request)))
+                    (islet/log/info "Order request notification could not be sent to trader.")))))
+            
+            (loop (duplet/block robot/notif/u))))))))
 
 
 ;; Generate the spawn definition that trader sends to market notifications service.
