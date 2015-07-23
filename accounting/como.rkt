@@ -62,7 +62,7 @@
 
 (define (como:log/event/filtered logger event filter)
   (when (filter event)
-    (displayln (format "Logging event ~a using ~a" event (como:logger-messenger logger)))
+    ;(displayln (format "Logging event ~a using ~a" event (como:logger-messenger logger)))
     (let* ([messenger (como:logger-messenger logger)]
            [sender (como:transport-messenger-sender messenger)])
       (sender event))))
