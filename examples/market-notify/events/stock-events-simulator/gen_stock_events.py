@@ -12,9 +12,9 @@ e.g.
 200
 1 5
 1 500
-GOOG 555 10 [A,B] [A,B]
-YHOO 300 5 [A] [B]
-FB 82 2 [A] [B]
+GOOG 644 10 [A,B] [A,B]
+YHOO 39 5 [A] [B]
+FB 94 2 [A] [B]
 IBM 161 3 [A] [B]
 
 Sample generated output will look like this:
@@ -83,6 +83,9 @@ def generate_stock_events(outfile, event_count, min_delay, max_delay, \
         delta = stocks[symbol][1]
         diff = random.randint(-delta, delta)
         new_price = current_price + diff
+        # don't allow the price to go negative!
+        if new_price < 0:
+            new_price = 0
         stocks[symbol][0] = new_price
         print("delay %d" % delay, file=outfile)
         print("%s %s %d %d %s %s" % (symbol, "order", new_price, quantity,
