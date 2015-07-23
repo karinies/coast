@@ -77,8 +77,7 @@ CURL
                         (vector-set! v 2 (vector-ref v 0)) ; remember last price  @ index 2
                         (vector-set! v 0 stock-price))] ; set new price @ index 0
                      [else 
-                      (hash-set! stock/values stock-symbol (vector stock-price -1))]) ; -1 means no value seen
-                   )
+                      (hash-set! stock/values stock-symbol (vector stock-price -1 -1 -1))])) ; -1 means no value seen
                  ;(islet/log/info stock/values) ; DEBUG  show hash
                  ]
                 ; handle risk event
@@ -97,7 +96,7 @@ CURL
                         (vector-set! v 3 (vector-ref v 1)) ; remember last risk value @ index 3
                         (vector-set! v 1 stock-risk))] ; set new risk value @ index 1
                      [else 
-                      (hash-set! stock/values stock-symbol (vector -1 stock-risk))])) ; -1 means no value seen
+                      (hash-set! stock/values stock-symbol (vector -1 stock-risk -1 -1))])) ; -1 means no value seen
                  ;(islet/log/info stock/values) ; DEBUG  show hash
                  ]
                 [else
