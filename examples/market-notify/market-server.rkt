@@ -11,10 +11,7 @@
   "../../remote.rkt"
   "../../spawn.rkt"
   "../../transport/gate.rkt"
-  "../../transport/gates/challenge.rkt"
-  "../../transport/gates/whitelist.rkt"
-  "../../accounting/stomp-transport.rkt"
-  "../../Island/island-como.rkt")
+  "../../Island/island-como.rkt"
   "../examples-base.rkt"
   "../examples-env.rkt")
 
@@ -97,12 +94,6 @@ are interested in it.
   (notification/spawn))
 
 (define market-server (example/island/new 'market-server "market_server_secret" server/boot))
-
-(let ([messenger (stomp-messenger-new #:host "peru.local"
-                                       #:login "coastdev"
-                                       #:pass "Hi123"
-                                       #:destination "/queue/coast")])
-  (island/monitoring/start (island-nickname market-server) messenger))
 
 ;;; Multiple islands in the same address space can share the exact same keystore
 ;;; and any change in the keystore will be seen by all such islands in the

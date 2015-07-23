@@ -5,9 +5,12 @@
   racket/string
   racket/contract/base
   racket/format
-  "../Island/logger.rkt"
+  ;"../Island/logger.rkt"
   "../islet.rkt"
-  "../include/base.rkt")
+  "../include/base.rkt"
+  "../accounting/stomp-transport.rkt"
+  "../Island/island-como.rkt"
+  )
 
 (provide
  (contract-out
@@ -63,14 +66,19 @@
 (define CERTIFICATE/SECRET "./certificates/secret/")
 
 (define KEYSTORE ((lambda () 
-                   (let ([k (keystore/new)])
-                     (keystore/load k CERTIFICATE/PUBLIC)
-                     k))))
+                    (let ([k (keystore/new)])
+                      (keystore/load k CERTIFICATE/PUBLIC)
+                      k))))
 
 (define (example/island/new nickname filename bootstrap)
   (let* ([ISLAND/SECRET/PATH   (string-append CERTIFICATE/SECRET filename)]
          [ISLAND/CURVE/SECRET   (path-to-curve ISLAND/SECRET/PATH)]
-         [island (island/new nickname ISLAND/CURVE/SECRET bootstrap)])
+         [island (island/new nickname ISLAND/CURVE/SECRET bootstrap)]
+         [messenger (stomp-messenger-new #:host "peru.local"
+                                       #:login "coastdev"
+                                       #:pass "Hi123"
+                                       #:destination "/queue/coast")])
     (island/keystore/set island KEYSTORE)
+    (island/monitoring/start (island-nickname island) messenger)
     island)
   )

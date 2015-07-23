@@ -5,6 +5,7 @@
   "../../persistent/environ.rkt"
   "./risk-server-register.rkt"
   "../../promise.rkt"
+  "../../promise/base.rkt"
   "../../murmur.rkt"
   "../../send.rkt"
   "../../transport/gate.rkt"

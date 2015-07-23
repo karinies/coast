@@ -3,6 +3,7 @@
 (require
   racket/contract
   "islet.rkt"
+  "promise/base.rkt"
   "promise.rkt"
   "send.rkt"
   "murmur.rkt"
