@@ -9,10 +9,10 @@
 
 (define EXAMPLES/ENVIRON
   (pairs-to-environ
-   environ/null
+   BASELINE
    (list
-    (define/global/1 'log/info islet/log/info)
-    (define/global/1 'log/error islet/log/info)
-    (define/global/1 'log/debug islet/log/info)
-    (define/global/1 'log/warning islet/log/info)
+    (define/global/N 'islet/log/info islet/log/info)
+    (define/global/N 'islet/log/error islet/log/error)
+    (define/global/N 'islet/log/debug islet/log/debug)
+    (define/global/N 'islet/log/warning islet/log/warning)
     )))

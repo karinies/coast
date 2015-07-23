@@ -12,12 +12,10 @@
   "../../murmur.rkt"
   "../../send.rkt"
   "../../transport/gate.rkt"
-  "../../transport/access.rkt"
   "../../islet.rkt"
   "../../islet-utils.rkt"
-  "../../curl/base.rkt"
-  "../../spawn.rkt"
-  "../../uuid.rkt")
+  "../../uuid.rkt"
+  "../examples-env.rkt")
 
 (provide
  ROBOT/SERVER/ENV)
@@ -71,6 +69,7 @@
     (cons 'BASELINE/SPAWN BASELINE/SPAWN)
     (cons 'GATE/ALWAYS GATE/ALWAYS)
     (cons 'INTRA INTRA)
+    (cons 'EXAMPLES/ENVIRON EXAMPLES/ENVIRON)
     (define/global/2 'send send)
     
     )))
