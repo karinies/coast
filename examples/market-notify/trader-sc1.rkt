@@ -121,16 +121,22 @@ CURL
                        [quantity (string->number(vector-ref payload 4))]
                        [send-order #t])
                   ; only echo FB and GOOG orders
-                  (when (equal? symbol 'YHOO) 
+                  (when (equal? symbol "YHOO") 
+                    (islet/log/info "FOUND YAHOO MARKET EVENT.")
                     (cond 
                       [(and (<= price 2700) (not first-yhoo-sell)) 
                         (set! quantity 500) ; fixed amount representing first half of shares 
-                        (set! first-yahoo-sell #t)] ; make sure we ondly do this once
+                        (set! first-yahoo-sell #t) ; make sure we only do this once
+                        (islet/log/info "TRIGGERING FIRST YAHOO SALE.")] 
                       [(and (<= price 2300) (not second-yhoo-sell)) ; YAHOO
                         (set! quantity 500) ; fixed amount representing second half of shares 
-                        (set! second-yahoo-sell #t)] ; make sure we only do this once
+                        (set! second-yahoo-sell #t) ; make sure we only do this once
+                        (islet/log/info "TRIGGERING SECOND YAHOO SALE.")]
+                        ; ADD CODE HERE TO MAKE GOOG AND FB PURCHASE USING ALL $ IN COMBINED YAHOO SALES
+                        ; DISTRIBUTED PROPORTIONATELY TO RISK.
                       [else ; ignore all other yahoo events
-                       (set! send-order #f)]))
+                       (set! send-order #f)
+                       (islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
                   (when send-order
                     (let ([new-order-request (order-request "trader" "broker" symbol price quantity 0)])
                       (islet/log/info "Sending order: ~a" new-order-request)
