@@ -11,7 +11,7 @@
   "../../remote.rkt"
   "../../spawn.rkt"
   "../../transport/gate.rkt"
-  "../../Island/island-como.rkt"
+  "../../Island/island-comet.rkt"
   "../examples-base.rkt"
   "../examples-env.rkt")
 
@@ -95,8 +95,4 @@ are interested in it.
 
 (define market-server (example/island/new 'market-server "market_server_secret" server/boot))
 
-;;; Multiple islands in the same address space can share the exact same keystore
-;;; and any change in the keystore will be seen by all such islands in the
-;;; address space.
-(island/keystore/set market-server KEYSTORE)
 (island/log/level/set 'warning)

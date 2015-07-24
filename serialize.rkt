@@ -42,8 +42,8 @@
  "persistent/environ.rkt"
  "persistent/set.rkt"
  (only-in "persistent/vector.rkt" vector/persist? vector/length vector/fold/left vector/racket=>vector/persist)
- "accounting/como-types.rkt"
- [only-in "Island/island-como.rkt" island/monitoring/log])
+ "comet/comet-types.rkt"
+ [only-in "Island/island-comet.rkt" island/monitoring/log])
  
 (provide 
  motile/serializable?
@@ -463,7 +463,7 @@
          (unless (or (symbol? (curl/access v)) (curl/embargo? v))
            (accessor/add (this/accessors) (curl/access v)))
          (let ([flat-curl (vector-immutable 'struct:curl (reloop (curl/origin v)) (reloop (curl/zpl/signed v)))])
-           (island/monitoring/log #:type COMO/CURL/TRANSFER
+           (island/monitoring/log #:type COMET/CURL/TRANSFER
                                   #:place (if (symbol? (curl/access v)) INTER INTRA) 
                                   #:curl v)
            flat-curl)]

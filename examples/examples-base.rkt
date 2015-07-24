@@ -8,8 +8,8 @@
   ;"../Island/logger.rkt"
   "../islet.rkt"
   "../include/base.rkt"
-  "../accounting/stomp-transport.rkt"
-  "../Island/island-como.rkt"
+  "../comet/stomp-transport.rkt"
+  "../Island/island-comet.rkt"
   )
 
 (provide
@@ -78,7 +78,7 @@
                                        #:login "coastdev"
                                        #:pass "Hi123"
                                        #:destination "/queue/coast")])
+
     (island/keystore/set island KEYSTORE)
-    (island/monitoring/start (island-nickname island) messenger)
-    island)
-  )
+    (island/monitoring/start nickname messenger)
+    island))

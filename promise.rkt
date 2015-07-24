@@ -17,8 +17,8 @@
   "transport/gates/whitelist.rkt"
   "transport/transports/bankers.rkt"
   "transport/transports/promise.rkt"
-  [only-in "Island/island-como.rkt" island/monitoring/log]
-  "accounting/como-types.rkt")
+  [only-in "Island/island-comet.rkt" island/monitoring/log]
+  "comet/comet-types.rkt")
 
 (provide
  (rename-out
@@ -105,7 +105,7 @@
 ;; Blocking read of the resolution of a promise.
 (define (promise/block p) 
   (let ([result (access/receive (duplet/receiver p) #f)])
-    (island/monitoring/log #:type COMO/CURL/RECEIVE
+    (island/monitoring/log #:type COMET/CURL/RECEIVE
                            #:place #f
                            #:curl (duplet/resolver p))
     result))
@@ -115,7 +115,7 @@
 ;; on success and the failure value if the access:receive? would block.
 (define (promise/try p) 
   (let ([result (access/receive/try (duplet/receiver p) #f)])
-    (island/monitoring/log #:type COMO/CURL/RECEIVE
+    (island/monitoring/log #:type COMET/CURL/RECEIVE
                            #:place #f
                            #:curl (duplet/resolver p))
     result))
@@ -179,14 +179,14 @@
 
 (define (duplet/block d)
   (let ([result (access/receive (duplet/receiver d) #f)])
-    (island/monitoring/log #:type COMO/CURL/RECEIVE
+    (island/monitoring/log #:type COMET/CURL/RECEIVE
                            #:place #f
                            #:curl (duplet/resolver d))
     result))
 
 (define (duplet/try d)
   (let ([result (access/receive/try (duplet/receiver d) #f)])
-    (island/monitoring/log #:type COMO/CURL/RECEIVE
+    (island/monitoring/log #:type COMET/CURL/RECEIVE
                            #:value #f
                            #:curl (duplet/resolver d))
     result))

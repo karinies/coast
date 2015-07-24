@@ -3,7 +3,7 @@
 (require racket/contract
          (planet tonyg/stomp:3:2)
          json
-         "como.rkt")
+         "comet.rkt")
 
 (provide
  (contract-out 
@@ -16,7 +16,7 @@
  |#
 
 (struct stomp-messenger
-  (session) #:super struct:como:transport-messenger #:transparent)
+  (session) #:super struct:comet:transport-messenger #:transparent)
 
 (define (stomp-messenger-new #:host host #:login login #:pass pass #:destination destination #:vhost [vhost "/"])
   (let* ([s (stomp-connect host
@@ -24,7 +24,7 @@
                            #:passcode pass
                            #:virtual-host vhost)]
          [sender (lambda (payload) 
-                   (stomp-send s destination (jsexpr->bytes (como:event->jsexpr payload)))
+                   (stomp-send s destination (jsexpr->bytes (comet:event->jsexpr payload)))
                    (stomp-flush s))]
          [stopper (lambda () (stomp-disconnect s))]
          [messenger (stomp-messenger sender stopper s)])

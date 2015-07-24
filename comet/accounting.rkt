@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require "como.rkt"
+(require "comet.rkt"
          "stomp-transport.rkt")
 
 #|
@@ -11,11 +11,11 @@
                                        #:login "coastdev"
                                        #:pass "Hi123"
                                        #:destination "/queue/coast")]
-       [logger (como:logger messenger)])
+       [logger (comet:logger messenger)])
   (let loop ()
-    (define anEvent (como:event "argentina" "test-type" como:protocol/LATEST "TestValue" (current-inexact-milliseconds)))
-    (como:log/event logger anEvent) 
+    (define anEvent (comet:event "argentina" "test-type" comet:protocol/LATEST "TestValue" (current-inexact-milliseconds)))
+    (comet:log/event logger anEvent) 
     (sleep 1.0)
     (loop))
-  (como:transport-messenger/shutdown messenger)
+  (comet:transport-messenger/shutdown messenger)
   )

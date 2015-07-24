@@ -21,7 +21,9 @@
  "bindings/libzyre/peer.rkt"
  "persistent/environ.rkt"
  "curve.rkt"
- "islet.rkt")
+ "islet.rkt"
+ [only-in "Island/island-comet.rkt" island/monitoring/log]
+ "comet/comet-types.rkt")
 
 (provide 
  (contract-out
@@ -137,6 +139,7 @@
   ; Jumpstart the peer thread.
   ;(log/info (island/nickname i) "starting peer" #t)
   (thread-send (island/peer i) (island/boot i)))
+  
 
 ;; Kill the island.
 ;; Any pending messages in the zyre peer will be lost.

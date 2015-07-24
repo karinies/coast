@@ -14,8 +14,8 @@
   "../transport/access.rkt"
   "../uuid.rkt"
   "../zpl.rkt"
-  "../accounting/como-types.rkt"
-  (only-in "../Island/island-como.rkt" island/monitoring/log))
+  "../comet/comet-types.rkt"
+  (only-in "../Island/island-comet.rkt" island/monitoring/log))
 
 ;; Notation: zpl (in lower case) refers to a byte string that is a legal zpl text
 ;; (in the sense of the zpl parser defined in zpl.rkt). ZPL (in upper case) refers
@@ -96,7 +96,7 @@
 (define (curl/core/new kp/base64 path access metadata) ; (struct curl/core (id origin path access/id created metadata) #:transparent)
   (let ([curl (curl/core (uuid/symbol) kp/base64 path access (time/now) metadata)]
         [place (if (symbol? access) 'INTER 'INTRA)])
-    (island/monitoring/log #:type COMO/CURL/NEW
+    (island/monitoring/log #:type COMET/CURL/NEW
                            #:place #f
                            #:curl curl)
     curl))
@@ -104,7 +104,7 @@
 (define (curl/core/new* keys path access metadata)
   (let ([curl (curl/core (uuid/symbol) (curve/kp/base64 keys) path access (time/now) metadata)]
         [place (if (symbol? access) 'INTER 'INTRA)])
-    (island/monitoring/log #:type COMO/CURL/NEW
+    (island/monitoring/log #:type COMET/CURL/NEW
                            #:place place
                            #:curl curl)
     curl))
