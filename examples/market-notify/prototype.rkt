@@ -22,8 +22,7 @@
   (island/start robot-server)
   (island/start market-server)
   (island/start order-router)
-  ;; Get the KP/BASE85 for these guys.
-  (sleep 10)
+
   (island/start trader))
 
 (define (kill)
