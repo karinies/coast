@@ -50,8 +50,14 @@ CURL
                [market-thunk (motile/call motile/register/market environ/null (duplet/resolver robot/notif/u))]
                [risk-thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))]
                [stock/values (make-hash)] ; maps stock symbols to (price,risk) pairs, price is in cents
-               [first-yhoo-sell #f] ; first sell when yahoo stock first reaches 27 or below
-               [second-yhoo-sell #f]) ; second sell when yhoo stock firsst reaches 23 or below 
+               [first-yhoo-sell (box #f)] ; first sell when yahoo stock first reaches 27 or below
+               [second-yhoo-sell (box #f)]) ; second sell when yhoo stock firsst reaches 23 or below 
+          
+          (define (report-callback report) ;callback function  to handle order execution reports on this order
+            (let ([c trader/notif/curl])
+              (islet/log/info "Report received ~a: " report)
+              (when (not (send c report)) 
+                (islet/log/info "Could not notify trader of report."))))
           
           (send market/curl market-thunk) ; Send the registration thunk to the Market Data Server.
           (send risk/curl risk-thunk) ; Send the registration thunk to the Risk Server.
@@ -109,36 +115,31 @@ CURL
               ; For now we are going to echo back each market notification as a request to the Order Router 
               ; just to generate some traffic....
               (when (equal? (vector-ref payload 0) 'struct:market-event)
-                (let* ([p (subislet/callback/new (uuid/symbol) EXAMPLES/ENVIRON ; create a new islet to listen for order reports on this order request
-                                                 (lambda (report) ;callback function  to handle order execution reports on this order
-                                                   (let ([c trader/notif/curl])
-                                                     (islet/log/info "Report received ~a: " report)
-                                                     (when (not (send c report)) 
-                                                       (islet/log/info "Could not notify trader of report.")))))]
+                (let* ([p (subislet/callback/new (uuid/symbol) EXAMPLES/ENVIRON report-callback)] ; create a new islet to listen for order reports on this order request                             
                        [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
                        [symbol (vector-ref payload 1)]
                        [price (string->number(vector-ref payload 3))]
-                       [quantity (string->number(vector-ref payload 4))]
-                       [send-order #t])
+                       [quantity (box (string->number(vector-ref payload 4)))]
+                       [send-order (box #t)])
                   ; only echo FB and GOOG orders
                   (when (equal? symbol "YHOO") 
                     (islet/log/info "FOUND YAHOO MARKET EVENT.")
                     (cond 
-                      [(and (<= price 2700) (not first-yhoo-sell)) 
-                        (set! quantity 500) ; fixed amount representing first half of shares 
-                        (set! first-yahoo-sell #t) ; make sure we only do this once
+                      [(and (<= price 2700) (not (unbox first-yhoo-sell))) 
+                        (set-box! quantity 500) ; fixed amount representing first half of shares 
+                        (set-box! first-yhoo-sell #t) ; make sure we only do this once
                         (islet/log/info "TRIGGERING FIRST YAHOO SALE.")] 
-                      [(and (<= price 2300) (not second-yhoo-sell)) ; YAHOO
-                        (set! quantity 500) ; fixed amount representing second half of shares 
-                        (set! second-yahoo-sell #t) ; make sure we only do this once
+                      [(and (<= price 2300) (not (unbox second-yhoo-sell))) ; YAHOO
+                        (set-box! quantity 500) ; fixed amount representing second half of shares 
+                        (set-box! second-yhoo-sell #t) ; make sure we only do this once
                         (islet/log/info "TRIGGERING SECOND YAHOO SALE.")]
                         ; ADD CODE HERE TO MAKE GOOG AND FB PURCHASE USING ALL $ IN COMBINED YAHOO SALES
                         ; DISTRIBUTED PROPORTIONATELY TO RISK.
                       [else ; ignore all other yahoo events
-                       (set! send-order #f)
+                       (set-box! send-order #f)
                        (islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
-                  (when send-order
-                    (let ([new-order-request (order-request "trader" "broker" symbol price quantity 0)])
+                  (when (unbox send-order)
+                    (let ([new-order-request (order-request "trader" "broker" symbol price (unbox quantity) 0)])
                       (islet/log/info "Sending order: ~a" new-order-request)
                       ; send order to order router, adding curl to communicate order exec reports back
                       (when (not (send order/curl (vector-append (struct->vector new-order-request) (vector order-exec-curl))))
