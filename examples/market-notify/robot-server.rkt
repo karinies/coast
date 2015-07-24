@@ -28,14 +28,23 @@
       (loop (duplet/block d)))))
 
 (define (server/boot)
+  (islet/log/info "Running Robot server's boot function.")
+  
+  (islet/log/info "Waiting for Market Data Server and Order Router...")
+  (islands/enter/wait (list (curl/origin (robot/get-curl/market-server)) (curl/origin (robot/get-curl/order-router))))
+  (islet/log/info "Market Data Server and Order Router have been seen.")
+  
+  ;; Commented because Kari doesn't run the Risk Server every time.
+  ; (islet/log/info "Waiting for Risk Server...")
+  ; (islands/enter/wait (curl/origin (robot/get-curl/risk-server)))
+  ; (islet/log/info "Risk Server has been seen.")
+  
   (define (trader/spawn) ; This function creates an islet that will receive spawn requests to register for notifications.
     (let ([x (islet/new (this/island) 'server.registration TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
       (islet/jumpstart
        x
        (lambda () (service/spawn/trader))))) ; Executes service/spawn/registration in the new islet.
-  
-  
-  (islet/log/info "Running Robot server's boot function")
+
   (trader/spawn))
 
 (define robot-server (example/island/new 'robot-server "robot_server_secret" server/boot))
