@@ -69,15 +69,10 @@ CURL
               (cond 
                 ; handle market data event
                 [(equal? (vector-ref payload 0) 'struct:market-event)
-                 (let ([stock-symbol (vector-ref payload 1)]
-                       [stock-price (string->number(vector-ref payload 3))]
-                       [quantity (string->number(vector-ref payload 4))])
-                   #| why can't motile find these getters?
-                       [m-event (vector->market-event payload)]
-                       [stock-symbol (market-event/symbol m-event)]
-                       [stock-price (market-event/price m-event)]
-                       [quantity (market-event/quantity m-event)])
-                       |#
+                 (let* ([m-event (vector->market-event payload)]
+                        [stock-symbol (market-event/symbol m-event)]
+                        [stock-price (market-event/price m-event)]
+                        [quantity (market-event/quantity m-event)])   
                    (cond 
                      [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
                       ; get the (price,risk,prev-price,prev-risk) vector, change the price, update hash
@@ -90,13 +85,9 @@ CURL
                  ]
                 ; handle risk event
                 [(equal? (vector-ref payload 0) 'struct:risk-event)
-                 (let ([stock-symbol (vector-ref payload 1)]
-                       [stock-risk (string->number(vector-ref payload 3))])
-                   #| why can't motile find these getters?
-                       [r-event (vector->risk-event payload)]
-                       [stock-symbol (risk-event/symbol r-event)]
-                       [stock-risk (risk-event/risk r-event)]
-                       |#
+                 (let* ([r-event (vector->risk-event payload)]
+                        [stock-symbol (risk-event/symbol r-event)]
+                        [stock-risk (risk-event/risk r-event)])
                    (cond 
                      [(hash-has-key? stock/values stock-symbol) ; is there already a key for this symbol?
                       ; get the (price,risk,prev-price,prev-risk) vector, change the risk, update hash
@@ -123,21 +114,21 @@ CURL
                        [send-order (box #t)])
                   ; only echo FB and GOOG orders
                   (when (equal? symbol "YHOO") 
-                    (islet/log/info "FOUND YAHOO MARKET EVENT.")
+                    ;(islet/log/info "FOUND YAHOO MARKET EVENT.")
                     (cond 
                       [(and (<= price 2700) (not (unbox first-yhoo-sell))) 
                         (set-box! quantity 500) ; fixed amount representing first half of shares 
-                        (set-box! first-yhoo-sell #t) ; make sure we only do this once
-                        (islet/log/info "TRIGGERING FIRST YAHOO SALE.")] 
+                        (set-box! first-yhoo-sell #t)] ; make sure we only do this once
+                        ;(islet/log/info "TRIGGERING FIRST YAHOO SALE.")] 
                       [(and (<= price 2300) (not (unbox second-yhoo-sell))) ; YAHOO
                         (set-box! quantity 500) ; fixed amount representing second half of shares 
-                        (set-box! second-yhoo-sell #t) ; make sure we only do this once
-                        (islet/log/info "TRIGGERING SECOND YAHOO SALE.")]
+                        (set-box! second-yhoo-sell #t)] ; make sure we only do this once
+                        ;(islet/log/info "TRIGGERING SECOND YAHOO SALE.")]
                         ; ADD CODE HERE TO MAKE GOOG AND FB PURCHASE USING ALL $ IN COMBINED YAHOO SALES
                         ; DISTRIBUTED PROPORTIONATELY TO RISK.
                       [else ; ignore all other yahoo events
-                       (set-box! send-order #f)
-                       (islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
+                       (set-box! send-order #f)]))
+                       ;(islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
                   (when (unbox send-order)
                     (let ([new-order-request (order-request "trader" "broker" symbol price (unbox quantity) 0)])
                       (islet/log/info "Sending order: ~a" new-order-request)
