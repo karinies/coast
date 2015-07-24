@@ -2,14 +2,16 @@
 
 
 (require
- "../include/base.rkt"
- "../baseline.rkt"
- [only-in "../curl/base.rkt" curl/origin curl/path curl/metadata]
- "../promise.rkt"
- "../remote.rkt"
- "../transport/gate.rkt"
- "../transport/gates/challenge.rkt"
- "../transport/gates/whitelist.rkt")
+  "../include/base.rkt"
+  "../baseline.rkt"
+  [only-in "../curl/base.rkt" curl/origin curl/path curl/metadata]
+  "../promise.rkt"
+  "../remote.rkt"
+  "../transport/gate.rkt"
+  "../transport/gates/challenge.rkt"
+  "../transport/gates/whitelist.rkt"
+  "../comet/stomp-transport.rkt"
+  "../Island/island-comet.rkt")
 
 (define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -20,7 +22,7 @@
 (define ALICE/KP/BASE64 #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc")
 (define BOB/KP/BASE64   #"49u_B0VEdFFS3WCPMMX5T5MFQ3SaSHjM8fM63I4L338")
 (define CAROL/KP/BASE64 #"rqM_XCwrsziuhIEsG1d0yMA05mivoewXhUmzKUzhb0s")
-  
+
 (define KEYSTORE (keystore/new))
 ;; Download all of the predefined public certificates.
 (keystore/load KEYSTORE CERTIFICATE/PUBLIC)
@@ -37,7 +39,7 @@
 ;; as shown below.
 
 (define/curl/inline ALICE/CURL/SPAWN
-#<<!!
+  #<<!!
 SIGNATURE = #"GNzBZNi6r6WTBdASzv_R0GJjAiwaBYtHkZhiMlyKTD8E-S-mL-A7SMFR7_9IKNl8_JJcfzOIBQh4YDnP3JoWBw"
 CURL
     id = 0dd4f4f5-72ce-40fe-996f-f80700c322f0
@@ -48,7 +50,7 @@ CURL
     metadata = #f
 
 !!
-)
+  )
 
 ;; Return the petname of the island that transmitted murmur m.
 (define (murmur/petname m)
@@ -71,11 +73,11 @@ CURL
                   (gate/whitelist/island (curl/origin u)) ; Access restricted to client (bob, for example).
                   #f     ; No metadata
                   'INTER)]) ; Good for inter-island messaging only.
-
+          
           ; Inform the client of the CURL that it must use to contact the spawn.
           (send u (duplet/resolver d))
-
-           ; Loop reading and responding to echo requests from the client.
+          
+          ; Loop reading and responding to echo requests from the client.
           (let loop ([m (duplet/block d)])
             (let ([payload (murmur/payload m)])
               (when (and (list? payload) (= (length payload) 3))
@@ -172,12 +174,20 @@ CURL
   
   (server/spawn))
 
- ; Construct an in-memory CURL instance of the predefined CURL for alice.
+; Construct an in-memory CURL instance of the predefined CURL for alice.
 (define alice/curl/spawn (curl/zpl/safe-to-curl ALICE/CURL/SPAWN KEYSTORE))
 
 (define alice (island/new 'alice ALICE/CURVE/SECRET server/boot))
 (define bob   (island/new 'bob   BOB/CURVE/SECRET   (lambda () (client/boot alice/curl/spawn))))
 ;(define carol (island/new 'carol CAROL/CURVE/SECRET (lambda () (client/boot alice/curl/spawn))))
+
+(define messenger (stomp-messenger-new #:host "peru.local"
+                                       #:login "coastdev"
+                                       #:pass "Hi123"
+                                       #:destination "/queue/coast"))
+
+(island/monitoring/start 'alice messenger)
+(island/monitoring/start 'bob messenger)
 
 ;;; Multiple islands in the same address space can share the exact same keystore
 ;;; and any change in the keystore will be seen by all such islands in the
