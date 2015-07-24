@@ -90,5 +90,5 @@
           'value (comet:event-value event)
           'time (comet:event-time event)
           'place (let ([place (comet:event-place event)])
-                   (if (symbol? place) (symbol->string place) place))
+                   (if (symbol? place) (string-downcase (symbol->string place)) place))
           'curl-id (if (false? curl) #f (symbol->string (if (curl? curl) (curl/id curl) (curl/core-id curl)))))))
