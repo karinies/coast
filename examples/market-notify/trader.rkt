@@ -7,32 +7,10 @@
  "../../islet-utils.rkt"
  "../../uuid.rkt"
  "../examples-base.rkt"
- "../examples-env.rkt")
+ "../examples-env.rkt"
+ "../../curl-utils.rkt")
 
 (provide trader)
-
-;(define ROBOT-SERVER/SECRET/PATH   (string-append CERTIFICATE/SECRET "robot_serve_secret"))
-;(define ROBOT-SERVER/CURVE/SECRET   (path-to-curve ROBOT-SERVER/SECRET/PATH))
-;; Demonstrate how to generate an inline CURL for market-server:
-;; Execute
-;;   (display (curl-as-bytes ROBOT-SERVER/CURVE/SECRET '(service spawn) 'access:send.service.spawn #f))
-;; and then copy and paste the text as the body of a
-;;  (define/curl/inline ROBOT-SERVER/CURL/chirp ...)
-;; as shown below.
-
-(define/curl/inline ROBOT-SERVER/CURL/SPAWN
-  #<<!!
-SIGNATURE = #"XbVHE3O5lhPAL-XreJ1z_q9QGftm21w5c9mOg48Fspe_KT0w5xKlVi9xprq8PcmZ7chKJK7yTgZMHW3UL4feBw"
-CURL
-    id = b927dace-e6b5-4ca7-9c22-b1d4e3ba4b9f
-    origin = #"RaQDnsBmoxoaCe_rkNuPJB1Q7PgSaYm17jzafmYFPSc"
-    path = (service spawn)
-    access/id = access:send.service.spawn
-    created = "2015-05-28T13:49:37Z"
-    metadata = #f
-
-!!
-  )
 
 ;; This thunk will be executed on the Robot Server.
 ;; It will register for notifications coming from both the Market Data Server and the Risk Server
@@ -185,7 +163,9 @@ CURL
     (send server/u thunk)))
 
 ; Construct an in-memory CURL instance of the predefined CURL for robot-server.
-(define robot-server/curl/spawn (curl/zpl/safe-to-curl ROBOT-SERVER/CURL/SPAWN KEYSTORE))
+;(define robot-server/curl/spawn (curl/zpl/safe-to-curl ROBOT-SERVER/CURL/SPAWN KEYSTORE))
+
+(define robot-server/curl/spawn (curl/zpl/file/load "deployer.robot_server.curl" KEYSTORE))
 
 (define trader (example/island/new 'trader  "trader_secret"  (lambda () (trader/boot robot-server/curl/spawn))))
 
