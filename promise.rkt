@@ -6,6 +6,7 @@
   "Island/accessor.rkt"
   [only-in "curl/base.rkt" curl/access]
   "curl/curl.rkt"
+  "curl/base.rkt"
   "curve.rkt"
   "getters.rkt"
   "islet.rkt"
@@ -33,6 +34,8 @@
   [duplet/block (-> duplet? (or/c murmur? #f))]
   [duplet/try   (-> duplet? (or/c murmur? #f))]
   [duplet/wait  (-> duplet? (>=/c 0) (or/c murmur? #f))]
+  
+  ;[islet/duplet/known/new (-> curl? duplet?)]
   
   [promise/new (-> duplet:promise?)]
   [promise/block (-> duplet:promise? (or/c murmur? #f))]
@@ -105,9 +108,13 @@
 ;; Blocking read of the resolution of a promise.
 (define (promise/block p) 
   (let ([result (access/receive (duplet/receiver p) #f)])
-    (island/monitoring/log #:type COMET/CURL/RECEIVE
-                           #:place #f
-                           #:curl (duplet/resolver p))
+    (if (murmur? result)
+        (island/monitoring/log #:type COMET/CURL/RECEIVE
+                               #:place #f
+                               #:curl (murmur/target result))
+        (island/monitoring/log #:type COMET/CURL/RECEIVE/FAILED
+                               #:place #f
+                               #:curl (duplet/resolver p)))
     result))
 
 ;; Attempt to read the promise without blocking while hiding all of the machinery underneath.
@@ -115,9 +122,13 @@
 ;; on success and the failure value if the access:receive? would block.
 (define (promise/try p) 
   (let ([result (access/receive/try (duplet/receiver p) #f)])
-    (island/monitoring/log #:type COMET/CURL/RECEIVE
-                           #:place #f
-                           #:curl (duplet/resolver p))
+    (if (murmur? result)
+        (island/monitoring/log #:type COMET/CURL/RECEIVE
+                               #:place #f
+                               #:curl (murmur/target result))
+        (island/monitoring/log #:type COMET/CURL/RECEIVE/FAILED
+                               #:place #f
+                               #:curl (duplet/resolver p)))
     result))
 
 ;; A blocking read with timeout again while hiding as much machinery as possible.
@@ -125,12 +136,31 @@
 ;; is returned. If the promise is resolved before the timeout then the payload
 ;; of the murmur that resolved the promised is returned.
 (define (promise/wait p timeout)
-  (let ([x (sync/timeout timeout p)])
-    (and x (access/receive (duplet/receiver x) #f))))
+  (let* ([x (sync/timeout timeout p)]
+         [result (and x (access/receive (duplet/receiver x) #f))])
+    (if (murmur? result)
+        (island/monitoring/log #:type COMET/CURL/RECEIVE
+                               #:place #f
+                               #:curl (murmur/target result))
+        (island/monitoring/log #:type COMET/CURL/RECEIVE/FAILED
+                               #:place #f
+                               #:curl (duplet/resolver p)))
+    result))
 
 ;; Returns #t if promise has been resolved and #f otherwise.
 (define (promise/resolved? p)
   (not (transport/empty? (access/transport (duplet/receiver p)))))
+#|
+(define (islet/duplet/known/new curl)
+  (let* ([t (transport:bankers/new)]
+         [name (this/islet/nickname)]
+         [a/send     (access:send/new   t name gate (place/intra? place))]
+         [a/receive (access:receive/new t name (gate/whitelist/islet (this/islet)))]
+         [keys (this/curve)])
+    (when (place/inter? place) (accessor/add (this/accessors) a/send))
+    (duplet/new a/receive curl)))
+|#
+
 
 ;; Generate a fresh bankers queue transport, its access points, and a CURL that references the
 ;; generated access:send point.
@@ -179,16 +209,24 @@
 
 (define (duplet/block d)
   (let ([result (access/receive (duplet/receiver d) #f)])
-    (island/monitoring/log #:type COMET/CURL/RECEIVE
-                           #:place #f
-                           #:curl (duplet/resolver d))
+    (if (murmur? result)
+        (island/monitoring/log #:type COMET/CURL/RECEIVE
+                               #:place #f
+                               #:curl (murmur/target result))
+        (island/monitoring/log #:type COMET/CURL/RECEIVE/FAILED
+                               #:place #f
+                               #:curl (duplet/resolver d)))
     result))
 
 (define (duplet/try d)
   (let ([result (access/receive/try (duplet/receiver d) #f)])
-    (island/monitoring/log #:type COMET/CURL/RECEIVE
-                           #:value #f
-                           #:curl (duplet/resolver d))
+    (if (murmur? result)
+        (island/monitoring/log #:type COMET/CURL/RECEIVE
+                               #:place #f
+                               #:curl (murmur/target result))
+        (island/monitoring/log #:type COMET/CURL/RECEIVE/FAILED
+                               #:place #f
+                               #:curl (duplet/resolver d)))
     result))
 
 (define (duplet/wait d timeout)

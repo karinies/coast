@@ -12,12 +12,16 @@
   "../../spawn.rkt"
   "../../transport/gate.rkt"
   "../examples-base.rkt"
-  "../examples-env.rkt")
+  "../examples-env.rkt"
+  "../../curl-utils.rkt")
 
 (provide robot-server)
 
+(define DEPLOYER/CURL (curl/zpl/file/load "deployer.robot_server.curl" KEYSTORE))
+
 (define (service/spawn/trader) ; A Service to spawn stock trader computations
   (islet/log/info "Running Robot Server's spawning service.")
+  ;(let* ([d (islet/duplet/known/new DEPLOYER/CURL)]) ; Create a CURL to listen for computations.
   (let* ([d (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)]) ; Create a CURL to listen for computations.
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
