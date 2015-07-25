@@ -71,28 +71,46 @@ def init_stock_data(infile):
     return event_count, min_delay, max_delay, \
            min_quantity, max_quantity, stocks
 
+
+
 def generate_stock_events(outfile, event_count, min_delay, max_delay, \
                           min_quantity, max_quantity, stocks):
+    '''
+    In this scenario, the Yahoo price should dip slighty or stay the
+    same at each Yahoo event until it reaches 0.
+    When it reaches 0 it should stay there.
+    '''
     for i in range(event_count):
         delay = random.randint(min_delay, max_delay)
         quantity = random.randint(min_quantity, max_quantity)
         symbol = random.choice(list(stocks.keys()))
+        # keep track of yahoo events, we will handle them
+        # differently fro this scenario
+        is_yahoo = symbol == "YHOO"
         seller = random.choice(stocks[symbol][2])
         buyer = random.choice(stocks[symbol][3])
         current_price = stocks[symbol][0]
         delta = stocks[symbol][1]
         diff = random.randint(-delta, delta)
-        new_price = current_price + diff
-        # don't allow the price to go negative!
+        # ensure any change is always negative for Yahoo
+        if is_yahoo and diff > 0:
+            diff = -diff
+        # if yahoo already at 0 keep it there
+        if is_yahoo and (current_price == 0):
+            new_price = 0 # keep it at 0
+        else:
+            new_price = current_price + diff
+        # don't allow any price to go negative!
         if new_price < 0:
             new_price = 0
+        stocks[symbol][0] 
         stocks[symbol][0] = new_price
         print("delay %d" % delay, file=outfile)
         print("%s %s %d %d %s %s" % (symbol, "order", new_price, quantity,
                                      seller, buyer), file=outfile)    
 
 def main():
-    in_filename = "stock_input.txt"
+    in_filename = "stock_input-sc1.txt"
     infile = open(in_filename, "r")
     event_count, min_delay, max_delay, min_quantity, max_quantity, stocks = \
         init_stock_data(infile)
@@ -102,7 +120,7 @@ def main():
     
     print("Stock info:", stocks)
     
-    out_filename = "stock_events.txt"
+    out_filename = "stock_events-sc1.txt"
     outfile = open(out_filename, "w")
     generate_stock_events(outfile, event_count, min_delay, max_delay, \
                           min_quantity, max_quantity, stocks)

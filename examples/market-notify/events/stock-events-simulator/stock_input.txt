@@ -1,7 +1,7 @@
 200
 1 5
 1 500
-GOOG 555 10 [A,B] [A,B]
-YHOO 300 5 [A] [B]
-FB 82 2 [A] [B]
+GOOG 644 10 [A,B] [A,B]
+YHOO 39 5 [A] [B]
+FB 94 2 [A] [B]
 IBM 161 3 [A] [B]
