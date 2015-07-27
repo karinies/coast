@@ -28,7 +28,7 @@
     (islet/jumpstart
      x
      (lambda ()
-       (let ([d (islet/curl/new (list nickname) GATE/ALWAYS #f ANYWHERE)]) ; Create a duplet that the worker will use to receive messages.
+       (let ([d (islet/curl/new (list nickname) GATE/ALWAYS #f INTER)]) ; Create a duplet that the worker will use to receive messages.
          (send (promise/resolver p/for/curl) (duplet/resolver d)) ; Send the new curl to the parent.
          (let loop ([m (duplet/block d)]) ; Listen for new messages.
            (when (murmur? m) ; When a murmur is received (it should happen every time)
