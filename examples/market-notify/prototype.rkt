@@ -18,11 +18,11 @@
 ;(islet/log/silence 'trader)
 
 (define (run)
-  (island/start risk-server)
   (island/start robot-server)
-  (island/start market-server)
   (island/start order-router)
-
+  (island/start risk-server)
+  (island/start market-server)
+  
   (island/start trader))
 
 (define (kill)
