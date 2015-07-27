@@ -97,7 +97,7 @@
   (let ([curl (curl/core (uuid/symbol) kp/base64 path access (time/now) metadata)]
         [place (if (symbol? access) 'INTER 'INTRA)])
     (island/monitoring/log #:type COMET/CURL/NEW
-                           #:place #f
+                           #:place place
                            #:curl curl)
     curl))
 
