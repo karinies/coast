@@ -1,10 +1,12 @@
 #lang racket/base
 
-(require  "../../getters.rkt")
+(require  
+  racket/contract/base
+  "../../getters.rkt")
 
 (provide order-request
          order-request/sender
-         order-request/target
+         order-request/action
          order-request/symbol
          order-request/unit-price
          order-request/quantity
@@ -22,12 +24,14 @@
          )
 
 (provide vector->order-request
-         vector->order-exec-report)
+         vector->order-exec-report
+         order-request/pretty
+         order-exec-report/pretty)
 
 
 (struct order-request
   (sender     ; The buyer making request
-   target     ; The broker
+   action     ; "BUY" or "SELL"
    symbol     ; Stock symbol
    unit-price ; The price per share
    quantity   ; The amount of shares to be traded.
@@ -44,20 +48,27 @@
    qnty-filled)   ; The amount of shares that are traded so far
   #:transparent)
 
-(struct/getters/define order-request sender target symbol unit-price quantity uid)
+(struct/getters/define order-request sender action symbol unit-price quantity uid)
 (struct/getters/define order-exec-report uid symbol status unit-price qnty-requested qnty-filled)
 
+(define (order-request/pretty order)
+  (format "[~a order] Symbol: ~a Qty: ~a Price: ~a UUID: ~a" (order-request/action order) (order-request/symbol order) (order-request/quantity order) (order-request/unit-price order) (order-request/uid order)))
+
+(define (order-exec-report/pretty report)
+  (let ([report (if (vector? report) (vector->order-exec-report report) report)])
+    (format "[~a Report] Symbol: ~a Status: ~a Price: ~a Requested: ~a Filled: ~a" (order-exec-report/uid report) (order-exec-report/symbol report) (order-exec-report/status report) (order-exec-report/unit-price report) (order-exec-report/qnty-requested report) (order-exec-report/qnty-filled report)))
+  )
 
 (define (vector->order-request v)
   (cond 
     [(equal? (vector-ref v 0) 'struct:order-request)
      (let ([sender (vector-ref v 1)]
-           [target (vector-ref v 2)]
+           [action (vector-ref v 2)]
            [symbol (vector-ref v 3)]
            [unit-price (vector-ref v 4)]
            [quantity (vector-ref v 5)]
            [uid (vector-ref v 6)])
-       (order-request sender target symbol unit-price quantity uid))]
+       (order-request sender action symbol unit-price quantity uid))]
     [else
      (display "VECTOR IS NOT ORDER REQUEST")(display "\n")]))
 

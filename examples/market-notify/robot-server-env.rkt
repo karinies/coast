@@ -24,7 +24,7 @@
 ;; Still incomplete: time, date, gates.
 (define ROBOT/SERVER/ENV
   (pairs-to-environ
-   BASELINE
+   EXAMPLES/ENVIRON
    (list
     ; Hack for now.
     (define/global/1 'display display) ; HACK, HACK, HACK.

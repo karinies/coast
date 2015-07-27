@@ -35,7 +35,7 @@
           ; We now listen for notifications coming from the Market Data Server and the Risk Server through robot/notif/u.
           (let loop ([m (duplet/block robot/notif/u)]) ; Wait for an incoming message.
             (let ([payload (murmur/payload m)]) ; Extract the message's payload.
-              (islet/log/info payload) ; Print it into the console.
+              (islet/log/info "Update received: ~a" payload) ; Print it into the console.
               (cond 
                 ; handle market data event
                 [(equal? (vector-ref payload 0) 'struct:market-event)
@@ -85,23 +85,26 @@
               ; For now we are going to echo back each market notification as a request to the Order Router 
               ; just to generate some traffic....
               (when (equal? (vector-ref payload 0) 'struct:market-event)
-                (let* ([p (subislet/callback/new (uuid/symbol) EXAMPLES/ENVIRON ; create a new islet to listen for order reports on this order request
+                (let* ([p (subislet/callback/new (uuid/symbol) (environ/merge EXAMPLES/ENVIRON (unbox (islet/environ (this/islet)))) ; create a new islet to listen for order reports on this order request
                                                  (lambda (report) ;callback function  to handle order execution reports on this order
-                                                   (let ([c trader/notif/curl])
-                                                     (islet/log/info "Report received ~a: " report)
-                                                     (when (not (send c report)) 
+                                                   (let ([c trader/notif/curl]
+                                                         [notif-report-pretty (format "Report received: ~a" (order-exec-report/pretty report))])
+                                                     ;(islet/log/info "Report received ~a: " report)
+                                                     (islet/log/info notif-report-pretty)
+                                                     (when (not (send c notif-report-pretty))
                                                        (islet/log/info "Could not notify trader of report.")))))]
                        [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
                        [symbol (vector-ref payload 1)]
                        [price (string->number(vector-ref payload 3))]
                        [quantity (string->number(vector-ref payload 4))]
-                       [new-order-request (order-request "trader" "broker" symbol price quantity 0)])
-                  (islet/log/info "Sending order: ~a" new-order-request)
+                       [new-order-request (order-request "trader" "BUY" symbol price quantity 0)])
+                  (islet/log/info "Sending order: ~a" (order-request/pretty new-order-request))
                   ; send order to order router, adding curl to communicate order exec reports back
                   (when (not (send order/curl (vector-append (struct->vector new-order-request) (vector order-exec-curl))))
                     (islet/log/info "Order request could not be sent."))
                   ; notify trader of new order request
-                  (when (not (send trader/notif/curl (struct->vector new-order-request)))
+                  ;(when (not (send trader/notif/curl (struct->vector new-order-request)))
+                   (when (not (send trader/notif/curl (order-request/pretty new-order-request)))
                     (islet/log/info "Order request notification could not be sent to trader.")))))
             
             (loop (duplet/block robot/notif/u))))))))
@@ -118,7 +121,7 @@
         ; Creates a new CURL when it is evaluated (it cannot be passed because it has to be created on the server-side.
         (let ([d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTRA)])
           (register (list "GOOG" "YHOO" "FB" "IBM") (duplet/resolver d))
-          (islet/log/info "Registered for market events")
+          (islet/log/info "Registered for market events.")
           
           (let loop ([m (duplet/block d)])
             (let ([payload (murmur/payload m)])
