@@ -22,7 +22,8 @@
          comet:filter/FALSE
          comet:filter/c
          comet:place/c
-         comet:curl/c)
+         comet:curl/c
+         comet:value/c)
 
 #|
  | Accountability Logging.
@@ -60,6 +61,8 @@
 (define comet:filter/TRUE (lambda (event) #t))
 
 (define comet:filter/FALSE (lambda (event) #f))
+
+(define comet:value/c jsexpr?)
 
 (define (comet:log/event logger event)
   (comet:log/event/filtered logger event comet:filter/TRUE))
