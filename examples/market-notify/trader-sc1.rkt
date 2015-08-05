@@ -51,12 +51,27 @@ CURL
                [risk-thunk (motile/call motile/register/risk environ/null (duplet/resolver robot/notif/u))]
                [stock/values (make-hash)] ; maps stock symbols to (price,risk) pairs, price is in cents
                [first-yhoo-sell (box #f)] ; first sell when yahoo stock first reaches 27 or below
-               [second-yhoo-sell (box #f)]) ; second sell when yhoo stock firsst reaches 23 or below 
+               [second-yhoo-sell (box #f)] ; second sell when yhoo stock firsst reaches 23 or below
+               [yhoo-sale-amt (box 0)] ; keeps track of cumulative amount of both yahoo sales, in cents
+               [bought-fb-goog (box #f)]) ; set to true when yahoo sale completes and goog and fb stocks are purchased
           
-          (define (report-callback report) ;callback function  to handle order execution reports on this order
-            (let ([c trader/notif/curl])
-              (islet/log/info "Report received ~a: " report)
-              (when (not (send c report)) 
+          ;; sends an order request to the order router and aslo notifies trader of requst
+          (define (place-order order-req order-req-curl order-notif-curl)
+            (islet/log/info "Sending order: ~a" (order-request/pretty order-req))
+            ; send order to order router, adding curl to communicate order exec reports back
+            (when (not (send order-req-curl (vector-append (struct->vector order-req) (vector order-notif-curl))))
+              (islet/log/info "Order request could not be sent."))
+            ; notify trader of new order request
+            (when (not (send trader/notif/curl (order-request/pretty order-req)))
+                    (islet/log/info "Order request notification could not be sent to trader.")))
+          
+          ;; callback function to handle order execution reports on this order
+          (define (report-callback report) 
+            (let ([c trader/notif/curl]
+                  [notif-report-pretty (format "Report received: ~a" (order-exec-report/pretty report))])
+              ;(islet/log/info "Report received ~a: " report)
+              (islet/log/info notif-report-pretty)
+              (when (not (send c notif-report-pretty))
                 (islet/log/info "Could not notify trader of report."))))
           
           (send market/curl market-thunk) ; Send the registration thunk to the Market Data Server.
@@ -65,7 +80,7 @@ CURL
           ; We now listen for notifications coming from the Market Data Server and the Risk Server through robot/notif/u.
           (let loop ([m (duplet/block robot/notif/u)]) ; Wait for an incoming message.
             (let ([payload (murmur/payload m)]) ; Extract the message's payload.
-              (islet/log/info payload) ; Print it into the console.
+              (islet/log/info "Update received: ~a" payload) ; Print it into the console.
               (cond 
                 ; handle market data event
                 [(equal? (vector-ref payload 0) 'struct:market-event)
@@ -102,11 +117,9 @@ CURL
                  (islet/log/info "UNKNOWN EVENT")])
               
               
-              ;************** CHANGE THIS ***************************
-              ; For now we are going to echo back each market notification as a request to the Order Router 
-              ; just to generate some traffic....
+              ; We echo back each market notification for GOOG and FB as a request to the Order Router 
               (when (equal? (vector-ref payload 0) 'struct:market-event)
-                (let* ([p (subislet/callback/new (uuid/symbol) EXAMPLES/ENVIRON report-callback)] ; create a new islet to listen for order reports on this order request                             
+                (let* ([p (subislet/callback/new (uuid/symbol) (environ/merge EXAMPLES/ENVIRON (unbox (islet/environ (this/islet)))) report-callback)] ; create a new islet to listen for order reports on this order request                             
                        [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
                        [symbol (vector-ref payload 1)]
                        [price (string->number(vector-ref payload 3))]
@@ -118,26 +131,50 @@ CURL
                     (cond 
                       [(and (<= price 2700) (not (unbox first-yhoo-sell))) 
                         (set-box! quantity 500) ; fixed amount representing first half of shares 
-                        (set-box! first-yhoo-sell #t)] ; make sure we only do this once
-                        ;(islet/log/info "TRIGGERING FIRST YAHOO SALE.")] 
+                        (set-box! first-yhoo-sell #t) ; make sure we only do this once
+                        (islet/log/info "TRIGGERING FIRST YAHOO SALE.")
+                        (set-box! yhoo-sale-amt (* (unbox quantity) price))] ; remember prices are in cents
                       [(and (<= price 2300) (not (unbox second-yhoo-sell))) ; YAHOO
                         (set-box! quantity 500) ; fixed amount representing second half of shares 
-                        (set-box! second-yhoo-sell #t)] ; make sure we only do this once
-                        ;(islet/log/info "TRIGGERING SECOND YAHOO SALE.")]
-                        ; ADD CODE HERE TO MAKE GOOG AND FB PURCHASE USING ALL $ IN COMBINED YAHOO SALES
-                        ; DISTRIBUTED PROPORTIONATELY TO RISK.
+                        (set-box! second-yhoo-sell #t) ; make sure we only do this once
+                        (islet/log/info "TRIGGERING SECOND YAHOO SALE.")
+                        (set-box! yhoo-sale-amt (+ (unbox yhoo-sale-amt) (* (unbox quantity) price)))]
                       [else ; ignore all other yahoo events
                        (set-box! send-order #f)]))
                        ;(islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
+                  ; Here we are sending one of three orders:
+                  ; 1> a goog or facebook order based on goog or fb market notification
+                  ; 2> a first yahoo selloff (once) or
+                  ; 3> a second yahoo selloff (once)
                   (when (unbox send-order)
-                    (let ([new-order-request (order-request "trader" "broker" symbol price (unbox quantity) 0)])
-                      (islet/log/info "Sending order: ~a" new-order-request)
-                      ; send order to order router, adding curl to communicate order exec reports back
-                      (when (not (send order/curl (vector-append (struct->vector new-order-request) (vector order-exec-curl))))
-                        (islet/log/info "Order request could not be sent."))
-                      ; notify trader of new order request
-                      (when (not (send trader/notif/curl (struct->vector new-order-request)))
-                        (islet/log/info "Order request notification could not be sent to trader."))))
+                    (let ([new-order-request (order-request "trader" "BUY" symbol price (unbox quantity) 0)])
+                      (place-order new-order-request order/curl order-exec-curl)))
+                  ; Here we are making one goog and one fb order using all monies from yahoo sales, distributed
+                  ; proportionately to the current risk values for those stocks.
+                  ; This should occur immediately after 2nd yahoo sale, and only once.
+                  (when (and (equal? (unbox second-yhoo-sell) #t) 
+                             (equal? (unbox bought-fb-goog) #f))
+                    (let* ([fb-v (hash-ref stock/values "FB")]
+                           [goog-v (hash-ref stock/values "GOOG")]
+                           [fb-price (vector-ref fb-v 0)] ; get last seen FB price
+                           [goog-price (vector-ref goog-v 0)] ; get last seen GOOG price
+                           [fb-neg-risk (vector-ref fb-v 1)]
+                           [goog-neg-risk (vector-ref goog-v 1)]
+                           [fb-pos-risk (- 100 fb-neg-risk)]
+                           [goog-pos-risk (- 100 goog-neg-risk)]
+                           [fb-percent (/ fb-pos-risk (+ fb-pos-risk goog-pos-risk))]
+                           [goog-percent (/ goog-pos-risk (+ fb-pos-risk goog-pos-risk))]
+                           [fb-sale-amt (* fb-percent (unbox yhoo-sale-amt))]
+                           [goog-sale-amt (* goog-percent (unbox yhoo-sale-amt))]
+                           [num-fb-shares (floor (/ fb-sale-amt fb-price))]
+                           [num-goog-shares (floor (/ goog-sale-amt goog-price))])
+                      (let ([fb-order-request (order-request "trader" "BUY" "FB" fb-price num-fb-shares 0)])
+                        (islet/log/info "Sending FB for YHOO order...")
+                        (place-order fb-order-request order/curl order-exec-curl))
+                      (let ([goog-order-request (order-request "trader" "BUY" "GOOG" goog-price num-goog-shares 0)])
+                        (islet/log/info "Sending GOOG for YHOO order...")
+                        (place-order goog-order-request order/curl order-exec-curl)))
+                    (set-box! bought-fb-goog #t))
               )))
             
             (loop (duplet/block robot/notif/u))))))))
@@ -154,7 +191,7 @@ CURL
         ; Creates a new CURL when it is evaluated (it cannot be passed because it has to be created on the server-side.
         (let ([d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTRA)])
           (register (list "GOOG" "YHOO" "FB" "IBM") (duplet/resolver d))
-          (islet/log/info "Registered for market events")
+          (islet/log/info "Registered for market events.")
           
           (let loop ([m (duplet/block d)])
             (let ([payload (murmur/payload m)])
@@ -173,7 +210,7 @@ CURL
         ; Creates a new CURL when it is evaluated (it cannot be passed because it has to be created on the server-side.
         (let ([d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTRA)])
           (register (list "GOOG" "YHOO" "FB" "IBM") (duplet/resolver d))
-          (islet/log/info "Registered for risk events")
+          (islet/log/info "Registered for risk events.")
           
           (let loop ([m (duplet/block d)])
             (let ([payload (murmur/payload m)])
