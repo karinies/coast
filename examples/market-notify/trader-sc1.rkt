@@ -221,6 +221,11 @@ CURL
 ;; server/u - CURL for spawn service on Robot Server.
 (define (trader/boot server/u)
   (islet/log/info "Trader is booting...")
+
+  (islet/log/info "Waiting for Robot Server...")
+  (island/enter/wait (curl/origin server/u))
+  (islet/log/info "Robot Server has been seen.")
+  
   (let* ([pr (subislet/callback/new 'trader-notif EXAMPLES/ENVIRON ; create a new islet to listen notifications of order requests made on traders behalf
                                     (island/compile '(lambda (payload) ;callback function  to handle order notifications to the trader
                                                        (islet/log/info "Trader Notification received: ~a" payload)
