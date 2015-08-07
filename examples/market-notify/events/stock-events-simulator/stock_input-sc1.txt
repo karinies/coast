@@ -1,6 +1,9 @@
-250
-2 5
-1 500
-GOOG 644 1 [A,B] [A,B]
-YHOO 39 2 [A] [B]
-FB 94 3 [A] [B]
+800
+250 500
+10 500
+GOOG 642 2 2 [A,B] [A,B]
+YHOO 36 0.4 0.2 [A] [B]
+FB 95 2 2 [A] [B]
+AAPL 115 3 3 [A,B] [A,B]
+AMZN 529 3 3 [A,B] [A,B]
+MSFT 46 1 1 [A,B] [A,B]
