@@ -3,7 +3,7 @@ This module generates stock events for the COAST market-notify example
 It takes an input file of the format:
 
 <number of events to generate>
-<min time delay> <max time delay>  # in seconds
+<min time delay> <max time delay>  # in milliseconds
 <min purchase quantity> <max purchase quantity> # in entire dollars
 [<stock symbol> <start price> <delta change> <list of possible buyers> <list of posssible sellers>]* # start price and delta change in entire dollars.
 
@@ -44,6 +44,8 @@ YHOO order 30248 484 A B
 
 import random
 import time
+import sys
+from decimal import *
 
 event_count = 0
 max_delay = min_delay = 0
@@ -78,8 +80,8 @@ def init_stock_data(infile):
         sellers = (stock_info[FILE_SELLER_IDX][1:-1]).split(",")
         buyers = (stock_info[FILE_BUYER_IDX][1:-1]).split(",")
         init_price = int(stock_info[FILE_INITIAL_PRICE_IDX])*100 # convert to cents
-        delta_neg = int(stock_info[FILE_DELTA_NEG_IDX])*100 # convert to cents
-        delta_pos = int(stock_info[FILE_DELTA_POS_IDX])*100 # convert to cents
+        delta_neg = Decimal(stock_info[FILE_DELTA_NEG_IDX])*100 # convert to cents
+        delta_pos = Decimal(stock_info[FILE_DELTA_POS_IDX])*100 # convert to cents
         stocks[stock_info[FILE_SYMBOL_IDX]] = [init_price, delta_neg, delta_pos, sellers, buyers]
 
     return event_count, min_delay, max_delay, \
@@ -108,6 +110,14 @@ def generate_stock_events(outfile, event_count, min_delay, max_delay, \
 
 def main():
     in_filename = "stock_input.txt"
+
+    print(sys.argv)
+
+    if(len(sys.argv) > 1):
+        in_filename = sys.argv[1]
+
+    print ("input file: ", in_filename)
+
     infile = open(in_filename, "r")
     event_count, min_delay, max_delay, min_quantity, max_quantity, stocks = \
         init_stock_data(infile)
