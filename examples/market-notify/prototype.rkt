@@ -2,7 +2,7 @@
 
 (require
   "../../include/base.rkt"
-  "trader.rkt"
+  "trader-sc1.rkt"
   "risk-server.rkt"
   "robot-server.rkt"
   "market-server.rkt"
@@ -17,12 +17,13 @@
 (islet/log/silence 'order-router)
 ;(islet/log/silence 'trader)
 
-(define (run)
-  (island/start risk-server)
+(define (run-servers)
   (island/start robot-server)
-  (island/start market-server)
   (island/start order-router)
+  (island/start risk-server)
+  (island/start market-server))
 
+(define (run-trader)
   (island/start trader))
 
 (define (kill)
