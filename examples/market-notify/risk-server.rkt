@@ -70,7 +70,7 @@ are interested in it.
        (lambda () (service/spawn/registration))))) ; Executes service/spawn/registration in the new islet.
   
   (define (notification/spawn) ; This function creates a new islet that will run the notification service.
-    (let ([x (islet/new (this/island) 'server.notification TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
+    (let ([x (islet/new (this/island) 'updater TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
       (islet/jumpstart
        x
        (lambda () (service/notification))))) ; Executes service/notification in the new islet.
