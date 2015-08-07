@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require "../../getters.rkt")
+(require "../../getters.rkt"
+         "../examples-base.rkt")
 
 (provide market/subscribe
          market/subs/count
@@ -29,29 +30,28 @@
 (struct/getters/define market-event symbol type price quantity seller buyer)
 
 (define (vector->market-event v)
-  (cond 
-    [(equal? (vector-ref v 0) 'struct:market-event)
-     (let ([symbol (vector-ref v 1)]
+  (if (equal? (vector-ref v 0) 'struct:market-event)
+      (let ([symbol (vector-ref v 1)]
            [type (vector-ref v 2)]
            [price (string->number(vector-ref v 3))]
            [quantity (string->number(vector-ref v 4))]
            [seller (vector-ref v 5)]
            [buyer (vector-ref v 6)])
-       (market-event symbol type price quantity buyer seller))]
-    [else
-     (display "VECTOR IS NOT MARKET EVENT")(display "\n")]))
-
+       (market-event symbol type price quantity buyer seller))
+      (islet/log/error "VECTOR IS NOT MARKET EVENT\n")))
+   
 (define market/registrations (make-hash)) ; The "Database" for market event registrations
 
 (define (market/subscribe symbols curl)
   (for-each
     (lambda (symbol)
-      (cond 
-        [(hash-has-key? market/registrations symbol) ; is there already a key for this symbol?
+      (if (hash-has-key? market/registrations symbol) ; is there already a key for this symbol?
           ; get the curl list, append new curl, update hash
-         (hash-set! market/registrations symbol (append(hash-ref market/registrations symbol)(list curl)))]
-        [else (hash-set! market/registrations symbol (list curl))])) ; otherwise, make a new list with single curl
-      symbols))
+          (hash-set! market/registrations symbol (append(hash-ref market/registrations symbol)(list curl)))
+          ; otherwise, make a new list with single curl
+          (hash-set! market/registrations symbol (list curl))))
+    symbols))
+
 
 (define (market/subs/count) ; Returns the number of entries in the DB.
   (hash-count market/registrations))
@@ -60,12 +60,7 @@
   (hash-for-each market/registrations proc))
 
 (define (market/subs/apply event proc) ; apply proc to only subs on symbol
-  (cond 
-    [(hash-has-key? market/registrations (market-event-symbol event))
-     ; loop through curl list on hash calling (proc event curl) for each
-     (for-each (lambda (curl)
+  (when (hash-has-key? market/registrations (market-event-symbol event))
+    (for-each (lambda (curl)
        (proc event curl))
-       (hash-ref market/registrations (market-event-symbol event)))]
-    [else (displayln (format "Unregistered symbol ~a" (market-event-symbol event)))]))
-
-
+       (hash-ref market/registrations (market-event-symbol event)))))
