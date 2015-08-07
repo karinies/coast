@@ -147,7 +147,7 @@ CURL
                   ; 2> a first yahoo selloff (once) or
                   ; 3> a second yahoo selloff (once)
                   (when (unbox send-order)
-                    (let ([new-order-request (order-request "trader" "BUY" symbol price (unbox quantity) 0)])
+                    (let ([new-order-request (order-request "trader" "BUY" symbol price (unbox quantity) (uuid/symbol))])
                       (place-order new-order-request order/curl order-exec-curl)))
                   ; Here we are making one goog and one fb order using all monies from yahoo sales, distributed
                   ; proportionately to the current risk values for those stocks.
@@ -168,10 +168,10 @@ CURL
                            [goog-sale-amt (* goog-percent (unbox yhoo-sale-amt))]
                            [num-fb-shares (floor (/ fb-sale-amt fb-price))]
                            [num-goog-shares (floor (/ goog-sale-amt goog-price))])
-                      (let ([fb-order-request (order-request "trader" "BUY" "FB" fb-price num-fb-shares 0)])
+                      (let ([fb-order-request (order-request "trader" "BUY" "FB" fb-price num-fb-shares (uuid/symbol))])
                         (islet/log/info "Sending FB for YHOO order...")
                         (place-order fb-order-request order/curl order-exec-curl))
-                      (let ([goog-order-request (order-request "trader" "BUY" "GOOG" goog-price num-goog-shares 0)])
+                      (let ([goog-order-request (order-request "trader" "BUY" "GOOG" goog-price num-goog-shares (uuid/symbol))])
                         (islet/log/info "Sending GOOG for YHOO order...")
                         (place-order goog-order-request order/curl order-exec-curl)))
                     (set-box! bought-fb-goog #t))
