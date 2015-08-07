@@ -28,12 +28,21 @@
    (list
     ; Hack for now.
     (define/global/1 'display display) ; HACK, HACK, HACK.
-    (define/global/1 'vector? vector)
+    
+    ; vector functions
+    (define/global/1 'vector? vector?)
     (define/global/N 'vector vector)
+    (define/global/2 'vector-ref vector-ref)
+    (define/global/3 'vector-set! vector-set!)
     (define/global/1 'struct->vector struct->vector)
     (define/global/N 'vector-append vector-append)
+    ; hash functions
+    (define/global/0 'make-hash make-hash)
+    (define/global/2 'hash-has-key? hash-has-key?)
+    (define/global/2 'hash-ref hash-ref)
+    (define/global/3 'hash-set! hash-set!)
     
-    ; market events
+    ; market events and getters
     (define/global/N 'market-event market-event)
     (define/global/1 'market-event/symbol market-event/symbol)
     (define/global/1 'market-event/type market-event/type)
@@ -42,19 +51,13 @@
     (define/global/1 'market-event/seller market-event/seller)
     (define/global/1 'market-event/buyer market-event/buyer)
     (define/global/1 'vector->market-event vector->market-event)
-    ; risk events
+    ; risk events and getters
     (define/global/3 'risk-event risk-event)
     (define/global/1 'risk-event/symbol risk-event/symbol)
     (define/global/1 'risk-event/type risk-event/type)
     (define/global/1 'risk-event/risk risk-event/risk)
     (define/global/1 'vector->risk-event vector->risk-event)
     
-    (define/global/2 'vector-ref vector-ref)
-    (define/global/3 'vector-set! vector-set!)
-    (define/global/0 'make-hash make-hash)
-    (define/global/2 'hash-has-key? hash-has-key?)
-    (define/global/2 'hash-ref hash-ref)
-    (define/global/3 'hash-set! hash-set!)
     (define/global/0 'robot/get-curl/market-server robot/get-curl/market-server)
     (define/global/0 'robot/get-curl/risk-server robot/get-curl/risk-server)
     (define/global/0 'robot/get-curl/order-router robot/get-curl/order-router)

@@ -60,7 +60,7 @@ are interested in it.
     (define vline (list->vector line))
       (cond
         [(equal? "delay" (vector-ref vline 0))
-         (sleep (string->number (vector-ref vline 1)))] ;sleep for the specified amount
+         (sleep (/ (string->number (vector-ref vline 1)) 1000))] ;sleep for the specified amount
         [else (process-stock-event vline)])))
   
 

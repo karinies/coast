@@ -3,9 +3,9 @@ This module generates stock events for the COAST market-notify example
 It takes an input file of the format:
 
 <number of events to generate>
-<min time delay> <max time delay>  # in milliseconds
-<min purchase quantity> <max purchase quantity> # in entire dollars
-[<stock symbol> <start price> <delta change> <list of possible buyers> <list of posssible sellers>]* # start price and delta change in entire dollars.
+<min time delay> <max time delay>
+<min purchase quantity> <max purchase quantity>
+[<stock symbol> <start price> <delta change> <list of possible buyers> <list of posssible sellers>]*
 
 e.g.
 
@@ -44,25 +44,10 @@ YHOO order 30248 484 A B
 
 import random
 import time
-import sys
-from decimal import *
 
 event_count = 0
 max_delay = min_delay = 0
 stocks = {}
-
-FILE_SYMBOL_IDX = 0
-FILE_INITIAL_PRICE_IDX = 1
-FILE_DELTA_NEG_IDX = 2
-FILE_DELTA_POS_IDX = 3
-FILE_SELLER_IDX = 4
-FILE_BUYER_IDX = 5
-
-MEM_CURRENT_PRICE = 0
-MEM_DELTA_NEG = 1
-MEM_DELTA_POS = 2
-MEM_SELLER = 3
-MEM_BUYER = 4
 
 def init_stock_data(infile):
     # read event count
@@ -77,47 +62,55 @@ def init_stock_data(infile):
 
     for line in infile:
         stock_info = line.replace("\n", "").split(" ");
-        sellers = (stock_info[FILE_SELLER_IDX][1:-1]).split(",")
-        buyers = (stock_info[FILE_BUYER_IDX][1:-1]).split(",")
-        init_price = int(stock_info[FILE_INITIAL_PRICE_IDX])*100 # convert to cents
-        delta_neg = Decimal(stock_info[FILE_DELTA_NEG_IDX])*100 # convert to cents
-        delta_pos = Decimal(stock_info[FILE_DELTA_POS_IDX])*100 # convert to cents
-        stocks[stock_info[FILE_SYMBOL_IDX]] = [init_price, delta_neg, delta_pos, sellers, buyers]
+        sellers = (stock_info[3][1:-1]).split(",")
+        buyers = (stock_info[4][1:-1]).split(",")
+        init_price = int(stock_info[1])*100 # convert to cents
+        delta_change = int(stock_info[2])*100 # convert to cents
+        stocks[stock_info[0]] = [init_price, delta_change, sellers, buyers]
 
     return event_count, min_delay, max_delay, \
            min_quantity, max_quantity, stocks
 
+
+
 def generate_stock_events(outfile, event_count, min_delay, max_delay, \
                           min_quantity, max_quantity, stocks):
+    '''
+    In this scenario, the Yahoo price should dip slighty or stay the
+    same at each Yahoo event until it reaches 0.
+    When it reaches 0 it should stay there.
+    '''
     for i in range(event_count):
         delay = random.randint(min_delay, max_delay)
         quantity = random.randint(min_quantity, max_quantity)
         symbol = random.choice(list(stocks.keys()))
-        seller = random.choice(stocks[symbol][MEM_SELLER])
-        buyer = random.choice(stocks[symbol][MEM_BUYER])
-        current_price = stocks[symbol][MEM_CURRENT_PRICE]
-        delta_neg = stocks[symbol][MEM_DELTA_NEG]
-        delta_pos = stocks[symbol][MEM_DELTA_POS]
-        diff = random.randint(-delta_neg, delta_pos)
-        new_price = current_price + diff
-        # don't allow the price to go negative!
+        # keep track of yahoo events, we will handle them
+        # differently fro this scenario
+        is_yahoo = symbol == "YHOO"
+        seller = random.choice(stocks[symbol][2])
+        buyer = random.choice(stocks[symbol][3])
+        current_price = stocks[symbol][0]
+        delta = stocks[symbol][1]
+        diff = random.randint(-delta, delta)
+        # ensure any change is always negative for Yahoo
+        if is_yahoo and diff > 0:
+            diff = -diff
+        # if yahoo already at 0 keep it there
+        if is_yahoo and (current_price == 0):
+            new_price = 0 # keep it at 0
+        else:
+            new_price = current_price + diff
+        # don't allow any price to go negative!
         if new_price < 0:
             new_price = 0
-        stocks[symbol][MEM_CURRENT_PRICE] = new_price
+        stocks[symbol][0] 
+        stocks[symbol][0] = new_price
         print("delay %d" % delay, file=outfile)
         print("%s %s %d %d %s %s" % (symbol, "order", new_price, quantity,
                                      seller, buyer), file=outfile)    
 
 def main():
-    in_filename = "stock_input.txt"
-
-    print(sys.argv)
-
-    if(len(sys.argv) > 1):
-        in_filename = sys.argv[1]
-
-    print ("input file: ", in_filename)
-
+    in_filename = "stock_input-sc1.txt"
     infile = open(in_filename, "r")
     event_count, min_delay, max_delay, min_quantity, max_quantity, stocks = \
         init_stock_data(infile)
@@ -127,7 +120,7 @@ def main():
     
     print("Stock info:", stocks)
     
-    out_filename = "stock_events.txt"
+    out_filename = "stock_events-sc1.txt"
     outfile = open(out_filename, "w")
     generate_stock_events(outfile, event_count, min_delay, max_delay, \
                           min_quantity, max_quantity, stocks)
