@@ -98,12 +98,12 @@
 (define (order-router/boot)
   ;; Code for order-router request service.
   (define (order-router/listener) ; This function creates an islet that will receive and process order requests.
-    (let* ([x (islet/new (this/island) 'order-router.request TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
+    (let* ([x (islet/new (this/island) 'order-receiver TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
       (islet/jumpstart
        x
        (lambda () (service/order-request))))) ; Executes service/order-request in the new islet. 
   (islet/log/info "Running Order Router's boot function")
-  (thread (lambda () (order-router/listener)))) 
+  (order-router/listener))
 
 
 (define order-router (example/island/new 'order-router "order_router_secret" order-router/boot))
