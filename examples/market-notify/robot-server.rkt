@@ -27,6 +27,17 @@
             (spawn worker payload 900.0)))) ; There shouldn't be a timeout for this.
       (loop (duplet/block d)))))
 
+(define (service/spawn/trader/premium) ; A Service to spawn stock trader computations
+  (islet/log/info "Running Robot Server's Premium spawning service.")
+  (let* ([d (islet/curl/known/new '(register) 'access:send:service.register GATE/ALWAYS environ/null)]) ; Create a CURL to listen for computations.
+    (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
+      (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
+        (when (procedure? payload) ; Check if the payload is a procedure.
+          (let ([worker (subspawn/new (murmur/origin m) TRUST/LOWEST (environ/merge ROBOT/SERVER/ENV EXAMPLES/ENVIRON) #f)]) ; Spawn the computation with a Binding Environment prepared (only) for registration.
+            (islet/log/info "Robot Server spawning computation...")
+            (spawn worker payload 900.0)))) ; There shouldn't be a timeout for this.
+      (loop (duplet/block d)))))
+
 (define (server/boot)
   (islet/log/info "Running Robot server's boot function.")
   
@@ -45,7 +56,14 @@
        x
        (lambda () (service/spawn/trader))))) ; Executes service/spawn/registration in the new islet.
 
-  (trader/spawn))
+  (define (trader/spawn/premium) ; This function creates an islet that will receive spawn requests to register for notifications.
+    (let ([x (islet/new (this/island) 'server.registration.premium TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
+      (islet/jumpstart
+       x
+       (lambda () (service/spawn/trader/premium))))) ; Executes service/spawn/registration in the new islet.
+
+  (trader/spawn)
+  (trader/spawn/premium))
 
 (define robot-server (example/island/new 'robot-server "robot_server_secret" server/boot))
 
