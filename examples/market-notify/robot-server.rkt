@@ -16,9 +16,12 @@
 
 (provide robot-server)
 
+(define DEPLOYER/CURL (curl/zpl/file/load "deployer.robot_server.curl" KEYSTORE))
+(define DEPLOYER/PREMIUM/CURL (curl/zpl/file/load "deployer_premium.robot_server.curl" KEYSTORE))
+
 (define (service/spawn/trader) ; A Service to spawn stock trader computations
   (islet/log/info "Running Robot Server's spawning service.")
-  (let* ([d (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)]) ; Create a CURL to listen for computations.
+  (let* ([d (islet/duplet/known/new DEPLOYER/CURL GATE/ALWAYS)]) ; Create a CURL to listen for computations.
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
         (when (procedure? payload) ; Check if the payload is a procedure.
@@ -29,7 +32,7 @@
 
 (define (service/spawn/trader/premium) ; A Service to spawn stock trader computations
   (islet/log/info "Running Robot Server's Premium spawning service.")
-  (let* ([d (islet/curl/known/new '(register) 'access:send:service.register GATE/ALWAYS environ/null)]) ; Create a CURL to listen for computations.
+  (let* ([d (islet/duplet/known/new DEPLOYER/PREMIUM/CURL GATE/ALWAYS)]) ; Create a CURL to listen for computations.
     (let loop ([m (duplet/block d)]) ; Wait for a spawn request.
       (let ([payload (murmur/payload m)]) ; Extract the murmur's payload.
         (when (procedure? payload) ; Check if the payload is a procedure.
