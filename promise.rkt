@@ -35,6 +35,8 @@
   [duplet/try   (-> duplet? (or/c murmur? #f))]
   [duplet/wait  (-> duplet? (>=/c 0) (or/c murmur? #f))]
 
+  [islet/duplet/known/new (-> curl? gate? duplet?)]
+  
   [promise/new (-> duplet:promise?)]
   [promise/block (-> duplet:promise? (or/c murmur? #f))]
   [promise/wait (-> duplet:promise? (>=/c 0)(or/c murmur? #f))]
@@ -124,6 +126,15 @@
 ;; Returns #t if promise has been resolved and #f otherwise.
 (define (promise/resolved? p)
   (not (transport/empty? (access/transport (duplet/receiver p)))))
+
+(define (islet/duplet/known/new curl gate)
+  (let* ([t (transport:bankers/new)]
+         [name (this/islet/nickname)]
+         [a/send    (access:send/known/new t (if (symbol? (curl/access curl)) (curl/access curl) (access/id (curl/access curl))) gate EMBARGO/NO)]
+         [a/receive (access:receive/new t name (gate/whitelist/islet (this/islet)))]
+         [keys (this/curve)])
+    (accessor/add (this/accessors) a/send)
+    (duplet/new a/receive curl)))
 
 (define place/c (flat-named-contract 'place (or/c 'INTER 'INTRA 'ANYWHERE)))
 (define (place/intra? place)    (eq? place INTRA))
