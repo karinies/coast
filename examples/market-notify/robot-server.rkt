@@ -12,7 +12,8 @@
   "../../spawn.rkt"
   "../../transport/gate.rkt"
   "../examples-base.rkt"
-  "../examples-env.rkt")
+  "../examples-env.rkt"
+  "../../curl-utils.rkt")
 
 (provide robot-server)
 
