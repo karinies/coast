@@ -1,0 +1,8 @@
+SIGNATURE = #"CYOpV3P9CY7op7I1e5vxC_WnspDCR6hulxcq1PAHHPUkyuNfbLWVOr3-LT7HafkuohuJRXzMWY-JeIAY8nmNCw"
+CURL
+    id = 223816be-e7da-4695-bf82-5cc2d8705731
+    origin = #"RaQDnsBmoxoaCe_rkNuPJB1Q7PgSaYm17jzafmYFPSc"
+    path = (register)
+    access/id = access:send:service.register
+    created = "2015-08-08T13:20:40Z"
+    metadata = #f
