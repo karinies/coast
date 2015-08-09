@@ -60,7 +60,14 @@
        x
        (lambda () (service/spawn/trader))))) ; Executes service/spawn/registration in the new islet.
 
-  (trader/spawn))
+  (define (trader/spawn/premium) ; This function creates an islet that will receive spawn requests to register for notifications.
+    (let ([x (islet/new (this/island) 'server.registration.premium TRUST/MODERATE environ/null environ/null)]) ; Creates a new islet.
+      (islet/jumpstart
+       x
+       (lambda () (service/spawn/trader/premium))))) ; Executes service/spawn/registration in the new islet.
+
+  (trader/spawn)
+  (trader/spawn/premium))
 
 (define robot-server (example/island/new 'robot-server "robot_server_secret" server/boot))
 
