@@ -1,24 +1,15 @@
 #lang racket/base
 
 (require
- "../../include/base.rkt"
- "../../baseline.rkt"
- [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
- "../../islet-utils.rkt"
- "../../uuid.rkt"
- "../examples-base.rkt"
- "../examples-env.rkt")
+  "../../include/base.rkt"
+  "../../baseline.rkt"
+  [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
+  "../../islet-utils.rkt"
+  "../../uuid.rkt"
+  "../examples-base.rkt"
+  "../examples-env.rkt")
 
 (provide trader)
-
-;(define ROBOT-SERVER/SECRET/PATH   (string-append CERTIFICATE/SECRET "robot_serve_secret"))
-;(define ROBOT-SERVER/CURVE/SECRET   (path-to-curve ROBOT-SERVER/SECRET/PATH))
-;; Demonstrate how to generate an inline CURL for market-server:
-;; Execute
-;;   (display (curl-as-bytes ROBOT-SERVER/CURVE/SECRET '(service spawn) 'access:send.service.spawn #f))
-;; and then copy and paste the text as the body of a
-;;  (define/curl/inline ROBOT-SERVER/CURL/chirp ...)
-;; as shown below.
 
 (define/curl/inline ROBOT-SERVER/CURL/SPAWN
   #<<!!
@@ -63,7 +54,7 @@ CURL
               (islet/log/info "Order request could not be sent."))
             ; notify trader of new order request
             (when (not (send trader/notif/curl (order-request/pretty order-req)))
-                    (islet/log/info "Order request notification could not be sent to trader.")))
+              (islet/log/info "Order request notification could not be sent to trader.")))
           
           ;; callback function to handle order execution reports on this order
           (define (report-callback report) 
@@ -111,7 +102,6 @@ CURL
                         (vector-set! v 1 stock-risk))] ; set new risk value @ index 1
                      [else 
                       (hash-set! stock/values stock-symbol (vector -1 stock-risk -1 -1))])) ; -1 means no value seen
-                 ;(islet/log/info stock/values) ; DEBUG  show hash
                  ]
                 [else
                  (islet/log/info "UNKNOWN EVENT")])
@@ -127,21 +117,20 @@ CURL
                        [send-order (box #t)])
                   ; only echo FB and GOOG orders
                   (when (equal? symbol "YHOO") 
-                    ;(islet/log/info "FOUND YAHOO MARKET EVENT.")
                     (cond 
                       [(and (<= price 2700) (not (unbox first-yhoo-sell))) 
-                        (set-box! quantity 500) ; fixed amount representing first half of shares 
-                        (set-box! first-yhoo-sell #t) ; make sure we only do this once
-                        (islet/log/info "TRIGGERING FIRST YAHOO SALE.")
-                        (set-box! yhoo-sale-amt (* (unbox quantity) price))] ; remember prices are in cents
+                       (set-box! quantity 500) ; fixed amount representing first half of shares 
+                       (set-box! first-yhoo-sell #t) ; make sure we only do this once
+                       (islet/log/info "TRIGGERING FIRST YAHOO SALE.")
+                       (set-box! yhoo-sale-amt (* (unbox quantity) price))] ; remember prices are in cents
                       [(and (<= price 2300) (not (unbox second-yhoo-sell))) ; YAHOO
-                        (set-box! quantity 500) ; fixed amount representing second half of shares 
-                        (set-box! second-yhoo-sell #t) ; make sure we only do this once
-                        (islet/log/info "TRIGGERING SECOND YAHOO SALE.")
-                        (set-box! yhoo-sale-amt (+ (unbox yhoo-sale-amt) (* (unbox quantity) price)))]
+                       (set-box! quantity 500) ; fixed amount representing second half of shares 
+                       (set-box! second-yhoo-sell #t) ; make sure we only do this once
+                       (islet/log/info "TRIGGERING SECOND YAHOO SALE.")
+                       (set-box! yhoo-sale-amt (+ (unbox yhoo-sale-amt) (* (unbox quantity) price)))]
                       [else ; ignore all other yahoo events
                        (set-box! send-order #f)]))
-                       ;(islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
+                  ;(islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
                   ; Here we are sending one of three orders:
                   ; 1> a goog or facebook order based on goog or fb market notification
                   ; 2> a first yahoo selloff (once) or
@@ -175,7 +164,7 @@ CURL
                         (islet/log/info "Sending GOOG for YHOO order...")
                         (place-order goog-order-request order/curl order-exec-curl)))
                     (set-box! bought-fb-goog #t))
-              )))
+                  )))
             
             (loop (duplet/block robot/notif/u))))))))
 
@@ -221,7 +210,7 @@ CURL
 ;; server/u - CURL for spawn service on Robot Server.
 (define (trader/boot server/u)
   (islet/log/info "Trader is booting...")
-
+  
   (islet/log/info "Waiting for Robot Server...")
   (island/enter/wait (curl/origin server/u))
   (islet/log/info "Robot Server has been seen.")
