@@ -1,13 +1,13 @@
 #lang racket/base
 
 (require
- "../../include/base.rkt"
- "../../baseline.rkt"
- [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
- "../../islet-utils.rkt"
- "../../uuid.rkt"
- "../examples-base.rkt"
- "../examples-env.rkt")
+  "../../include/base.rkt"
+  "../../baseline.rkt"
+  [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
+  "../../islet-utils.rkt"
+  "../../uuid.rkt"
+  "../examples-base.rkt"
+  "../examples-env.rkt")
 
 (provide trader)
 
@@ -63,7 +63,7 @@ CURL
               (islet/log/info "Order request could not be sent."))
             ; notify trader of new order request
             (when (not (send trader/notif/curl (order-request/pretty order-req)))
-                    (islet/log/info "Order request notification could not be sent to trader.")))
+              (islet/log/info "Order request notification could not be sent to trader.")))
           
           ;; callback function to handle order execution reports on this order
           (define (report-callback report) 
@@ -119,65 +119,65 @@ CURL
               
               ; We echo back each market notification for GOOG and FB as a request to the Order Router 
               (when (equal? (vector-ref payload 0) 'struct:market-event)
-                (let* ([p (subislet/callback/new (uuid/symbol) (environ/merge EXAMPLES/ENVIRON (unbox (islet/environ (this/islet)))) report-callback)] ; create a new islet to listen for order reports on this order request                             
-                       [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
-                       [symbol (vector-ref payload 1)]
+                (let* ([symbol (vector-ref payload 1)]
                        [price (string->number(vector-ref payload 3))]
-                       [quantity (box (string->number(vector-ref payload 4)))]
-                       [send-order (box #t)])
-                  ; only echo FB and GOOG orders
-                  (when (equal? symbol "YHOO") 
-                    ;(islet/log/info "FOUND YAHOO MARKET EVENT.")
-                    (cond 
-                      [(and (<= price 2700) (not (unbox first-yhoo-sell))) 
-                        (set-box! quantity 500) ; fixed amount representing first half of shares 
-                        (set-box! first-yhoo-sell #t) ; make sure we only do this once
-                        (islet/log/info "TRIGGERING FIRST YAHOO SALE.")
-                        (set-box! yhoo-sale-amt (* (unbox quantity) price))] ; remember prices are in cents
-                      [(and (<= price 2300) (not (unbox second-yhoo-sell))) ; YAHOO
-                        (set-box! quantity 500) ; fixed amount representing second half of shares 
-                        (set-box! second-yhoo-sell #t) ; make sure we only do this once
-                        (islet/log/info "TRIGGERING SECOND YAHOO SALE.")
-                        (set-box! yhoo-sale-amt (+ (unbox yhoo-sale-amt) (* (unbox quantity) price)))]
-                      [else ; ignore all other yahoo events
-                       (set-box! send-order #f)]))
-                       ;(islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
-                  ; Here we are sending one of three orders:
-                  ; 1> a goog or facebook order based on goog or fb market notification
-                  ; 2> a first yahoo selloff (once) or
-                  ; 3> a second yahoo selloff (once)
-
-                  
-                  (when (and (unbox send-order) (eq? (remainder price 5) 1))
-                    (let ([new-order-request (order-request "trader" "BUY" symbol price (unbox quantity) (uuid/symbol))])
-                      (place-order new-order-request order/curl order-exec-curl)))
-                  ; Here we are making one goog and one fb order using all monies from yahoo sales, distributed
-                  ; proportionately to the current risk values for those stocks.
-                  ; This should occur immediately after 2nd yahoo sale, and only once.
-                  (when (and (equal? (unbox second-yhoo-sell) #t) 
-                             (equal? (unbox bought-fb-goog) #f))
-                    (let* ([fb-v (hash-ref stock/values "FB")]
-                           [goog-v (hash-ref stock/values "GOOG")]
-                           [fb-price (vector-ref fb-v 0)] ; get last seen FB price
-                           [goog-price (vector-ref goog-v 0)] ; get last seen GOOG price
-                           [fb-neg-risk (vector-ref fb-v 1)]
-                           [goog-neg-risk (vector-ref goog-v 1)]
-                           [fb-pos-risk (- 100 fb-neg-risk)]
-                           [goog-pos-risk (- 100 goog-neg-risk)]
-                           [fb-percent (/ fb-pos-risk (+ fb-pos-risk goog-pos-risk))]
-                           [goog-percent (/ goog-pos-risk (+ fb-pos-risk goog-pos-risk))]
-                           [fb-sale-amt (* fb-percent (unbox yhoo-sale-amt))]
-                           [goog-sale-amt (* goog-percent (unbox yhoo-sale-amt))]
-                           [num-fb-shares (floor (/ fb-sale-amt fb-price))]
-                           [num-goog-shares (floor (/ goog-sale-amt goog-price))])
-                      (let ([fb-order-request (order-request "trader" "BUY" "FB" fb-price num-fb-shares (uuid/symbol))])
-                        (islet/log/info "Sending FB for YHOO order...")
-                        (place-order fb-order-request order/curl order-exec-curl))
-                      (let ([goog-order-request (order-request "trader" "BUY" "GOOG" goog-price num-goog-shares (uuid/symbol))])
-                        (islet/log/info "Sending GOOG for YHOO order...")
-                        (place-order goog-order-request order/curl order-exec-curl)))
-                    (set-box! bought-fb-goog #t))
-              )))
+                       [quantity (box (string->number(vector-ref payload 4)))])
+                  (when (eq? (remainder price 5) 1)
+                    (let* ([p (subislet/callback/new (uuid/symbol) (environ/merge EXAMPLES/ENVIRON (unbox (islet/environ (this/islet)))) report-callback)] ; create a new islet to listen for order reports on this order request
+                           [order-exec-curl (cdr p)]; curl to communicate order-exec-reports
+                           [send-order (box #t)])
+                      ; only echo FB and GOOG orders
+                      (when (equal? symbol "YHOO") 
+                        ;(islet/log/info "FOUND YAHOO MARKET EVENT.")
+                        (cond 
+                          [(and (<= price 2700) (not (unbox first-yhoo-sell))) 
+                           (set-box! quantity 500) ; fixed amount representing first half of shares 
+                           (set-box! first-yhoo-sell #t) ; make sure we only do this once
+                           (islet/log/info "TRIGGERING FIRST YAHOO SALE.")
+                           (set-box! yhoo-sale-amt (* (unbox quantity) price))] ; remember prices are in cents
+                          [(and (<= price 2300) (not (unbox second-yhoo-sell))) ; YAHOO
+                           (set-box! quantity 500) ; fixed amount representing second half of shares 
+                           (set-box! second-yhoo-sell #t) ; make sure we only do this once
+                           (islet/log/info "TRIGGERING SECOND YAHOO SALE.")
+                           (set-box! yhoo-sale-amt (+ (unbox yhoo-sale-amt) (* (unbox quantity) price)))]
+                          [else ; ignore all other yahoo events
+                           (set-box! send-order #f)]))
+                      ;(islet/log/info "IGNORING YAHOO MARKET EVENT.")]))
+                      ; Here we are sending one of three orders:
+                      ; 1> a goog or facebook order based on goog or fb market notification
+                      ; 2> a first yahoo selloff (once) or
+                      ; 3> a second yahoo selloff (once)
+                      
+                      (when (unbox send-order)
+                        (let ([new-order-request (order-request "trader" "BUY" symbol price (unbox quantity) (uuid/symbol))])
+                          (place-order new-order-request order/curl order-exec-curl)))
+                      ; Here we are making one goog and one fb order using all monies from yahoo sales, distributed
+                      ; proportionately to the current risk values for those stocks.
+                      ; This should occur immediately after 2nd yahoo sale, and only once.
+                      (when (and (equal? (unbox second-yhoo-sell) #t) 
+                                 (equal? (unbox bought-fb-goog) #f))
+                        (let* ([fb-v (hash-ref stock/values "FB")]
+                               [goog-v (hash-ref stock/values "GOOG")]
+                               [fb-price (vector-ref fb-v 0)] ; get last seen FB price
+                               [goog-price (vector-ref goog-v 0)] ; get last seen GOOG price
+                               [fb-neg-risk (vector-ref fb-v 1)]
+                               [goog-neg-risk (vector-ref goog-v 1)]
+                               [fb-pos-risk (- 100 fb-neg-risk)]
+                               [goog-pos-risk (- 100 goog-neg-risk)]
+                               [fb-percent (/ fb-pos-risk (+ fb-pos-risk goog-pos-risk))]
+                               [goog-percent (/ goog-pos-risk (+ fb-pos-risk goog-pos-risk))]
+                               [fb-sale-amt (* fb-percent (unbox yhoo-sale-amt))]
+                               [goog-sale-amt (* goog-percent (unbox yhoo-sale-amt))]
+                               [num-fb-shares (floor (/ fb-sale-amt fb-price))]
+                               [num-goog-shares (floor (/ goog-sale-amt goog-price))])
+                          (let ([fb-order-request (order-request "trader" "BUY" "FB" fb-price num-fb-shares (uuid/symbol))])
+                            (islet/log/info "Sending FB for YHOO order...")
+                            (place-order fb-order-request order/curl order-exec-curl))
+                          (let ([goog-order-request (order-request "trader" "BUY" "GOOG" goog-price num-goog-shares (uuid/symbol))])
+                            (islet/log/info "Sending GOOG for YHOO order...")
+                            (place-order goog-order-request order/curl order-exec-curl)))
+                        (set-box! bought-fb-goog #t))
+                      )))))
             
             (loop (duplet/block robot/notif/u))))))))
 
@@ -223,7 +223,7 @@ CURL
 ;; server/u - CURL for spawn service on Robot Server.
 (define (trader/boot server/u)
   (islet/log/info "Trader is booting...")
-
+  
   (islet/log/info "Waiting for Robot Server...")
   (island/enter/wait (curl/origin server/u))
   (islet/log/info "Robot Server has been seen.")
