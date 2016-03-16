@@ -1,10 +1,10 @@
 #lang racket/base
 
 (require
- "../serialize.rkt"
- "../this.rkt"
- "../time.rkt"
- )
+  "../serialize.rkt"
+  "../this.rkt"
+  "../time.rkt"
+  )
 
 ;; Serialization of cons
 (define (test/cons/01)
@@ -20,25 +20,19 @@
 
 ;; Serialization of time structures.
 (define (test/time/01)
-  (let* ((d (date/utc/new 2013 08 20 12 09 43))
-         (t (date/utc=>time/unix d)))
+  (let* ((d (time/now)))
     (display (motile/serialize d))
     (newline)
-    (display (motile/serialize t))
-    (newline)
-    (display (motile/serialize (cons t t)))
+    (display (motile/serialize (cons d d)))
     (newline)))
 
 ;; Deserialization of time structures.
 (define (test/time/02)
-  (let* ((d (date/utc/new 2013 08 20 12 09 43))
-         (t (date/utc=>time/unix d)))
-    (display (motile/deserialize (motile/serialize d)))
-    (newline)
-    (display (motile/deserialize (motile/serialize t)))
-    (newline)
-    (display (motile/deserialize (motile/serialize (cons t t))))
-    (newline)))
+  (let* ((d (time/now)))
+    (and
+     (equal? d (motile/deserialize (motile/serialize d)))
+     (equal? (cons d d) (motile/deserialize (motile/serialize (cons d d))))
+     )))
 
 ;;; Serialization of island/address.
 ;(define (test/address/01)
@@ -55,6 +49,7 @@
 ;    (newline)
 ;    (display (motile/deserialize (motile/serialize (cons a a))))
 ;    (newline)))
+#|
 
 (define (test/actor/01a)
   (this/island #"a long public key in base64 format")
@@ -74,4 +69,4 @@
   (actor/root/new)
   (display (motile/serialize (cons (this/actor) (this/actor))))
   (newline))
-
+|#
