@@ -7,7 +7,6 @@
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>COAST Architectural Style</title>
-<link rel="alternate" type="application/rss+xml" title="frittt.com" href="feed/index.html">
 <link href="http://fonts.googleapis.com/css?family=Raleway:700,300" rel="stylesheet"
         type="text/css">
 <link rel="stylesheet" href="css/style.css">
@@ -57,10 +56,10 @@
       <li><a href="#publications" class="cc-active">Publications</a></li>
       <li class="separator"></li>
       <li><strong>Contact Us</strong></li>
-      <li><a href="#researchers" class="cc-active">Researchers</a></li>
+      <li><a href="#research_team" class="cc-active">Research Team</a></li>
     </ul>
     <div class="docs-content">
-      <h3 id="home">Welcome to the COAST website</h3>
+      <h2 id="home">Welcome to the COAST website</h3>
 
       <p>The World Wide Web evolved from humble beginnings to become a cornerstone of almost all facets of modern society, embracing activities as diverse as finance, communications, entertainment, and commerce. Our research lab has made fundamental contributions to the design and evolution of the Web, including Roy fielding’s definitions of the Representational State Transfer (REST) architectural style and the HTTP/1.1 protocol, Professor Jim Whitehead’s WebDAV distributed authoring mechanisms, Rohit Khare’s ARRESTED family of REST-derived styles, as well as Fielding’s work on the Apache Web Server and Justin Erenkrantz’s work on the Subversion configuration management system.</p>
       
@@ -68,7 +67,7 @@
       
       <p>Through initial exploratory prototyping, it became clear that CREST was not merely an explanatory mechanism for newer Web applications, but a distinct architectural style suitable for novel resilient, adaptive and decentralized systems. In the summer of 2008, Erenkrantz and Gorlick, along with ISR Ph.D. students Yongjie Zheng and Alegria Baquero (R. Taylor, advisor to both), built a dynamic, adaptive feed reader, in which lightweight data processing widgets can be graphically reconfigured on-the-fly to perform collaborative data extraction and display on news feeds. Justin Erenkrantz graduated with the dissertation "Computational REST: A New Model for Decentralized, Internet-Scale Applications" in September, 2009.</p>
       
-      <p>Our previous work on CREST evolved into COmputAtional State Transfer (COAST), which provides more detailed principles founded on computational exchange to support the design of openly secure decentralized applications. Since then, Michael Gorlick has been at work exploring the implications of the COAST principles and building a new generation of infrastructure to support more sophisticated forms of computational exchange. Former Ph.D. student Kyle Strasser built COASTcast, an application for sharing and manipulating real-time decentralized HD video streams. COASTcast demonstrates that COAST can be used to distribute real-time data throughout a service topology that may be dynamically reconfigured via computation exchange. COASTcast implements high-definition video streams, from camera to display, as collaborating video services. A single stream may cross multiple organizations: the source (real-time HD video cameras), midpoints (encoders, decoders, and publication/subscription relays), and sinks (user interfaces and displays) may reside and be moved across many distinct islands, each potentially managed by a separate organization.</p>
+      <p>Our previous work on CREST evolved into COmputAtional State Transfer (COAST), which provides more detailed <a href="#principles">principles</a> founded on computational exchange to support the design of openly secure decentralized applications. Since then, Michael Gorlick has been at work exploring the implications of the COAST principles and building a new generation of infrastructure to support more sophisticated forms of computational exchange. Former Ph.D. student Kyle Strasser built COASTcast, an application for sharing and manipulating real-time decentralized HD video streams. COASTcast demonstrates that COAST can be used to distribute real-time data throughout a service topology that may be dynamically reconfigured via computation exchange. COASTcast implements high-definition video streams, from camera to display, as collaborating video services. A single stream may cross multiple organizations: the source (real-time HD video cameras), midpoints (encoders, decoders, and publication/subscription relays), and sinks (user interfaces and displays) may reside and be moved across many distinct islands, each potentially managed by a separate organization.</p>
       
       <p>Our research effort continues on envisioning and developing exploratory applications that allow the investigation of common design patterns, methods for system design, notations to describe COAST systems, and the need for further infrastructure features and tool support. Current exploratory projects include collaborative video-tagging and real-time video editing, a platform for recasting service-oriented architectures and Web Services in e-commerce, situational awareness services, and securely open healthcare systems.</p>
 
@@ -174,37 +173,36 @@
       <h3 id="publications">Publications</h3>
       <h4>Book Chapters</h4>
       <ul>
-        <li><a href= "http://link.springer.com/chapter/10.1007%2F978-1-4614-9299-3_2">Michael M. Gorlick and Richard N. Taylor. Communication and Capability URLs in COAST-based Decentralized Services. In: <i>C. Pautasso et al. (eds.), REST: Advanced Research Topics and Practical Applications</i>, pp. 9-25, Springer, 2014. DOI 10.1007/978-1-4614-9299-3.</a></li>
+        <li>Michael M. Gorlick and Richard N. Taylor. <a href= "http://link.springer.com/chapter/10.1007%2F978-1-4614-9299-3_2">Communication and Capability URLs in COAST-based Decentralized Services.</a> In: <i>C. Pautasso et al. (eds.), REST: Advanced Research Topics and Practical Applications</i>, pp. 9-25, Springer, 2014. DOI 10.1007/978-1-4614-9299-3.</li>
       </ul>
 
       <h4>Conference Proceedings</h4>
       <ul>
         <li>A. Baquero, and Taylor, R.N. <a href="papers/baquero_fhies14.pdf">“Secure and Customizable EHR Management Services with COASTmed”</a> In <i>Proceedings of FHIES/SEHC 2014 : Symposium on Foundations of Health Information Engineering and Systems (FHIES) and the Software Engineering in Healthcare (SEHC)</i>, Washington, DC, July, 2014.</li>
         <li>A. Baquero, <a href="http://dl.acm.org/citation.cfm?id=2591083">"COASTmed: software architectures for delivering customizable, policy-based differential web services"</a> <i>In Companion Proceedings of the 36th International Conference on Software Engineering (ICSE Companion 2014).</i> ACM, New York, NY, USA, 634-637.</li>
-        <li><a href="papers/wicsa.pdf">M.M. Gorlick, K. Strasser, and R. N. Taylor, "COAST: Architectures for decentralized on-demand tailored services," in <i>Proceedings of the Joint 10th Working IEEE/IFIP Conference on Software Architecture &amp; 6th European Conference on Software Architecture (WICSA/ECSA)</i>, 2012.</a></li>
-        <li><a href="papers/EC-Web.pdf">A. Baquero and R.N. Taylor, "Computational commerce: A vision for the future," in <i>Proc. 13th International Conference on Electronic Commerce and Web Technologies</i>, 2012, 124-136.</a></li>
+        <li>M.M. Gorlick, K. Strasser, and R. N. Taylor, <a href="papers/wicsa.pdf">"COAST: Architectures for decentralized on-demand tailored services,"</a> in <i>Proceedings of the Joint 10th Working IEEE/IFIP Conference on Software Architecture &amp; 6th European Conference on Software Architecture (WICSA/ECSA)</i>, 2012.</li>
+        <li>A. Baquero and R.N. Taylor, <a href="papers/EC-Web.pdf">"Computational commerce: A vision for the future,"</a> in <i>Proc. 13th International Conference on Electronic Commerce and Web Technologies</i>, 2012, 124-136.</li>
       
       </ul>
 
       <h4>Posters</h4>
       <ul>
-        <li><a href="papers/splash.pdf">M.M. Gorlick, K. Strasser, A. Baquero, R.N. Taylor, "CREST: principled foundations for decentralized systems," <i>SPLASH Proceedings</i>, 2011, 193-194</a></li>
+        <li>M.M. Gorlick, K. Strasser, A. Baquero, R.N. Taylor, <a href="papers/splash.pdf">"CREST: principled foundations for decentralized systems,"</a> <i>SPLASH Proceedings</i>, 2011, 193-194</li>
       </ul>
 
       <h4>Technical Reports</h4>
       <ul>
-        <li><a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-15-2.pdf">Matias Giorgio, Richard N. Taylor, "Accountability Through Architecture for Decentralized Systems: A Preliminary Assessment," UCI-ISR-15-2, October 2015.</a></li>
-        <li><a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-13-1.pdf">Michael M. Gorlick, Richard N. Taylor, "Motile: Reflecting an Architectural Style in a Mobile Code Language," UCI-ISR-13-1, June 2013.</a></li>
-        <li><a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-12-3.pdf">M.M. Gorlick, K. Strasser, R.N. Taylor, "Motile: Mobile Code for Decentralized On-Demand Tailored Services," UCI-ISR-12-3, April 2012.</a> Superseded by UCI-ISR-13-1.</li>
+        <li>Matias Giorgio, Richard N. Taylor, <a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-15-2.pdf">"Accountability Through Architecture for Decentralized Systems: A Preliminary Assessment,"</a> UCI-ISR-15-2, October 2015.</li>
+        <li>Michael M. Gorlick, Richard N. Taylor, <a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-13-1.pdf">"Motile: Reflecting an Architectural Style in a Mobile Code Language,"</a> UCI-ISR-13-1, June 2013.</li>
+        <li>M.M. Gorlick, K. Strasser, R.N. Taylor, <a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-12-3.pdf">"Motile: Mobile Code for Decentralized On-Demand Tailored Services,"</a> UCI-ISR-12-3, April 2012. Superseded by UCI-ISR-13-1.</li>
 
       </ul>
 
       <h4>Thesis/Dissertations</h4>
       <ul>
-        <li><a href="papers/giorgio_thesis.pdf">Mat&iacute;as Giorgio. Accountability Through Architecture for Decentralized Systems: A Preliminary Assessment. (8/2015). Masters Thesis. University of California, Irvine.</a></li>
-        <li><a href="papers/baquero_thesis.pdf">Alegria Baquero. COAST Services: Achieving Service Customization and Policy-Based Differential Access in Personal Information Systems. (12/2014). Doctoral Dissertation. University of California, Irvine.</a></li>
-        <li><a href="http://www.erenkrantz.com/CREST/Erenkrantz-2009-CREST-Dissertation.pdf">Justin R. Erenkrantz. Computational REST: A New Model for Decentralized, Internet-Scale Applications. (6/13/09). Doctoral Dissertation. University of California, Irvine.</a></li>
-
+        <li>Mat&iacute;as Giorgio. <a href="papers/giorgio_thesis.pdf">Accountability Through Architecture for Decentralized Systems: A Preliminary Assessment.</a> (8/2015). Masters Thesis. University of California, Irvine.</li>
+        <li>Alegria Baquero. <a href="papers/baquero_thesis.pdf">COAST Services: Achieving Service Customization and Policy-Based Differential Access in Personal Information Systems.</a> (12/2014). Doctoral Dissertation. University of California, Irvine.</li>
+        <li>Justin R. Erenkrantz. <a href="http://www.erenkrantz.com/CREST/Erenkrantz-2009-CREST-Dissertation.pdf">Computational REST: A New Model for Decentralized, Internet-Scale Applications.</a> (6/13/09). Doctoral Dissertation. University of California, Irvine.</li>
       </ul>
 
       <h3 id="publications">Related Publications</h3>
@@ -212,53 +210,40 @@
       <h4>Journals</h4>
       <ul>
         <li>Yongjie Zheng and Richard N. Taylor. A Classication and Rationalization of Model-Based Software Development. Invited "Expert's Voice." Software and Systems Modeling, 10.1007/s10270-013-0355-3; 12 pages, June 2013.</li>
-        <li><a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5280652&tag=1">John C. Georgas, Andre van der Hoek, Richard N. Taylor (10/1/09). Using Architectural Models at Runtime to Manage and Visualize Runtime Adaptation. IEEE Computer. 42 (10), 52-60.</a></li>
+        <li>John C. Georgas, Andre van der Hoek, Richard N. Taylor (10/1/09). <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5280652&tag=1">Using Architectural Models at Runtime to Manage and Visualize Runtime Adaptation.</a> IEEE Computer. 42 (10), 52-60.</li>
 
       </ul>
 
       <h4>Conference Proceedings</h4>
       <ul>
+        <li>Christoph Dorn and Richard N. Taylor. (11/28/12). <a href="http://link.springer.com/chapter/10.1007/978-3-642-35063-4_11">Architecture-Driven Modeling of Adaptive Collaboration Structures in Large-Scale Social Web Applications</a>. Proceedings of the 13th International Conference on Web Information System Engineering (WISE 2012). 7651 143-156.</li>  
+        <li>Yongjie Zheng and Richard N. Taylor (6/6/12). <a href="http://dl.acm.org/citation.cfm?id=2337453">xMapper: An Architecture-Implementation Mapping Tool" (Informal Research Demonstration)</a>. Proceedings of the 2012 International Conference on Software Engineering (ICSE 2012). 1461-1462.</li>
+        <li>Christoph Dorn and Richard N. Taylor (6/6/12). <a href="http://dl.acm.org/citation.cfm?id=2337394">Co-Adapting Human Collaborations and Software Architectures</a>. Proceedings of the 2012 International Conference on Software Engineering -- New Ideas and Emerging Results (NIER) track (ICSE 2012). 1277-1280.</li>
+        <li>Yongjie Zheng and Richard N. Taylor (6/6/12). <a href="http://dl.acm.org/citation.cfm?id=2337297">Enhancing Architecture-Implementation Conformance with Change Management and Support for Behavioral Mapping</a>. Proceedings of the 2012 International Conference on Software Engineering (ICSE 2012). 628-638.</li>
+        <li>Christoph Dorn and Richard N. Taylor (5/23/12). <a href="http://onlinelibrary.wiley.com/doi/10.1002/cpe.3438/full">Analyzing Runtime Adaptability of Collaboration Patterns</a>. Proceedings of the 2012 International Conference on Collaboration Technologies and Systems (CTS 2012). 551-558.</li>       
+        <li>Yongjie Zheng and Richard N. Taylor. (11/1/11). <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6100081">Taming Changes With 1.x-Way Architecture-Implementation Mapping</a>.  Proceedings of ASE 2011: 26th IEEE/ACM International Conference On Automated Software Engineering. 396-399.</li>
+        <li>Leyna C. Cotran and Richard N. Taylor (8/30/11). <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6043931">Developing Requirements in an Established Domain Using Tags and Metadata</a>. Proceedings of Requirements Engineering for Systems, Services, and Systems of Systems (Workshop at  RE'11). 24-27.</li>
+        <li>Richard N. Taylor, Nenad Medvidovic, Peyman Oreizy (9/1/09). <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5290803">Architectural Styles for Runtime Software Adaptation</a>. Proceedings of Joint Working IEEE/IFIP Conference on Software Architecture 2009 &amp; European Conference on Software  Architecture. 171-180.</li>       
+       <li>Hazeline Asuncion, Richard N. Taylor (5/1/09). <a href="http://dl.acm.org/citation.cfm?id=1557008">Capturing Custom Link Semantics among Heterogeneous Artifacts and Tools</a>. 5th Int'l Workshop on Traceability in Emerging Forms of Software Engineering.</li>
       </ul>
 
+      <h2>Contact Us</h3>
+      <h3 id="research_team">Research Team</h4>
 
+        <ul>
+          <li>Professor Richard N. Taylor (taylor@ics.uci.edu)</li>
+          <li>Michael M. Gorlick (mgorlick@acm.org)</li>
+          <li>Matías Giorgio (mgiorgio@uci.edu)</li>
+          <li>Kari Nies (kari@ics.uci.edu)</li>
+        </ul>
+    
+      <h4>Former Students</h4>
+        <ul>
+          <li>Kyle Strasser (kstrasse@ics.uci.edu)</li>
+          <li>Alegria Baquero (abaquero@ics.uci.edu)</li>
+        </ul>
 
-
-      <ul>
-        <li>Use Opineo to conduct pre-release surveys before launching new products or services</li>
-        <li>Analyze new trends in the industry</li>
-        <li>Run crowd-sourced campaigns with Opineo to mature new ideas, website designs or
-          logos</li>
-        <li>Conduct popularity surveys with free Opineo widget</li>
-        <li>Create and host polling surveys with Opineo</li>
-      </ul>
-      <h3 id="features"> Features</h3>
-      <ul>
-        <li>Facility to customize to match your website theme</li>
-        <li>Detailed and Compact view options</li>
-        <li>Comprehensive options to customize animation, colors, orientation and style</li>
-        <li>All the power and flexibility of jQuery</li>
-        <li>Easy install; 100% integration</li>
-        <li>Facility to customize rating icons</li>
-      </ul>
-      <h3 id="license"> License</h3>
-      <p> This Feedback Collection and Polling widget is free for personal and commercial
-        projects as long as you are providing a link back to this page. If you don’t want
-        to provide a link back, simply contribute to the development and improvement of
-        this tool. To contribute to this and many other interesting projects, go to Support
-        Efforts and become a patron.</p>
-      <hr>
-      <h2> Customizing Opineo</h2>
-      <p> Before you make any cusomization or even start using Opineo create a 'div' element
-        and assign it some id. Now add references to necessary Javascrip files e.g.</p>
-      <ul>
-        <li>A reference to latest jQuery library </li>
-        <li>A reference to Opineo script file sudo nano opineo.js</li>
-      </ul>
-      <p> The following customization options are available in Opineo:</p>
-      <h3 id="view_type"> View Type</h3>
-      <ul>
-        <li>Detailed View</li>
-      </ul>
+      <!--
      
       <pre class="prettyprint">&lt;script&gt;
       	$(document).ready(function (){
@@ -416,6 +401,7 @@
       </ul>
     </div>
   </div>
+  -->
 </section>
 <section class="vibrant centered">
   <div class="">
@@ -424,11 +410,13 @@
     the author(s) and do not necessarily reflect the views of the National Science Foundation.
   </div>
 </section>
+<!--
 <footer>
   <div class="">
     <p> &copy; Copyright Frittt Templates. All Rights Reserved.</p>
   </div>
 </footer>
+-->
 </div>
 <script src="js/jquery.min.js"></script> 
 <script type="text/javascript" src="js/prettify/prettify.js"></script> 
