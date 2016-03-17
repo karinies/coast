@@ -1,6 +1,6 @@
 #lang info
-(define collection 'multi)
-(define deps '("Motile-Island"
+(define collection "Island")
+(define deps '("racket/base"
                "rackunit-lib"))
 (define build-deps '("scribble-lib" "racket-doc"))
 (define scribblings '(("scribblings/Motile-Island.scrbl" ())))
