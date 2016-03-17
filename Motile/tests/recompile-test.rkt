@@ -11,7 +11,7 @@
 
  (only-in "../compile/compile.rkt"   motile/compile)
  (only-in "../generate/baseline.rkt" motile/call)
- (only-in "../compile/serialize.rkt" motile/serialize)
+ (only-in "../../serialize.rkt" motile/serialize)
  (only-in "../generate/baseline.rkt" motile/decompile)
  (only-in "../baseline.rkt" BASELINE ENVIRON/TEST))
 

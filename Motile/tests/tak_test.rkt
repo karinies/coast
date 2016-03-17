@@ -1,8 +1,8 @@
 #! /usr/bin/env racket
 #lang racket/base
 
-(require "../../compile/compile.rkt"
-         "../../generate/baseline.rkt"
+(require "../compile/compile.rkt"
+         "../generate/baseline.rkt"
          "../../baseline.rkt"
          "../../persistent/environ.rkt")
 
