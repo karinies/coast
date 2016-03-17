@@ -18,6 +18,7 @@ h6 {
     font-family: "Raleway", Helvetica, Arial, "Lucida Grande", sans-serif; 
     font-weight: 300;
     font-size: 15px;
+    text-align: center;
 }
 
 body {
@@ -301,10 +302,6 @@ nav #menu-toggle {
 
 
 
-
-
-
-
 /* Content Styles */
 section { padding: 1em 0 3em; text-align: center; }
 section.vibrant { background: #222; color: #fff; }
@@ -352,40 +349,10 @@ input {
 
 
 
-
-
-
 input:focus {
     border-color: #007eb2;
     outline: 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -403,6 +370,10 @@ input:focus {
     padding: 0 20px;
     text-decoration: none;
     border-right: 2px solid transparent;
+}
+
+.docs-content {
+    text-align: justify;
 }
 
 @media only screen and (min-width: 400px) {
@@ -467,7 +438,14 @@ input:focus {
         text-align: center;
     }
 
-
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        text-align: left;
+    }
 
 
 
