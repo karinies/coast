@@ -24,7 +24,7 @@
  "../persistent/hash.rkt"
  "../persistent/set.rkt"
  (only-in "../generate/baseline.rkt" motile/call motile/decompile)
- (only-in "../compile/xserialize.rkt" motile/serialize motile/deserialize))
+ (only-in "../../serialize.rkt" motile/serialize motile/deserialize))
 
 (provide
  compile/start
