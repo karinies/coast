@@ -38,7 +38,7 @@
 
       This example shows how to print a "Hello World!" message using the Island infrastructure. It instantiates an island called Alice, starts it up, and Alice prints the message. Notice that, in this example, we are not using CURLs or any Motile code, it is only a single island printing a message.
 
-      <h4>Preparing Racket to work with Island</h4>
+      <h4>1) Preparing Racket to work with Island</h4>
 
       <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file and name it <i>hello.rkt</i> and add the following code:</p>
 
@@ -51,7 +51,7 @@
 
 <p>That tells Racket that we will use the racket/base language and that we require Island/include/base, the basic component of the Island framework.</p>
 
-<h4>1) Setting up certificates</h4>
+<h4>2) Setting up certificates</h4>
 
 <p>There is some boilerplate code that you will require to setup the certificates. For these examples, we will use the default islands (alice, bob, carol...) because they come with default certificates, but you can check out here how to create your own certificates. In the same <i>hello.rkt</i> file, add the following code:</p>
 
@@ -66,7 +66,7 @@
 
 <p>Now we're ready to start adding our code in Alice.</p>
 
-<h4>2) Creating the first computation</h4>
+<h4>3) Creating the first computation</h4>
 
 <p>We need an initial computation to bootstrap Alice, that is, to tell Alice what to do first:</p>
 
@@ -76,12 +76,12 @@
 
 <p>We are creating a computation that will only print <i>"Hello World!"</i> and will do nothing else.</p>
 
-<h4>3) Instantiating Alice</h4>
+<h4>4) Instantiating Alice</h4>
 
 <pre><code class="language-scheme">;; Instantiate Alice island
 (define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre>
 
-<h4>4) Running the example</h4>
+<h4>5) Running the example</h4>
 
 <p>Now, hit <i>"Run"</i> on DrRacket to execute your code, and then type on the DrRacket's console:</p>
 
@@ -99,7 +99,7 @@
 
 <p>In this example, we have seen how to create a computation using the Island infrastructure. We setup Racket, load the certificates, and created an initial computation.</p>
 
-<h4>Entire source code</h4>
+<h4>Complete source code</h4>
 
 <p>See the entire <i>hello.rkt</i> file here:</p>
 
@@ -172,7 +172,7 @@
 
 <p>Alice will say "Hi, I am Alice", and Bob will say "Hi, I am Bob". Notice the use of <code class="language-scheme">(this/island)</code> and <code class="language-scheme">(island/name)</code>. The former returns the island executing the computation. The latter returns the nickname of a given island.</p>
 
-<h4>Entire source code</h4>
+<h4>Complete source code</h4>
 
 <p>Here is the entire source code:</p>
 <pre><code class="language-scheme">#lang racket/base
