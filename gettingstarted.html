@@ -24,19 +24,23 @@
     <ul class="docs-nav">
       <li><a href="index.html" class="cc-active">Home</a></li>
       <li class="separator"></li>
-      <li><strong>Getting started</strong></li>
-      <li><a href="#hello" class="cc-active">Hello World!</a></li>
+      <li><strong>Creating islands</strong></li>
+      <li><a href="#hello" class="cc-active">The "Hello World!" island</a></li>
+      <li><a href="#hello_two" class="cc-active">"Hello World!" with two islands</a></li>
+      <li><strong>Inter-islet communication</strong></li>
     </ul>
     <div class="docs-content">
-      <h2 id="hello">Getting started</h2>
+      <h2 id="hello">Creating islands</h2>
 
     Clarification about "COAST" and "Motile/Island".
 
-      <h3 id="hello">Hello World!</h3>
+      <h3 id="hello">The "Hello World!" island</h3>
+
+      This example shows how to print a "Hello World!" message using the Island infrastructure. It instantiates an island called Alice, starts it up, and Alice prints the message. Notice that, in this example, we are not using CURLs or any Motile code, it is only a single island printing a message.
 
       <h4>Preparing Racket to work with Island</h4>
 
-      <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file called hello.rkt and add the following code:</p>
+      <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file and name it <i>hello.rkt</i> and add the following code:</p>
 
        
 <pre><code class="language-scheme">#lang racket/base
@@ -47,9 +51,9 @@
 
 <p>That tells Racket that we will use the racket/base language and that we require Island/include/base, the basic component of the Island framework.</p>
 
-<h4>Setting up certificates</h4>
+<h4>1) Setting up certificates</h4>
 
-<p>There is some boilerplate code that you will require to setup the certificates. For these examples, we will use the default islands (alice, bob, carol...) because they come with default certificates, but you can check out here how to create your own certificates. In the same hello.rkt file, add the following code:</p>
+<p>There is some boilerplate code that you will require to setup the certificates. For these examples, we will use the default islands (alice, bob, carol...) because they come with default certificates, but you can check out here how to create your own certificates. In the same <i>hello.rkt</i> file, add the following code:</p>
 
 <pre><code class="language-scheme">;; Boilerplate to setup Alice's certificates. You will need them to create Alice island.
 (define CERTIFICATE/SECRET "./certificates/secret/")
@@ -58,26 +62,28 @@
 ;; Create Alice's CURVE cryptographic keys
 (define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))</code></pre>
 
-<p>That will let Island know where your certificates are (make sure that the path is correct). It will use alice_secret file to create the CURVE cryptographic keys for Alice.</p>
+<p>That will let Island know where your certificates are (make sure that the path is correct). It will use <i>alice_secret</i> file to create the CURVE cryptographic keys for Alice.</p>
 
 <p>Now we're ready to start adding our code in Alice.</p>
 
-<h4>Create an initial islet</h4>
+<h4>2) Creating the first computation</h4>
 
-<p>An Islet is a computation running in an island. You will need an initial computation to bootstrap Alice, that is, to tell Alice what to do first:</p>
+<p>We need an initial computation to bootstrap Alice, that is, to tell Alice what to do first:</p>
 
 <pre><code class="language-scheme">;; The bootstrap computation for Alice island to say "Hello World!"
 (define (alice/boot)
   (display "Hello World!"))</code></pre>
 
-<p>We are creating a computation that will only print "Hello World!" and will do nothing else.</p>
+<p>We are creating a computation that will only print <i>"Hello World!"</i> and will do nothing else.</p>
 
-<h4>Instantiate Alice</h4>
+<h4>3) Instantiating Alice</h4>
 
 <pre><code class="language-scheme">;; Instantiate Alice island
 (define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre>
 
-<p>Now, hit "Run" on DrRacket to execute your code, and then type on the DrRacket's console:</p>
+<h4>4) Running the example</h4>
+
+<p>Now, hit <i>"Run"</i> on DrRacket to execute your code, and then type on the DrRacket's console:</p>
 
 <pre><code class="language-scheme">(island/start alice)</code></pre>
 
@@ -93,7 +99,9 @@
 
 <p>In this example, we have seen how to create a computation using the Island infrastructure. We setup Racket, load the certificates, and created an initial computation.</p>
 
-<p>See the entire hello.rkt file here:</p>
+<h4>Entire source code</h4>
+
+<p>See the entire <i>hello.rkt</i> file here:</p>
 
 <div class="source-all">
   <pre class="line-numbers"><code class="language-scheme">#lang racket/base
@@ -117,165 +125,77 @@
 (define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre>
 </div>
 
-      <!--
-     
-      <pre class="prettyprint">&lt;script&gt;
-      	$(document).ready(function (){
-        $('#DefaultOptions').opineo('results.php', {curvalue:3,
-            view: 'detailed',
-            animation_speed: 'super',
-            show_total_votes_counter: false,
-            show_overall_rating: true});
-         })
-&lt;/script&gt;</pre>
-      <ul>
-        <li>Compact View</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-	$(document).ready(function (){
-	$('#CompactView').opineo('results.php',
-    	    {curvalue:3, view: 'compact',
-    	    animation_speed: 'super'});
-	})
-&lt;/script&gt;</pre>
-      <ul>
-        <li>Mini View</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#MiniView').opineo('results.php', {curvalue:0, view: 'mini', callback: myCallback});
-    })	
-&lt;/script&gt;</pre>
-      <h3 id="animation_style"> Animation Style</h3>
-      <ul>
-        <li>Slow</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', animation_speed:'slow'});
-    })	
-&lt;/script&gt; </pre>
-      <ul>
-        <li>Medium</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', animation_speed:'mild'});
-    })	
-&lt;/script&gt; </pre>
-      <ul>
-        <li>Fast</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', animation_speed:'fast'});
-    })	
- &lt;/script&gt;</pre>
-      <ul>
-        <li>Super Fast</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', animation_speed:'super'});
-    })	
-&lt;/script&gt;</pre>
-      <ul>
-        <li>Ultra Fast</li>
-      </ul>
-      <pre class="prettyprint"> &lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', animation_speed:'ultra fast'});
-    })	
-&lt;/script&gt; </pre>
-      <h3 id="bars_text"> Bars Text</h3>
-      <ul>
-        <li>Show</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', votes_label:true});
-    })	
-&lt;/script&gt;</pre>
-      <ul>
-        <li>Hide</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', votes_label:false});
-    })	
- &lt;/script&gt;</pre>
-      <h3 id="vote_counter"> Vote Counter</h3>
-      <ul>
-        <li>Show</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', show_votes_counter:true});
-    })	
-&lt;/script&gt; </pre>
-      <ul>
-        <li>Hide</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', votes_label:false});
-    })	
-&lt;/script&gt;</pre>
-      <h3 id="rating_icons"> Rating Icons</h3>
-      <ul>
-        <li>Colored</li>
-        <li>Grey</li>
-      </ul>
-      <h3 id="rating_titles"> Rating Titles</h3>
-      <ul>
-        <li>Text For First Star</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', star_1_text:'Hate It'});
-    })	
-&lt;/script&gt;</pre>
-      <ul>
-        <li>Text For Second Star</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', star_2_text:'Don't Like It'});
-    })	
-&lt;/script&gt; </pre>
-      <ul>
-        <li>Text For Third Star</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', star_1_text:'Its OK'});
-    })	
-&lt;/script&gt;</pre>
-      <ul>
-        <li>Text For Fourth Star</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', star_1_text:'Like It'});
-    })	
-&lt;/script&gt;</pre>
-      <ul>
-        <li>Text For Fifth Star</li>
-      </ul>
-      <pre class="prettyprint">&lt;script&gt;
-    $(document).ready(function (){
-    $('#opineo').opineo('results.php', {curvalue:0, view: 'mini', star_1_text:'Love It'});
-    })	
-&lt;/script&gt;</pre>
-      <h3 id="bar_colors"> Bar Colors</h3>
-      <ul>
-        <li>Colors of Red Bar</li>
-        <li>Colors of Yellow Bar</li>
-        <li>Colors of Green Bar</li>
-      </ul>
-    </div>
-  </div>
-  -->
+<hr />
+
+<h3 id="hello_two">"Hello World!" with two islands</h3>
+
+<p>In this example we will create two islands that will print the same message but they will not communicate with each other. It is quite similar as the previous one but this time Alice, and the new island, Bob, will introduce themselves.</p>
+
+<h4>1) Setting up Racket, library, and certificates</h4>
+
+<p>We will not explain again this boilerplate code since we did it in the previous example, but don't forget to include it:</p>
+
+<pre><code class="language-scheme">#lang racket/base
+
+(require
+  Island/include/base
+)
+
+(define CERTIFICATE/PUBLIC "./certificates/public/")
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+(define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))
+(define BOB/CURVE/SECRET   (path-to-curve BOB/SECRET/PATH))</code></pre>
+
+<h4>2) Creating a computation for Alice and Bob</h4>
+
+<p>Now, we define a function that will be used for both Alice and Bob:</p>
+
+<pre><code class="language-scheme">(define (islet/hello)
+  (display (format "Hi, I am ~a" (island/nickname (this/island)))))</code></pre>
+
+<h4>3) Instantiating Alice and Bob</h4>
+
+<p>The following code instantiates both islands:</p>
+
+<pre><code class="language-scheme">(define alice (island/new 'alice ALICE/CURVE/SECRET islet/hello))
+(define bob   (island/new 'bob   BOB/CURVE/SECRET   islet/hello))</code></pre>
+
+<h4>4) Running the example</h4>
+
+<p>Finally, from the console we type:</p>
+
+<pre><code class="language-scheme">(island/start alice)
+(island/start bob)</code></pre>
+
+<p>Alice will say "Hi, I am Alice", and Bob will say "Hi, I am Bob". Notice the use of <code class="language-scheme">(this/island)</code> and <code class="language-scheme">(island/name)</code>. The former returns the island executing the computation. The latter returns the nickname of a given island.</p>
+
+<h4>Entire source code</h4>
+
+<p>Here is the entire source code:</p>
+<pre><code class="language-scheme">#lang racket/base
+
+(require
+  Island/include/base
+)
+
+(define CERTIFICATE/PUBLIC "./certificates/public/")
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+(define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))
+(define BOB/CURVE/SECRET   (path-to-curve BOB/SECRET/PATH))
+
+(define (islet/hello)
+  (display (format "Hi, I am ~a" (island/nickname (this/island)))))
+
+(define alice (island/new 'alice ALICE/CURVE/SECRET islet/hello))
+(define bob   (island/new 'bob   BOB/CURVE/SECRET   islet/hello))</code></pre>
+
+
 </section>
 <section class="vibrant centered">
   <div class="">
@@ -284,13 +204,6 @@
     the author(s) and do not necessarily reflect the views of the National Science Foundation.
   </div>
 </section>
-<!--
-<footer>
-  <div class="">
-    <p> &copy; Copyright Frittt Templates. All Rights Reserved.</p>
-  </div>
-</footer>
--->
 </div>
 <script src="js/jquery.min.js"></script> 
 <script type="text/javascript" src="js/prism/prism.js"></script> 
