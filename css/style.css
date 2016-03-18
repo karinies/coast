@@ -463,8 +463,10 @@ input:focus {
     input {
         display: inline-block;
     }
-
-
-
 }
 
+/**** Custom styles ****/
+.source-all {
+    overflow:auto;
+    max-height: 300px;
+}
