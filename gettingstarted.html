@@ -175,7 +175,8 @@
 <h4>Complete source code</h4>
 
 <p>Here is the entire source code:</p>
-<pre><code class="language-scheme">#lang racket/base
+<div class="source-all">
+  <pre class="line-numbers"><code class="language-scheme">#lang racket/base
 
 (require
   Island/include/base
@@ -193,7 +194,7 @@
   (display (format "Hi, I am ~a" (island/nickname (this/island)))))
 
 (define alice (island/new 'alice ALICE/CURVE/SECRET islet/hello))
-(define bob   (island/new 'bob   BOB/CURVE/SECRET   islet/hello))</code></pre>
+(define bob   (island/new 'bob   BOB/CURVE/SECRET   islet/hello))</code></pre></div>
 
 
 </section>
