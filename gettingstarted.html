@@ -27,12 +27,20 @@
       <li><strong>Creating islands</strong></li>
       <li><a href="#hello" class="cc-active">The "Hello World!" island</a></li>
       <li><a href="#hello_two" class="cc-active">"Hello World!" with two islands</a></li>
-      <li><strong>Inter-islet communication</strong></li>
+      <li><strong>Introducing CURLs</strong></li>
+      <li><a href="#curls_simple" class="cc-active">Hello CURL!</a></li>
+      <li><a href="#curls_realistic" class="cc-active">CURLs getting real</a></li>
+      <li><a href="#curls_realistic" class="cc-active">Specific duplets: Promises</a></li>
+      <li><strong>The Motile language</strong></li>
+      <li><a href="#motile_simple" class="cc-active">A simple Motile computation</a></li>
     </ul>
     <div class="docs-content">
       <h2 id="hello">Creating islands</h2>
 
     (TODO: Add clarification about "COAST" and "Motile/Island")
+    (TODO: Prepare readers for what they are about to read: Explain that we include some basic info and links about Racket for people who aren't familiar with it.)
+    (TODO: Introduce Alice and Bob (didn't I do that already?))
+    (TODO: Add code practices for Racket or Scheme)
 
       <h3 id="hello">The "Hello World!" island</h3>
 
@@ -45,7 +53,7 @@
        
 <pre><code class="language-scheme">#lang racket/base
 
-;; Basic requires to work with Island
+;; Basic require to work with Island
 (require
   Island/include/base)</code></pre>
 
@@ -106,7 +114,7 @@
 <div class="source-all">
   <pre class="line-numbers"><code class="language-scheme">#lang racket/base
 
-;; Basic requires to work with Island
+;; Basic require to work with Island
 (require
   Island/include/base)
 
@@ -141,7 +149,6 @@
   Island/include/base
 )
 
-(define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
 (define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
 (define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
@@ -182,7 +189,6 @@
   Island/include/base
 )
 
-(define CERTIFICATE/PUBLIC "./certificates/public/")
 (define CERTIFICATE/SECRET "./certificates/secret/")
 (define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
 (define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
@@ -196,11 +202,364 @@
 (define alice (island/new 'alice ALICE/CURVE/SECRET islet/hello))
 (define bob   (island/new 'bob   BOB/CURVE/SECRET   islet/hello))</code></pre></div>
 
+<hr />
+
+  <h2>Introducing CURLs</h2>
+
+  <p>Islets use <a href="#">CURLs</a> to communicate with each other. Briefly, a CURL unambiguously identifies a service offered by an islet, and also provides addressability for such service. That is, when an islet exercises a CURL, the underlying platform will take care of delivering the message. If islet <i>x</i> wants to send a message to islet <i>y</i>, then <i>x</i> must hold a CURL issued by <i>y</i>.</p>
+
+  <h3 id="curls_simple">Hello CURL!</h3>
+
+  <p>This example shows how two islets sharing memory space can communicate with each other. It is a simplified example because the CURL that enables the communication between islets is stored by the CURL issuer in a global variable. Notice that in Real-world, islets need to communicate with others without sharing memory space. Also, using a global variable to pass a CURL is far from being a good practice, nevertheless it works for our example.
+
+  <p>Alice creates two islets and executes them: an Echo Server and a message sender. The Echo Server listens for messages coming via a CURL and displays them. The Message Sender uses the Echo Server's CURL to send a message.</p>
+
+  <p>As usual, we must initialize Island and Racket:</p>
+
+<pre><code class="language-scheme">#lang racket/base
+
+;; Notice that we require some additional Island collections.
+(require
+  Island/include/base
+  Island/baseline
+  Island/transport/gate)
+
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))</code></pre>
+
+<p>We define a <a href="https://docs.racket-lang.org/guide/boxes.html">box</a> (i.e. a container to put a single value) where we will store the CURL that an islet will use to communicate with the other:</p>
+
+<pre><code class="language-scheme">;; Create a box with a dummy value inside.
+(define curl-box (box #f))</code></pre>
+
+<p>Now, we create the function with which Alice is created: (alice/boot). Internally, it defines four functions that are later on invoked:</p>
+<ol>
+  <li><code class="language-scheme">(server/listen)</code>: Creates a new CURL and listens for messages coming via that CURL. It defines what the Echo Server will do.</li>
+  <li><code class="language-scheme">(spawn/server)</code>: Creates and executes the Echo Server.</li>
+  <li><code class="language-scheme">(sender/send)</code>: Sends a message via the Echo Server's CURL</li>
+  <li><code class="language-scheme">(spawn/sender)</code>: Creates and executes the message sender.</li>
+</ol>
+
+<pre><code class="language-scheme">;; Define the bootstrap computation for Alice
+(define (alice/boot)
+  ;; This is the function for the Echo Service at Alice. It creates a duplet containing the CURL used to communicate.
+  (define (server/listen)
+    ;; Create a duplet (containing a CURL). A couple of points about this:
+    ;; 1) '(echo alice) is the service path.
+    ;; 2) GATE/ALWAYS means that there are no constraints to use this CURL.
+    ;; 3) #f means that no metadata is attached to the CURL.
+    ;; 4) 'INTRA means that the CURL can only be used within Alice (it is intra-Island).
+    (let ([echo-duplet (islet/curl/new '(echo alice) GATE/ALWAYS #f 'INTRA)])
+      ;; Put the CURL into the box (duplet/resolver extracts a CURL from a duplet)
+      (set-box! curl-box (duplet/resolver echo-duplet))
+
+      ;; Listen for messages coming through the CURL. It blocks on the duplet's CURL until a message arrives, then it blocks back.
+      (let loop ([m (duplet/block echo-duplet)])
+        ;; Extract the message content (i.e. the murmur's payload)
+        (let ([message (murmur/payload m)])
+          ;; Show the message.
+          (display message)))))
+
+  ;; This is a function that uses the sender to send its message through the boxed CURL.
+  (define (sender/send)
+    (send (unbox curl-box) (format "Hi, I am ~a, and I also run in Alice!" (islet/nickname (this/islet)))))
+
+  ;; This function creates and executes the sender.
+  (define (spawn/sender)
+    ;; (islet/new) creates a new islet in the current island:
+    ;; 1) (this/island) returns the current island.
+    ;; 2) 'message.sender is the nickname of the new islet.
+    ;; 3) TRUST/MODERATE defines the level of trust granted to the new islet.
+    ;; 4) BASELINE/SPAWN is the Execution Site global binding environment.
+    ;; 5) environ/null is an islet-specific binding environment.
+    (let ([x (islet/new (this/island) 'message.sender TRUST/MODERATE BASELINE/SPAWN environ/null)])
+      ;; Launch the new islet with the sender/send function.
+      (islet/jumpstart x sender/send)))
+
+  ;; This function creates an executes the Echo Server.
+  (define (spawn/server)
+    ;; Similar to the previous function but uses 'echo.server as the nickname.
+    (let ([x (islet/new (this/island) 'echo.server TRUST/MODERATE BASELINE/SPAWN environ/null)])
+      (islet/jumpstart x server/listen)))
+
+  ;; Invoke the functions defined above.
+  (spawn/server)
+  (sleep 1.0)
+  (spawn/sender))</code></pre>
+
+<p>You may notice that there is a new concept here: <strong>duplet</strong>. In short, a duplet is an abstraction that wraps a CURL and the mechanism to receive messages through it. See the <a href="">duplet documentation</a> for a more detailed explanation. For now, it is enough to know that a duplet contains one CURL that can be obtained using the <code class="language-scheme">(duplet/resolver <i>your_duplet</i>)</code> function.</p>
+
+<p>Lastly, we define Alice and we are ready to go:</p>
+
+<pre><code class="language-scheme">(define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre>
+
+<p>Typing <code class="language-scheme">(island/start alice)</code> in DrRacket's console should print:
+
+<pre><code class="language-none">Hi, I am message.sender@alice, and I also run in Alice!</code></pre>
+
+<p>See the entire source code for this example:</p>
+
+<div class="source-all">
+  <pre class="line-numbers"><code class="language-scheme">#lang racket/base
+
+(require
+  Island/include/base
+  Island/baseline
+  Island/transport/gate)
+
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))
+
+;; Create a box with a dummy value inside.
+(define curl-box (box #f))
+
+;; Define the bootstrap computation for Alice
+(define (alice/boot)
+
+  ;; This is the function for the Echo Service at Alice. It creates a duplet containing the CURL used to communicate.
+  (define (server/listen)
+    ;; Create a duplet (containing a CURL). A couple of points about this:
+    ;; 1) '(echo alice) is the service path.
+    ;; 2) GATE/ALWAYS means that there are no constraints to use this CURL.
+    ;; 3) #f means that no metadata is attached to the CURL.
+    ;; 4) 'INTRA means that the CURL can only be used within Alice (it is intra-Island).
+    (let ([echo-duplet (islet/curl/new '(echo alice) GATE/ALWAYS #f 'INTRA)])
+
+      ;; Put the CURL into the box (duplet/resolver extracts a CURL from a duplet)
+      (set-box! curl-box (duplet/resolver echo-duplet))
+
+      ;; Listen for messages coming through the CURL. It blocks on the duplet's CURL until a message arrives, then it blocks back.
+      (let loop ([m (duplet/block echo-duplet)])
+        ;; Extract the actual message (i.e. the murmur's payload)
+        (let ([message (murmur/payload m)])
+          ;; Show the message.
+          (display message)))))
+
+  ;; This is a function that uses the sender to send its message through the boxed CURL.
+  (define (sender/send)
+    (send (unbox curl-box) (format "Hi, I am ~a, and I also run in Alice!" (islet/nickname (this/islet)))))
+
+  ;; This function creates and executes the sender.
+  (define (spawn/sender)
+    ;; (islet/new) creates a new islet in the current island:
+    ;; 1) (this/island) returns the current island.
+    ;; 2) 'message.sender is the nickname of the new islet.
+    ;; 3) TRUST/MODERATE defines the level of trust granted to the new islet.
+    ;; 4) BASELINE/SPAWN is the Execution Site global binding environment.
+    ;; 5) environ/null is an islet-specific binding environment.
+    (let ([x (islet/new (this/island) 'message.sender TRUST/MODERATE BASELINE/SPAWN environ/null)])
+      ;; Launch the new islet with the sender/send function.
+      (islet/jumpstart x sender/send)))
+
+  ;; This function creates an executes the Echo Server.
+  (define (spawn/server)
+    ;; Similar to the previous function but uses 'echo.server as the nickname.
+    (let ([x (islet/new (this/island) 'echo.server TRUST/MODERATE BASELINE/SPAWN environ/null)])
+      (islet/jumpstart x server/listen)))
+
+  ;; Call the functions defined above.
+  (spawn/server)
+  (sleep 1.0)
+  (spawn/sender))
+
+(define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre></div>
+
+<hr />
+
+<h3 id="curls_realistic">CURLs getting real</h3>
+
+<p>As the reader must have imagined, there was a reason in the previous example to use a box to store a CURL globally, and that reason was to bypass a security mechanism in COAST called <a href="">communication by introduction</a>. In COAST, we like to think that politeness is paramount, therefore a person must be introduced to someone if that person wants to communicate with him or her. In the COAST terminology, if an islet <i>y wants to communicate with an islet x</i>, then <i>y</i> must be introduced to <i>x</i>.</p>
+
+<p>Now, suppose that Janet wants to send a message to Joe, then Joe (or someone) should provide a CURL issued by him to Janet. However, if Joe was not previously introduced to Janet, how can he give her his CURL? For the sake of clarity, we decided to solve this chicken-and-egg problem using a box. Joe does not provide its CURL to Janet directly but puts it on a box where Janet can pack it up.</p>
+
+<p>It is out of the scope of COAST how an islet receives the CURL of a service with which it needs to communicate; in the same way that, for example, REST does not define how a URL is distributed. In this example, an islet in Alice wants to send a message to an islet in Bob. Alice somehow received a textual representation of the CURL issued by Bob (perhaps by e-mail or written in a piece of paper). Let's see how our Display Service would work in this context.</p>
+
+<p>As usual, we first setup the certificates:</p>
+
+<pre><code class="language-scheme">#lang racket/base
+
+(require
+  Island/include/base
+  Island/baseline
+  Island/transport/gate)
+
+(define CERTIFICATE/PUBLIC "./certificates/public/")
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+(define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))
+(define BOB/CURVE/SECRET   (path-to-curve BOB/SECRET/PATH))</code></pre>
+
+<p>Notice that we define a constant for the public certificates as well (<code class="language-scheme">CERTIFICATE/PUBLIC</code>), we will use it next because we require using a <a href="">Keystore</a> to store the public certificates of the other islands.</p>
+
+<p>In addition to the usual stuff we do for certificates, we define a constant for Alice's public key, create a keystore, and download all of the predefined public certificates:</p>
+
+<pre><code class="language-scheme">;; Alice's public key.
+(define ALICE/KP/BASE64 #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc")
+
+;; Create a Keystore to store the public certificates of other islands.
+(define KEYSTORE (keystore/new))
+;; Download all of the predefined public certificates.
+(keystore/load KEYSTORE CERTIFICATE/PUBLIC)</code></pre>
+
+<p>Now, we embed in the code a textual representation of Alice's CURL:</p>
+
+<pre><code class="language-scheme">;; The textual representation of the CURL for Alice's display service.
+(define/curl/inline ALICE/CURL/DISPLAY
+&#35;&lt;&lt;!!
+SIGNATURE = &#35;"Nxm6zGGiZDiao5vc8aYfdEeOIME104GEeOt4_K3ys2xDP673elLrwWa56SKAWp7gR2RI25QKZW0NvB2i23NJCg"
+CURL
+    id = 2eac24e1-f4fb-440d-a771-b3b60266a982
+    origin = &#35;"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc"
+    path = (echo)
+    access/id = access:send:echo
+    created = "2014-05-17T16:17:17Z"
+    metadata = &#35;f
+
+!!
+)</code></pre>
+
+<p>What we have just done is hard-coding a CURL in our code, analogously to when we hard-code a URL to connect to a service.</p>
+
+<p>At this point, we need to define functions for Alice and Bob:</p>
+
+<pre><code class="language-scheme">;; Bob's bootstrap function.
+;; alice/curl is the CURL for Alice's service.
+(define (bob/boot alice/curl)
+  ; Wait until Bob sees Alice.
+  (island/enter/wait ALICE/KP/BASE64)
+  ; Send message.
+  (send alice/curl "Hi, this is Bob!"))
+
+;; Bootstrap function for Alice who offers a display service.
+(define (alice/boot)
+  ; Define a (service/display) function.
+  (define (service/display)
+    ; Create a duplet to receive messages via Alice's CURL.
+    ; Notice the use of (islet/curl/known/new). We use this function because it is a known CURL, we are not creating a brand new CURL.
+    ; '(echo) is the service path (it must be the same as the one in the textual representation)
+    ; 'access:send:echo is the access id (it must be the same as the one in the textual representation)
+    (let ([server/duplet (islet/curl/known/new '(echo) 'access:send:echo GATE/ALWAYS environ/null)])
+      (let loop ([m (duplet/block server/duplet)])
+        (let ([payload (murmur/payload m)])
+          (display payload)))))
+          
+  (service/display))</code></pre>
+
+<p>Also, we must convert the CURL's textual representation to a CURL entity:</p>
+
+<pre><code class="language-scheme">;; Create an in-memory CURL from the textual representation.
+(define alice/curl/display (curl/zpl/safe-to-curl ALICE/CURL/DISPLAY KEYSTORE))</code></pre>
+
+<p>We finally instantiate both Alice and Bob:</p>
+
+<pre><code class="language-scheme">;; Instantiate Alice and Bob.
+(define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))
+(define bob (island/new 'bob BOB/CURVE/SECRET (lambda () (bob/boot alice/curl/display))))</code></pre>
+
+<p>Everything is ready to run our example, so in DrRacket's console, type:</p>
+
+<pre><code class="language-scheme">(island/start alice)
+(island/start bob)</code></pre>
+
+<p>You will then see in DrRacket's console:</p>
+
+<pre><code class="language-none">Hi, this is Bob!</code></pre>
+
+<p>If you see some red messages in the console, make sure that you set logging to a proper level:
+
+<pre><code class="language-scheme">(island/log/level/set 'warning</code><code class="language-scheme">)</code></pre>
+
+<div class="source-all">
+  <pre class="line-numbers"><code class="language-scheme">#lang racket/base
+
+(require
+  Island/include/base
+  Island/baseline
+  Island/transport/gate)
+
+(define CERTIFICATE/PUBLIC "./certificates/public/")
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+(define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))
+(define BOB/CURVE/SECRET   (path-to-curve BOB/SECRET/PATH))
+
+;; Alice's public key.
+(define ALICE/KP/BASE64 #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc")
+
+;; Create a Keystore to store the public certificates of other islands.
+(define KEYSTORE (keystore/new))
+;; Download all of the predefined public certificates.
+(keystore/load KEYSTORE CERTIFICATE/PUBLIC)
+
+;; The textual representation of the CURL for Alice's display service.
+(define/curl/inline ALICE/CURL/DISPLAY
+&#35;&lt;&lt;!!
+SIGNATURE = &#35;"Nxm6zGGiZDiao5vc8aYfdEeOIME104GEeOt4_K3ys2xDP673elLrwWa56SKAWp7gR2RI25QKZW0NvB2i23NJCg"
+CURL
+    id = 2eac24e1-f4fb-440d-a771-b3b60266a982
+    origin = &#35;"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc"
+    path = (echo)
+    access/id = access:send:echo
+    created = "2014-05-17T16:17:17Z"
+    metadata = &#35;f
+
+!!
+)
+
+;; Bob's bootstrap function.
+;; alice/curl is the CURL for Alice's service.
+(define (bob/boot alice/curl)
+  ; Wait until Bob sees Alice.
+  (island/enter/wait ALICE/KP/BASE64)
+  ; Send message.
+  (send alice/curl "Hi, this is Bob!"))
+
+;; Bootstrap function for Alice who offers a display service.
+(define (alice/boot)
+  ; Define a (service/display) function.
+  (define (service/display)
+    ; Create a duplet to receive messages via Alice's CURL.
+    ; Notice the use of (islet/curl/known/new). We use this function because it is a known CURL, we are not creating a brand new CURL.
+    ; '(echo) is the service path (it must be the same as the one in the textual representation)
+    ; 'access:send:echo is the access id (it must be the same as the one in the textual representation)
+    (let ([server/duplet (islet/curl/known/new '(echo) 'access:send:echo GATE/ALWAYS environ/null)])
+      (let loop ([m (duplet/block server/duplet)])
+        (let ([payload (murmur/payload m)])
+          (display payload)))))
+          
+  (service/display))
+
+;; Create an in-memory CURL from the textual representation.
+(define alice/curl/display (curl/zpl/safe-to-curl ALICE/CURL/DISPLAY KEYSTORE))
+
+;; Instantiate Alice and Bob.
+(define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))
+(define bob (island/new 'bob BOB/CURVE/SECRET (lambda () (bob/boot alice/curl/display))))
+
+(island/log/level/set 'warning)</code></pre></div>
+
+<hr />
+
+<h3>Specific duplets: Promises</h3>
+
+<hr />
+
+<h2>The Motile language</h2>
+
+<h3>A simple Motile computation</h3>
 
 </section>
 <section class="vibrant centered">
   <div class="">
-    This material is based upon work supported by the National Science Foundation under Grant Numbers  CNS-1449159, CCF-0820222 and 
+    This material is based upon work supported by the National Science Foundation under Grant Numbers CNS-1449159, CCF-0820222 and 
     CCF-0917129. Any opinions, findings, and conclusions or recommendations expressed in this material are those of 
     the author(s) and do not necessarily reflect the views of the National Science Foundation.
   </div>
