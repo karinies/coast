@@ -44,6 +44,7 @@
     (TODO: Prepare readers for what they are about to read: Explain that we include some basic info and links about Racket for people who aren't familiar with it.)
     (TODO: Introduce Alice and Bob (didn't I do that already?))
     (TODO: Add code practices for Racket or Scheme)
+    (TODO: Add link to https://github.com/mgiorgio/coast-examples)
 
       <h3 id="hello">The "Hello World!" island</h3>
 
@@ -112,7 +113,7 @@
 
 <h4>Complete source code</h4>
 
-<p>See the entire <i>hello.rkt</i> file here:</p>
+<p>See the entire <i>hello.rkt</i> file in <a href="https://github.com/mgiorgio/coast-examples/blob/master/hello-world-singleisland.rkt">Github</a> or here:</p>
 
 <div class="source-all">
   <pre class="line-numbers"><code class="language-scheme">#lang racket/base
@@ -184,7 +185,7 @@
 
 <h4>Complete source code</h4>
 
-<p>Here is the entire source code:</p>
+<p>See this example in <a href="https://github.com/mgiorgio/coast-examples/blob/master/hello-world-twoislands.rkt">Github</a> or here:</p>
 <div class="source-all">
   <pre class="line-numbers"><code class="language-scheme">#lang racket/base
 
@@ -305,7 +306,7 @@
 
 <pre><code class="language-none">Hi, I am message.sender@alice, and I also run in Alice!</code></pre>
 
-<p>See the entire source code for this example:</p>
+<p>See the entire source code for this example (or see it in <a href="https://github.com/mgiorgio/coast-examples/blob/master/display-sameisland.rkt">Github</a>):</p>
 
 <div class="source-all">
   <pre class="line-numbers"><code class="language-scheme">#lang racket/base
@@ -489,6 +490,8 @@ CURL
 
 <pre><code class="language-scheme">(island/log/level/set 'warning</code><code class="language-scheme">)</code></pre>
 
+<p>See the entire source code in <a href="https://github.com/mgiorgio/coast-examples/blob/master/display-differentislands.rkt">Github</a> or here:</p>
+
 <div class="source-all">
   <pre class="line-numbers"><code class="language-scheme">#lang racket/base
 
@@ -620,7 +623,7 @@ CURL
 
   <p>Notice that Bob creates a promise (<code class="language-scheme">promise/new</code>), sends the promise's CURL, and then waits (<code class="language-scheme">promise/block</code>) for a response from Alice. Likewise, Alice now expects a pair instead of a message. The pair contains the CURL that must be used to send the response as its first element, and the message to send back as the second element.</p>
 
-  <p>Here is the entire source code for this example:</p>
+  <p>Here is the entire source code for this example (or see it in <a href="https://github.com/mgiorgio/coast-examples/blob/master/echo-server-promises.rkt">Github</a>:</p>
 
   <div class="source-all">
   <pre class="line-numbers"><code class="language-scheme">#lang racket/base
@@ -724,6 +727,8 @@ CURL
 <p><A href="">Gates</A> let you constrain the conditions in which a CURL can be used. For example, an island can define who is authorized to exercise it, when, how many times, and also to impose limits at the Execution Site level such as the maximum allowed memory or CPU cycles to use by the visiting computation.</p>
 
 <p>We will expand farther the previous example to include a third island, Carol, that attempts to use Alice's Echo Service but it will not be able to do it.</p>
+
+<p>See the entire source code in <a href="https://github.com/mgiorgio/coast-examples/blob/master/echo-server-gates.rkt">Github</a> or here:</p>
 
 <hr />
 
