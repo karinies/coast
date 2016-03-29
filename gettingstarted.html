@@ -946,7 +946,7 @@ CURL
    '(lambda () (+ 2 3))
    ))</code></pre>
 
-<p>As you can see, the computation is pretty simple, it sums 2 and 3. Let's break this snippet down. We define a constant called <code class="language-scheme">BOB/COMPUTATION</code> with the output of the <code class="language-scheme">(island/compile)</code> function. This function receives Motile code and compiles it to Racket code that can be shipped for remote execution. The single quote (') means that everything after that will be a symbol. That is, <code class="language-scheme">'(lambda () (+ 2 3))</code> represents one symbol containing the <code class="language-scheme">(lambda () (+ 2 3))</code> expression. The <code class="language-scheme">(island/compile)</code> function will compile that expression into Racket code.</p>
+<p>As you can see, the computation is pretty simple, it sums 2 and 3. Let's break this snippet down. We define a constant called <code class="language-scheme">BOB/COMPUTATION</code> with the output of the <code class="language-scheme">(island/compile)</code> function. This function receives Motile code and compiles it to Racket code that can be shipped for remote execution. The single quote (<code class="language-scheme">'</code>) means that everything after that will be a symbol. That is, <code class="language-scheme">'(lambda () (+ 2 3))</code> represents one symbol containing the <code class="language-scheme">(lambda () (+ 2 3))</code> expression. The <code class="language-scheme">(island/compile)</code> function will compile that expression into Racket code.</p>
 
 <p>We create a function for Bob:</p>
 
