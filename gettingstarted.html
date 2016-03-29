@@ -890,11 +890,228 @@ CURL
 
 <h2>The Motile language</h2>
 
-<h3 id="motile_display_service">A simple Motile computation</h3>
+<p>Motile is a language for mobile computation integrated with the Island platform. Although Motile and Island are not the same thing, they are interrelated up to the point that we usually call them the <i>Motile/Island Platform</i>.</p>
+
+<p>We use Motile to send computations to be remotely executed, either within the same island or on a different one. Motile is a single-assignment dialect of Scheme expressly created for defining COAST computations and the messages and CURLs they exchange.</p>
+
+<h3 id="motile_simple">A simple Motile computation</h3>
+
+<p>Before continuing with the Display Server and the Echo Server examples, we present a much simpler example using Motile. Here, an island sends a simple calculation to be solved by another island. Bob writes its computation using Motile and sends it to Alice, that will solve it and send the result back to Bob.</p>
+
+<p>As always, we setup our islands:</p>
+
+<pre><code class="language-scheme">#lang racket/base
+
+(require
+  Island/include/base
+  Island/baseline
+  Island/transport/gate
+  Island/remote)
+
+(define CERTIFICATE/PUBLIC "./certificates/public/")
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+(define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))
+(define BOB/CURVE/SECRET   (path-to-curve BOB/SECRET/PATH))
+
+;; Alice's public key.
+(define ALICE/KP/BASE64 #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc")
+
+;; Create a Keystore to store the public certificates of other islands.
+(define KEYSTORE (keystore/new))
+;; Download all of the predefined public certificates.
+(keystore/load KEYSTORE CERTIFICATE/PUBLIC)
+
+;; The textual representation of the CURL for Alice's service.
+(define/curl/inline ALICE/CURL/SPAWN
+&#35;&lt;&lt;!!
+SIGNATURE = #"GNzBZNi6r6WTBdASzv_R0GJjAiwaBYtHkZhiMlyKTD8E-S-mL-A7SMFR7_9IKNl8_JJcfzOIBQh4YDnP3JoWBw"
+CURL
+    id = 0dd4f4f5-72ce-40fe-996f-f80700c322f0
+    origin = #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc"
+    path = (service spawn)
+    access/id = access:send.service.spawn
+    created = "2014-05-30T14:47:58Z"
+    metadata = #f
+
+!!
+)</code></pre>
+
+<p>We now define the Motile computation, using the <code class="language-scheme">(island/compile)</code> function:</p>
+
+<pre><code class="language-scheme">(define BOB/COMPUTATION
+  (island/compile
+   '(lambda () (+ 2 3))
+   ))</code></pre>
+
+<p>As you can see, the computation is pretty simple, it sums 2 and 3. Let's break this snippet down. We define a constant called <code class="language-scheme">BOB/COMPUTATION</code> with the output of the <code class="language-scheme">(island/compile)</code> function. This function receives Motile code and compiles it to Racket code that can be shipped for remote execution. The single quote (') means that everything after that will be a symbol. That is, <code class="language-scheme">'(lambda () (+ 2 3))</code> represents one symbol containing the <code class="language-scheme">(lambda () (+ 2 3))</code> expression. The <code class="language-scheme">(island/compile)</code> function will compile that expression into Racket code.</p>
+
+<p>We create a function for Bob:</p>
+
+<pre><code class="language-scheme">;; Bob's bootstrap function.
+;; alice/curl is the CURL for Alice's service.
+(define (bob/boot alice/curl)
+  ; Wait until Bob sees Alice.
+  (island/enter/wait ALICE/KP/BASE64)
+  ; Send Bob's computation and wait for the response.
+  (let* ([p (promise/new)]
+         [response/curl (promise/resolver p)])
+    (send alice/curl (cons response/curl BOB/COMPUTATION))
+    (let* ([m (promise/block p)]
+           [result (murmur/payload m)])
+      ; Show result.
+      (display result))))</code></pre>
+
+<p>The function presented above creates a pair with a promise's CURL and <code class="language-scheme">BOB/COMPUTATION</code>, and sends it to Alice via <code class="language-scheme">alice/curl</code>. After that, it waits for a response.</p>
+
+<p>We define a function for Alice:</p>
+
+<pre><code class="language-scheme">;; Bootstrap function for Alice.
+(define (alice/boot)
+  ; Define a (service/execute) function.
+  (define (service/execute)
+    ; Create a duplet to receive messages via Alice's CURL.
+    ; Notice the use of (islet/curl/known/new). We use this function because it is a known CURL, we are not creating a brand new CURL.
+    ; '(remote chirp) is the service path (it must be the same as the one in the textual representation)
+    ; 'access:send:chirp is the access id (it must be the same as the one in the textual representation)
+    (let ([server/duplet (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)])
+      (let loop ([m (duplet/block server/duplet)])
+        ; Create a worker (i.e. an islet) to solve the incoming computation.
+        ; 'client-worker is the worker's nickname.
+        ; BASELINE is the binding environment for the new islet.
+        (let ([worker (islet/new (this/island) 'client-worker TRUST/LOW BASELINE environ/null)]
+              [payload (murmur/payload m)])
+          ; Check that all parameters are correct.
+          (when (and (pair? payload) (curl? (car payload)) (procedure? (cdr payload)))
+            (let ([client/curl (car payload)]
+                  [thunk (cdr payload)])
+              ; Execute the computation and send the result back in no more than 10 seconds.
+              (remote worker thunk client/curl 10.0))))
+        (loop (duplet/block server/duplet)))))
+  
+  (service/execute))</code></pre>
+
+  <p>With this function, Alice receives thunks (procedures with no parameters) and spawns workers to execute them. Notice that Alice expects to receive a pair with the thunk and a CURL to send the result back, for which it uses the <code class="language-scheme">(remote)</code> function.</p>
+
+  <p>We finally setup the islands and we are good to go:</p>
+
+<pre><code class="language-scheme">;; Create an in-memory CURL from the textual representation.
+(define alice/curl/execute (curl/zpl/safe-to-curl ALICE/CURL/SPAWN KEYSTORE))
+
+;; Instantiate Alice and Bob.
+(define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))
+(define bob (island/new 'bob BOB/CURVE/SECRET (lambda () (bob/boot alice/curl/execute))))
+
+;; Set Alice' and Bob' keystore. Since both islands are in the same address space, they can share the keystore.
+(island/keystore/set alice KEYSTORE)
+(island/keystore/set bob   KEYSTORE)
+
+(island/log/level/set 'warning)</code></pre>
+
+<p>See the entire source code in <a href="https://github.com/mgiorgio/coast-examples/blob/master/motile-add.rkt">Github</a> or here:</p>
+
+<div class="source-all">
+  <pre class="line-numbers"><code class="language-scheme">#lang racket/base
+
+(require
+  Island/include/base
+  Island/baseline
+  Island/transport/gate
+  Island/remote)
+
+(define CERTIFICATE/PUBLIC "./certificates/public/")
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+(define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))
+(define BOB/CURVE/SECRET   (path-to-curve BOB/SECRET/PATH))
+
+;; Alice's public key.
+(define ALICE/KP/BASE64 #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc")
+
+;; Create a Keystore to store the public certificates of other islands.
+(define KEYSTORE (keystore/new))
+;; Download all of the predefined public certificates.
+(keystore/load KEYSTORE CERTIFICATE/PUBLIC)
+
+;; The textual representation of the CURL for Alice's service.
+(define/curl/inline ALICE/CURL/SPAWN
+&#35;&lt;&lt;!!
+SIGNATURE = #"GNzBZNi6r6WTBdASzv_R0GJjAiwaBYtHkZhiMlyKTD8E-S-mL-A7SMFR7_9IKNl8_JJcfzOIBQh4YDnP3JoWBw"
+CURL
+    id = 0dd4f4f5-72ce-40fe-996f-f80700c322f0
+    origin = #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc"
+    path = (service spawn)
+    access/id = access:send.service.spawn
+    created = "2014-05-30T14:47:58Z"
+    metadata = #f
+
+!!
+)
+
+(define BOB/COMPUTATION
+  (island/compile
+   '(lambda () (+ 2 3))
+   ))
+
+;; Bob's bootstrap function.
+;; alice/curl is the CURL for Alice's service.
+(define (bob/boot alice/curl)
+  ; Wait until Bob sees Alice.
+  (island/enter/wait ALICE/KP/BASE64)
+  ; Send Bob's computation and wait for the response.
+  (let* ([p (promise/new)]
+         [response/curl (promise/resolver p)])
+    (send alice/curl (cons response/curl BOB/COMPUTATION))
+    (let* ([m (promise/block p)]
+           [result (murmur/payload m)])
+      ; Show result.
+      (display result))))
+
+;; Bootstrap function for Alice.
+(define (alice/boot)
+  ; Define a (service/execute) function.
+  (define (service/execute)
+    ; Create a duplet to receive messages via Alice's CURL.
+    ; Notice the use of (islet/curl/known/new). We use this function because it is a known CURL, we are not creating a brand new CURL.
+    ; '(remote chirp) is the service path (it must be the same as the one in the textual representation)
+    ; 'access:send:chirp is the access id (it must be the same as the one in the textual representation)
+    (let ([server/duplet (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)])
+      (let loop ([m (duplet/block server/duplet)])
+        ; Create a worker (i.e. an islet) to solve the incoming computation.
+        ; 'client-worker is the worker's nickname.
+        ; BASELINE is the binding environment for the new islet.
+        (let ([worker (islet/new (this/island) 'client-worker TRUST/LOW BASELINE environ/null)]
+              [payload (murmur/payload m)])
+          ; Check that all parameters are correct.
+          (when (and (pair? payload) (curl? (car payload)) (procedure? (cdr payload)))
+            (let ([client/curl (car payload)]
+                  [thunk (cdr payload)])
+              ; Execute the computation and send the result back in no more than 10 seconds.
+              (remote worker thunk client/curl 10.0))))
+        (loop (duplet/block server/duplet)))))
+  
+  (service/execute))
+
+;; Create an in-memory CURL from the textual representation.
+(define alice/curl/execute (curl/zpl/safe-to-curl ALICE/CURL/SPAWN KEYSTORE))
+
+;; Instantiate Alice and Bob.
+(define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))
+(define bob (island/new 'bob BOB/CURVE/SECRET (lambda () (bob/boot alice/curl/execute))))
+
+;; Set Alice' and Bob' keystore. Since both islands are in the same address space, they can share the keystore.
+(island/keystore/set alice KEYSTORE)
+(island/keystore/set bob   KEYSTORE)
+
+(island/log/level/set 'warning)</code></pre></div>
 
 <h3 id="motile_display_service">A client-tailored Display Server</h3>
 
-<h3 id="motile_display_service">Passing parameters to Motile</h3>
+<h3 id="motile_parameters">Passing parameters to Motile</h3>
 
 </section>
 <section class="vibrant centered">
