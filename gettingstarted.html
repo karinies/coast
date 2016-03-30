@@ -1174,8 +1174,27 @@ CURL
 <ul>
   <li><p><strong>Why are there two lambdas?</strong> This question is crucial to understand this example and it has to do with how functional programming works. Recall that we must send a thunk to be executed, that is, a procedure with no parameters. However, we do need one parameter in this computation, that is the CURL that will be used to send the result back. How do we deal with this situation? We define one function with the required parameters (i.e. the outer lambda) that returns another function with no parameters (i.e. the inner lambda). The outer lambda's parameters are in the lexical scope of the inner lambda, that is, those parameters are <strong>not</strong> free variables, they are bound variables. When the outer lambda gets evaluated, it will return the inner lambda, and nothing else will happen. In other words, evaluating the outer lambda does not cause the inner lambda to be evaluated; the inner lambda will be <i>eventually</i> evaluated. If you got this, you can continue to the next point, otherwise, take a look at this example:</p>
   <p>Suppose you have a function <i>f(x)</i> that returns <i>g(x)</i>. The <i>f(x)</i> function does not return the result of <i>g(x)</i>, it returns <i>g(x)</i> itself. When someone evaluates <i>f(x)</i>, the <i>g(x)</i> function will not be evaluated. For that to happen, someone will need to evaluate <i>f(x)</i> and then evaluate its result (i.e. <i>g(x)</i>). That is exactly what happens here with the two lambdas.</p></li>
-  <li><strong>What is that</strong> <code class="language-scheme">(send)</code> <strong>function?</strong> 
+  <li><strong>What is that</strong> <code class="language-scheme">(send)</code> <strong>function?</strong> That is a Motile function that lets computations send messages to other computations. It receives a CURL and what is to be sent. A computation will be able to invoke <code class="language-scheme">(send)</code> if this function is in the computation's binding environment.
 </ul>
+
+<p>We now define Bob's function:</p>
+
+<pre><code class="language-scheme">;; Bob's bootstrap function.
+;; alice/curl is the CURL for Alice's service.
+(define (bob/boot alice/curl)
+  ; Wait until Bob sees Alice.
+  (island/enter/wait ALICE/KP/BASE64)
+  ; Send Bob's computation and wait for the response.
+  (let* ([p (promise/new)]
+         [response/curl (promise/resolver p)]
+         [thunk (motile/call BOB/COMPUTATION environ/null response/curl)])
+    (send alice/curl thunk)
+    (let* ([m (promise/block p)]
+           [result (murmur/payload m)])
+      ; Show result.
+      (display result))))</code></pre>
+
+<p>Here is where we solve the second part of passing an argument to the Motile computation. Recall that we are to send the inner lambda defined above, and it is returned when the outer lambda gets evaluated. Therefore, we must evaluate the outer lambda. If you look at this snippet above, you will see that the <code class="language-scheme">thunk</code> variable is defined as the result of <code class="language-scheme">(motile/call BOB/COMPUTATION environ/null response/curl)</code>. What we do here is precisely invoking the outer lambda, however we must do it by calling <code class="language-scheme">(motile/call)</code> because we are dealing with Motile code instead of Racket code. In short, executing <code class="language-scheme">BOB/COMPUTATION</code> will return the Motile inner lambda with the required arguments bound ready to be sent. Notice that we are passing the arguments we need when <code class="language-scheme">(motile/call)</code> is invoked.</p>
 
 </section>
 <section class="vibrant centered">
