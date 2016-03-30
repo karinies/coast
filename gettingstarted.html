@@ -1109,9 +1109,72 @@ CURL
 
 (island/log/level/set 'warning)</code></pre></div>
 
-<h3 id="motile_display_service">A client-tailored Display Server</h3>
+<h3 id="motile_display_service">A client-tailored Echo Server</h3>
 
-<h3 id="motile_parameters">Passing parameters to Motile</h3>
+<p>We modify the previous example so that, instead of having a client that sends a calculation and receives a result (server-driven), it is the client who decides what its computation running at the server side will do (client-driven). Specifically, in this example, the client will send a computation, and the server will do no more than only executing it. When executed on the server, the computation will send a message back to the client. This is different from the previous Echo Server examples because on those, the client sent only data, and the server knew what to do. In this example, the client decides what to do by implementing a computation that does that.</p>
+
+<o>We setup environment and islands:</o>
+
+<pre><code class="language-scheme">#lang racket/base
+
+(require
+  Island/include/base
+  Island/baseline
+  Island/transport/gate
+  Island/remote)
+
+(define CERTIFICATE/PUBLIC "./certificates/public/")
+(define CERTIFICATE/SECRET "./certificates/secret/")
+(define ALICE/SECRET/PATH (string-append CERTIFICATE/SECRET "alice_secret"))
+(define BOB/SECRET/PATH   (string-append CERTIFICATE/SECRET "bob_secret"))
+
+(define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))
+(define BOB/CURVE/SECRET   (path-to-curve BOB/SECRET/PATH))
+
+;; Alice's public key.
+(define ALICE/KP/BASE64 #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc")
+
+;; Create a Keystore to store the public certificates of other islands.
+(define KEYSTORE (keystore/new))
+;; Download all of the predefined public certificates.
+(keystore/load KEYSTORE CERTIFICATE/PUBLIC)
+
+;; The textual representation of the CURL for Alice's service.
+(define/curl/inline ALICE/CURL/SPAWN
+&#35;&lt;&lt;!!
+SIGNATURE = #"GNzBZNi6r6WTBdASzv_R0GJjAiwaBYtHkZhiMlyKTD8E-S-mL-A7SMFR7_9IKNl8_JJcfzOIBQh4YDnP3JoWBw"
+CURL
+    id = 0dd4f4f5-72ce-40fe-996f-f80700c322f0
+    origin = #"wdvbN1svfhEAewhM76oSVPKj-4kzfbDhaiTFW61VdUc"
+    path = (service spawn)
+    access/id = access:send.service.spawn
+    created = "2014-05-30T14:47:58Z"
+    metadata = #f
+
+!!
+  )</code></pre>
+
+  <p>We define the computation that the client (Bob) will send:</p>
+
+  <pre><code class="language-scheme">(define BOB/COMPUTATION
+  (island/compile
+   '(lambda (curl/response)
+      (lambda ()
+        (send curl/response "Hello World!")))
+   ))</code></pre>
+
+<p>This computation is different from <code class="language-scheme">BOB/COMPUTATION</code> in the previous example because:</p>
+<ol>
+  <li>It has one parameter.</li>
+  <li>It sends back something to the client instead of only producing a result.</li>
+</ol>
+
+<p>Let's answer a few questions about <code class="language-scheme">BOB/COMPUTATION</code>:</p>
+
+<ul>
+  <li><p><strong>Why are there two lambdas?</strong> This question is crucial to understand this example and it has to do with how functional programming works. Recall that we must send a thunk to be executed, that is, a procedure with no parameters. However, we do need one parameter in this computation, that is the CURL that will be used to send the result back. How do we deal with that? We define one function with the required parameters (i.e. the outer lambda) that returns another function with no parameters (i.e. the inner lambda). The outer lambda's parameters are in the lexical scope of the inner lambda, that is, those parameters are <strong>not</strong> free variables, they are bound variables. When the outer lambda gets evaluated, it will return the inner lambda, and nothing else will happen. In other words, the inner lambda will not be evaluated when the outer lambda is evaluated. If you got this, you can continue to the next point, otherwise, take a look at this example:</p>
+  <p>Suppose you have a function <i>f(x)</i> that returns <i>g(x)</i>. The <i>f(x)</i> function does not return the result of <i>g(x)</i>, it returns <i>g(x)</i> itself. When someone evaluates <i>f(x)</i>, the <i>g(x)</i> function will not be evaluated. For that to happen, someone will need to evaluate <i>f(x)</i> and then evaluate its result (i.e. <i>g(x)</i>). That is exactly what happens here with the two lambdas.</p></li>
+</ul>
 
 </section>
 <section class="vibrant centered">
