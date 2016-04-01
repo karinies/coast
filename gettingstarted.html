@@ -16,34 +16,51 @@
 <div class="wrapper">
 <header>
   <div class="container">
-    <h2 class="lone-header">COmputationAl State Transfer (COAST)</h2>
+    <h2 class="lone-header"><a href="index.html">COmputationAl State Transfer (COAST)</a></h2>
   </div>
 </header>
 <section>
   <div class="container">
     <ul class="docs-nav">
-      <li><a href="index.html" class="cc-active">Home</a></li>
+      <li><strong>Basics</strong></li>
+      <li><a href="#basics-islands" class="cc-active">Islands and Islets</a></li>
+      <li><a href="#basics_curls" class="cc-active">CURLs, Duplets and Promises</a></li>
+      <li><a href="#basics_gates" class="cc-active">Gates</a></li>
+      <li><a href="#basics_motile" class="cc-active">Motile</a></li>
+      <li><a href="#basics_bind_env" class="cc-active">Binding Environments</a></li>
       <li class="separator"></li>
       <li><strong>Creating islands</strong></li>
       <li><a href="#hello" class="cc-active">The "Hello World!" island</a></li>
       <li><a href="#hello_two" class="cc-active">"Hello World!" with two islands</a></li>
+      <li class="separator"></li>
       <li><strong>Introducing CURLs</strong></li>
       <li><a href="#curls_simple" class="cc-active">Hello CURL!</a></li>
       <li><a href="#curls_realistic" class="cc-active">CURLs getting real</a></li>
       <li><a href="#curls_promises" class="cc-active">Specific duplets: Promises</a></li>
       <li><a href="#curls_gates" class="cc-active">Managing CURLs using Gates</a></li>
+      <li class="separator"></li>
       <li><strong>The Motile language</strong></li>
       <li><a href="#motile_simple" class="cc-active">A simple Motile computation</a></li>
       <li><a href="#motile_display_service" class="cc-active">A client-tailored Display Server</a></li>
-      <li><a href="#motile_parameters" class="cc-active">Passing parameters to Motile</a></li>
-      <li><strong>Concepts</strong></li>
-      <li><a href="#concepts_island" class="cc-active">Islands and Islets</a></li>
-      <li><a href="#concepts_curls" class="cc-active">CURLs, Duplets and Promises</a></li>
-      <li><a href="#concepts_gates" class="cc-active">Gates</a></li>
-      <li><a href="#concepts_motile" class="cc-active">Motile</a></li>
     </ul>
     <div class="docs-content">
-      <h2 id="hello">Creating islands</h2>
+
+    <h2 id="basics">Basics</h2>
+
+    <h3 id="basics-platform">The Motile/Island Platform</h3>
+
+    <p>Motile/Island is a reference implementation of the COAST architectural style. Motile is a language for mobile computation, and Island is the infrastructure supporting the deployment and execution of mobile computations. Motile and Island are closely integrated and although they are not the same thing, they are interrelated up to the point that we usually call them the Motile/Island Platform.</p>
+
+    <h3 id="basics-islands">Islands and Islets</h3>
+
+    <p>In the Island Platform, a peer is a single, homogeneous address-space called <i>island</i>, which is occupied by one or more <i>islets</i>. An island is a self-certifying entity with a public key associated, and all communications among islands are encrypted. Islets are implemented as actors, that is, computational agents capable of conducting computations, receiving and sending messages asynchronously.</p>
+
+    <h3 id="basics-curls">CURLs, Duplets and Promises</h3>
+
+    <p><i>Capability URLs (CURLs)</i> convey the ability to communicate between computations.
+
+
+      <h2>Creating islands</h2>
 
     (TODO: Add clarification about "COAST" and "Motile/Island")
     (TODO: Prepare readers for what they are about to read: Explain that we include some basic info and links about Racket for people who aren't familiar with it.)
@@ -59,7 +76,7 @@
 
       <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file and name it <i>hello.rkt</i> and add the following code:</p>
 
-       
+coast isr       
 <pre><code class="language-scheme">#lang racket/base
 
 ;; Basic require to work with Island
@@ -1108,6 +1125,8 @@ CURL
 (island/keystore/set bob   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<hr />
 
 <h3 id="motile_display_service">A client-tailored Echo Server</h3>
 
