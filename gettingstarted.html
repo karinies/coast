@@ -7,8 +7,7 @@
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>COAST - Getting started</title>
-<link href="http://fonts.googleapis.com/css?family=Raleway:700,300" rel="stylesheet"
-        type="text/css">
+<link href="http://fonts.googleapis.com/css?family=Raleway:700,300" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="css/prism.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -49,15 +48,28 @@
 
     <h3 id="basics-platform">The Motile/Island Platform</h3>
 
-    <p>Motile/Island is a reference implementation of the COAST architectural style. Motile is a language for mobile computation, and Island is the infrastructure supporting the deployment and execution of mobile computations. Motile and Island are closely integrated and although they are not the same thing, they are interrelated up to the point that we usually call them the Motile/Island Platform.</p>
+    <p>Motile/Island is a reference implementation of the COAST architectural style. Motile is a language for mobile computation, and Island is the infrastructure supporting the deployment and execution of mobile computations. However, Motile and Island are closely integrated and although they are not the same thing, they are interrelated up to the point that we call them the Motile/Island Platform.</p>
 
     <h3 id="basics-islands">Islands and Islets</h3>
 
-    <p>In the Island Platform, a peer is a single, homogeneous address-space called <i>island</i>, which is occupied by one or more <i>islets</i>. An island is a self-certifying entity with a public key associated, and all communications among islands are encrypted. Islets are implemented as actors, that is, computational agents capable of conducting computations, receiving and sending messages asynchronously.</p>
+    <p>In Motile/Island, a peer is a single, homogeneous address-space called <i>island</i>, which is occupied by one or more <i>islets</i>. An island is a self-certifying entity with a public key associated, and all communications among islands are encrypted. Islets are implemented as actors, that is, computational agents capable of conducting computations, receiving and sending messages asynchronously.</p>
 
     <h3 id="basics-curls">CURLs, Duplets and Promises</h3>
 
-    <p><i>Capability URLs (CURLs)</i> convey the ability to communicate between computations.
+	<h4>CURLs</h4>
+	
+    <p><i>Capability URLs (CURLs)</i> convey the ability to communicate between computations. A CURL <i>u</i> is an unambiguous reference to a computation <i>x</i> that enables other computations holding <i>u</i> to send messages to <i>x</i>. CURLs are unguessable, unforgeable, and tamper-proof; they contain cryptographic material referencing the issuer computation, and are signed by the issuer's execution host.</p>
+	<p>In short, if you need to send a message to a computation, you must have a CURL issued by that computation.</p>
+	
+	<h4>Duplets and Promises</h4>
+	
+	<p>A <i>duplet</i> is a convenient structure to communicate with other computations and deal with CURLs. A duplet has a <i>resolver</i> and a <i>receiver</i>. The former is precisely a CURL that can be obtained from the duplet by using the <code class="language-scheme">(duplet/resolver)</code> function. The latter is a mechanism to receive messages via the duplet's CURL. It is not explicitely referenced by internally used by the <code class="language-scheme">(duplet/block)</code> and <code class="language-scheme">(duplet/wait)</code> functions to receive messages that were sent via the duplet's CURL.</p>
+	
+	<p>A <i>promise</i> is a particular case of a duplet. Promises work exactly as duplets but they can only be used once.
+	
+	<h3 id="basics-gates">Gates</h3>
+	
+	<p><i>Gates</i> are attached to CURLs and define the conditions that must be fulfilled for a computation to be executed. For example, a <i>whitelist gate</i> lists all the islands that are authorized to send messages via a specific CURL, whereas a <i>blacklist gate</i> defines which islands are not authorized for that. Gates can also limit the number of times, frequency, valid dates or time ranges that a CURL can be exercised. In addition, gates can constrain computational resources in the execution site such as CPU cycles and memory available for a visiting computation.</p>
 
 
       <h2>Creating islands</h2>
@@ -70,20 +82,19 @@
 
       <h3 id="hello">The "Hello World!" island</h3>
 
-      This example shows how to print a "Hello World!" message using the Island infrastructure. It instantiates an island called Alice, starts it up, and Alice prints the message. Notice that, in this example, we are not using CURLs or any Motile code, it is only a single island printing a message.
+      This example shows how to print a "Hello World!" message using the Motile/Island infrastructure. In the example, we instantiate an island called Alice, start it up, and Alice will print a message. Notice that we are not using CURLs or any Motile code, it is only a single island printing a message.
 
-      <h4>1) Preparing Racket to work with Island</h4>
+      <h4>1) Preparing Racket to work with Motile/Island</h4>
 
       <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file and name it <i>hello.rkt</i> and add the following code:</p>
 
-coast isr       
 <pre><code class="language-scheme">#lang racket/base
 
 ;; Basic require to work with Island
 (require
   Island/include/base)</code></pre>
 
-<p>That tells Racket that we will use the racket/base language and that we require Island/include/base, the basic component of the Island framework.</p>
+<p>That tells Racket that we will use the racket/base language and that we require Island/include/base, the basic component of the Motile/Island framework.</p>
 
 <h4>2) Setting up certificates</h4>
 
@@ -96,7 +107,7 @@ coast isr
 ;; Create Alice's CURVE cryptographic keys
 (define ALICE/CURVE/SECRET (path-to-curve ALICE/SECRET/PATH))</code></pre>
 
-<p>That will let Island know where your certificates are (make sure that the path is correct). It will use <i>alice_secret</i> file to create the CURVE cryptographic keys for Alice.</p>
+<p>That will let Motile/Island know where your certificates are (make sure that the path is correct). It will use <i>alice_secret</i> file to create the CURVE cryptographic keys for Alice.</p>
 
 <p>Now we're ready to start adding our code in Alice.</p>
 
@@ -131,7 +142,7 @@ coast isr
 
 <p>That was it!</p>
 
-<p>In this example, we have seen how to create a computation using the Island infrastructure. We setup Racket, loaded the certificates, and created an initial computation.</p>
+<p>In this example, we have seen how to create a computation using the Motile/Island infrastructure. We setup Racket, loaded the certificates, and created an initial computation.</p>
 
 <h4>Complete source code</h4>
 
@@ -140,7 +151,7 @@ coast isr
 <div class="source-all">
   <pre class="line-numbers"><code class="language-scheme">#lang racket/base
 
-;; Basic require to work with Island
+;; Basic require to work with Motile/Island
 (require
   Island/include/base)
 
@@ -240,11 +251,11 @@ coast isr
 
   <p>Alice creates two islets and executes them: a Display Server and a message sender. The Display Server listens for messages coming via a CURL and prints them. The Message Sender uses the Display Server's CURL to send a message.</p>
 
-  <p>As usual, we must initialize Island and Racket:</p>
+  <p>As usual, we must initialize Motile/Island and Racket:</p>
 
 <pre><code class="language-scheme">#lang racket/base
 
-;; Notice that we require some additional Island collections.
+;; Notice that we require some additional Motile/Island collections.
 (require
   Island/include/base
   Island/baseline
@@ -907,9 +918,7 @@ CURL
 
 <h2>The Motile language</h2>
 
-<p>Motile is a language for mobile computation integrated with the Island platform. Although Motile and Island are not the same thing, they are interrelated up to the point that we usually call them the <i>Motile/Island Platform</i>.</p>
-
-<p>We use Motile to send computations to be remotely executed, either within the same island or on a different one. Motile is a single-assignment dialect of Scheme expressly created for defining COAST computations and the messages and CURLs they exchange.</p>
+<p>We previously briefly explained that Motile is a language for mobile computation. We use Motile to send computations to be remotely executed, either within the same island or on a different one. Motile is a single-assignment dialect of Scheme expressly created for defining COAST computations and the messages and CURLs they exchange.</p>
 
 <h3 id="motile_simple">A simple Motile computation</h3>
 
