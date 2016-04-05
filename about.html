@@ -1,0 +1,285 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="description" content="">
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>COAST Architectural Style</title>
+<link href="http://fonts.googleapis.com/css?family=Raleway:700,300" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrapper" id="top">
+
+<nav>
+    <div class="pull-left">
+        <h1><a href="index.html"><img src="img/home.png" />Home</a></h1>
+    </div>
+    <div class="pull-right">
+        <a href="about.html">What is COAST?</a>
+        <a href="gettingstarted.html">Getting Started</a>
+        <a href="about.html#what_is_Motile">Motile/Island</a>
+        <a href="https://github.com/mgiorgio/coast" target="_blank">Github</a>
+        <a href="#download" class="btn btn-download"><img src="img/download.png" width="25" alt="Download Motile/Island" />Download Motile/Island</a>
+    </div>
+</nav>
+
+<header>
+  <div class="container">
+    <h2 class="lone-header">COmputationAl State Transfer (COAST)</h2>
+  </div>
+</header>
+<section>
+  <div class="container">
+    <ul class="docs-nav">
+      <li><strong>COAST</strong></li>
+      <li><a href="#what_is_coast" class="cc-active">What is COAST?</a></li>
+      <li><a href="#principles" class="cc-active">Principles</a></li>
+      <li><a href="#history" class="cc-active">History</a></li>
+      <li class="separator"></li>
+      <li><strong>Infrastructure</strong></li>
+      <li><a href="#introduction" class="cc-active">Introduction</a></li>
+      <li><a href="#what_is_Motile" class="cc-active">What is Motile?</a></li>
+      <li><a href="#what_is_island" class="cc-active">What is Island?</a></li>
+      <li class="separator"></li>
+      <li><strong>Development with COAST</strong></li>
+      <li><a href="#requirements" class="cc-active">Motile/Island Requirements</a></li>
+      <li><a href="#download" class="cc-active">Download Motile/Island</a></li>
+      <li><a href="#setup" class="cc-active">Setup your environment</a></li>
+      <li class="separator"></li>
+      <li><strong>Impact</strong></li>
+      <li><a href="#publications" class="cc-active">COAST Publications</a></li>
+      <li><a href="#related_publications" class="cc-active">Related Publications</a></li>
+      <li class="separator"></li>
+      <li><strong>Contact Us</strong></li>
+      <li><a href="#research_team" class="cc-active">Research Team</a></li>
+    </ul>
+    <div class="docs-content">
+      <h2>COAST</h2>
+      <h3 id="what_is_coast">What is COAST?</h3>
+
+      <p>COmputAtional State Transfer (COAST) is an architectural style for secure, decentralized, and adaptive systems. An architectural style involves a set of design decisions which constrain the design of software systems within particular development and deployment contexts. If these constrains are followed, the resulting system will elicit beneficial properties which those constrains are set forth to promote.
+      
+      <p>The principal goal of COAST is the construction of Internet-scale decentralized applications, where adaptivity, flexibility, agility, and safety are prized attributes. Safety in this domain includes: communication and information security; the protection of host computing resources; and the defense of valued organizational assets such as databases, sensors, and algorithms.
+      COAST targets decentralized contexts where organizations have assets that they provide to others, such as information in databases, devices, or from specialized classes of users. In COAST, third-party organizations create their own custom-tailored versions of services from these base assets in order to obtain the kind and level of service both desired by them and permitted by the asset owner.
+      
+      <p>Based on the architectural idiom of computation exchange, COAST presents a novel mode of interaction among Internet-scale service providers and consumers that enables tailored service construction and adaptivity. Computation exchange (the computational analogue of content exchange) is the bilateral exchange of computations among peers in a decentralized system containing multiple distinct spans of authority. In this regime, content delivery is a by-product of the evaluation of computations exchanged among peers. COAST is one architectural style for computation exchange, just as "pipes and filters" is one of many architectural styles for data processing.
+      
+      <p>Any architectural style based upon computation exchange requires mechanisms to address the security risks inherent in exchanging and executing mobile code across multiple, distinct, spheres of authority where malicious mobile code is a near certainty. Also, an architectural style for decentralized applications employing computation exchange should explicitly model the ability of each organization to confer separate organization-specific authority and rights to the same mobile code, reflecting the fundamental freedoms of agency in decentralized systems.
+      
+      <p>COAST fulfills these requirements through its core <a href="#principles">architectural principles</a>, which provide practical guidance on designing and developing COAST applications.
+
+      <h3 id="principles">COAST's Principles</h3>
+
+      <h4>Computations</h4>
+
+      <ul>
+        <li>All services are computations which execute within the confines of some execution site <i>‹E,B›</i> where <i>E</i> is an execution engine and <i>B</i> a binding environment. In other words, a COAST computation is the execution of a closure <i>c</i> by the execution engine <i>E</i> of its execution site in the context of <i>B</i>.</li>
+        <li><i>E</i> may enforce site-specific semantics: for example, limits on the consumption of resources such as processor cycles, memory, storage, or network bandwidth; rate-throttling of the same; logging; or adaptations for debugging.</li>
+      </ul>
+
+      <h4>Communication</h4>
+
+      <ul>
+        <li>The sole means of interaction among computations is the asynchronous messaging of closures (functions plus their lexical-scope bindings), continuations (snapshots of execution state) and binding environments (maps of name/value pairs). The receival of a message may result in the execution of some functionality, the sending of a message to another computation, or in the creation of a new computation.</li>
+      </ul>
+
+      <h4>Addressability</h4>
+
+      <ul>
+        <li>Communication capability is both granted and constrained by capability URLs (called CURLs). A CURL is a capability that conveys the ability for two computations to communicate. A CURL <i>c</i> issued by a computation <i>x</i>, is an unguessable, unforgeable and tamper-proof reference to <i>x</i> that grants to any computation <i>y</i> holding <i>c</i> the power to transmit messages to <i>x</i>. A CURL contains cryptographic material identifying <i>x</i> and is signed by <i>x</i>'s underlying execution host. CURLs are used to constrain interactions with a computation and also to bound the services that it offers.</li>
+      </ul>
+
+      <h4>Security</h4>
+
+      <ul>
+        <li>COAST relies on two security principles: the Principle of Least Authority (POLA) and capability-based security. POLA dictates that security is a cross-product of the authority given to a principal (the functional power made available) and the rights given to the principal (the rights of use conferred with respect to that authority). At each point within a system a principal must be simultaneously confined with respect to both authority and rights. In keeping with POLA, each binding environment <i>B</i> of an execution site should contain just the functional capability that visiting mobile code requires to implement a confined segment of service.</li>
+        <li>A capability is an unforgeable reference whose possession confers both authority and rights to a principal. A principal can be an individual, group of individuals, or a computation running on his or their behalf. The set of all closures and primitives reachable from binding environment <i>B</i> is the initial functional capability of a closure <i>c</i>. No local computation beyond that permitted by <i>B</i> is possible since, for any closure <i>c</i>, <i>B</i> is the only resolver for the free variables of <i>c</i>, hence, the only provider of the primitives that <i>c</i>'s definition requires.</li>
+      </ul>
+
+      <h3 id="history">History</h3>
+
+      <p>The World Wide Web evolved from humble beginnings to become a cornerstone of almost all facets of modern society, embracing activities as diverse as finance, communications, entertainment, and commerce. Our research lab has made fundamental contributions to the design and evolution of the Web, including Roy fielding’s definitions of the Representational State Transfer (REST) architectural style and the HTTP/1.1 protocol, Professor Jim Whitehead’s WebDAV distributed authoring mechanisms, Rohit Khare’s ARRESTED family of REST-derived styles, as well as Fielding’s work on the Apache Web Server and Justin Erenkrantz’s work on the Subversion configuration management system.</p>
+      
+      <p>As Web technologies evolved, however, innovations like Ajax, mashups, and Web Services pushed web applications beyond the REST constraints, which provided theoretical and practical guidance to system developers. Justin Erenkrantz, Girish Suryanarayana, and Ph.D. student Michael Gorlick (R. Taylor, advisor) responded to this disparity by articulating a set of theoretical principles called Computational REST (CREST), which explained and extended the emerging importance of computational activity and transfer—as opposed to content exchange—between clients and services.</p>
+      
+      <p>Through initial exploratory prototyping, it became clear that CREST was not merely an explanatory mechanism for newer Web applications, but a distinct architectural style suitable for novel resilient, adaptive and decentralized systems. In the summer of 2008, Erenkrantz and Gorlick, along with ISR Ph.D. students Yongjie Zheng and Alegria Baquero (R. Taylor, advisor to both), built a dynamic, adaptive feed reader, in which lightweight data processing widgets can be graphically reconfigured on-the-fly to perform collaborative data extraction and display on news feeds. Justin Erenkrantz graduated with the dissertation "Computational REST: A New Model for Decentralized, Internet-Scale Applications" in September, 2009.</p>
+      
+      <p>Our previous work on CREST evolved into COmputAtional State Transfer (COAST), which provides more detailed <a href="#principles">principles</a> founded on computational exchange to support the design of openly secure decentralized applications. Since then, Michael Gorlick has been at work exploring the implications of the COAST principles and building a new generation of infrastructure to support more sophisticated forms of computational exchange. Former Ph.D. student Kyle Strasser built COASTcast, an application for sharing and manipulating real-time decentralized HD video streams. COASTcast demonstrates that COAST can be used to distribute real-time data throughout a service topology that may be dynamically reconfigured via computation exchange. COASTcast implements high-definition video streams, from camera to display, as collaborating video services. A single stream may cross multiple organizations: the source (real-time HD video cameras), midpoints (encoders, decoders, and publication/subscription relays), and sinks (user interfaces and displays) may reside and be moved across many distinct islands, each potentially managed by a separate organization.</p>
+      
+      <p>Our research effort continues on envisioning and developing exploratory applications that allow the investigation of common design patterns, methods for system design, notations to describe COAST systems, and the need for further infrastructure features and tool support. Current exploratory projects include collaborative video-tagging and real-time video editing, a platform for recasting service-oriented architectures and Web Services in e-commerce, situational awareness services, and securely open healthcare systems.</p>
+
+      <p class="back-to-top"><a href="#top">Back to the top</a></p>
+
+      <hr />
+
+      <h2>Infrastructure</h2>
+      <h3 id="introduction">Introduction</h3>
+
+      <p>Like all other architectural styles, COAST permits multiple implementations (in the form of style-specific infrastructure, frameworks, languages, or ad-hoc approaches) but each of those implementations could have distinctly different impacts on the descriptive architectures of the applications that use the implementation. Implementations should be compatible with the intended context of the style, supportive of the constraints of the style, and facilitative of the benefits of the style.</p>
+
+      <p>For this purpose, we have created an implementation platform to facilitate the construction of COAST applications. This platform consists of Motile, a mobile code language whose semantics and implementation enforce key constraints on the use and migration of capability, and Island, a peering infrastructure for Motile computations.</p>
+      
+      <p>The COAST infrastructure allows developers to design and build applcations that adhere to the principles of the COAST architectural style.</p>
+
+      <p>For a more hands-on approach to COAST and Motile/Island, take a look at COAST's <a href="gettingstarted.html#basics">basics</a> and <a href="gettingstarted.html#hello">examples</a>.
+
+      <h3 id="what_is_Motile">What is Motile?</h3>
+
+      <p>Motile is a single-assignment, functional, and mobile code language based on Scheme for defining COAST architectural elements, namely computations and the messages and CURLs that they exchange. Motile's semantics and implementation express and enforce the communication and execution constraints of COAST, namely the use and migration of capability.</p>
+      
+      <p>The language contains primitives and standard library functions that allow Motile programs, when used in the context of the <a href="#what_is_island">Island</a> infrastructure and runtime environment, to reify and manipulate the COAST architectural elements of CURLs and binding environments.</p>
+      
+      <p>Each COAST computation is implemented as an islet. Each islet is an independent thread of computation that may transmit asynchronous messages to other islets, receive asynchronous messages from other islets, conduct private computation, and spawn new islets. Spawning here is implemented as a specialized kind of message sending.</p>
+      
+      <p>All Motile islets are named by one or more CURLs. All Motile data structures are purely functional (hence immutable), which circunvents all the shortcomings of synchonization characteristic of shared-memory communication.</p>
+      
+      <p>When a Motile closure is sent between two computations on distinct islands, the closure is routed through the Motile "decompiler" and is serialized. When received by the island on which the destination computation is executing, the message is subsequently deserialized and "recompiled" into closures of the host language.</p>
+
+      <h3 id="what_is_island">What is Island?</h3>
+
+      <p>An island is a single, homogeneous address space occupied by one or more Motile islets. Islands implement the role of "execution host". Each island is uniquely identified by the public key half of a public/private key pair. All islands are self-certifying and all communication between islands is encrypted.</p>
+      
+      <p>Island incorporates a number of libraries for managing message transmission and Motile computation management, including the CURL library, the persistent functional data structures used by Motile programs, and the ability to start Motile programs with selected binding environments.</p>
+      
+      <p>Each island is instantiated with an initial set of execution engines, binding environments, and a set of trusted computations that allocate execution sites to visiting computations. Those trusted islets have access to implementation-level Motile primitives that other computations are not permitted to call, for example, creating an islet, instantiating island-wide user interfaces, and staging fixed island assets. These primitives include all functions not written in Motile but made available through the binding environments allocated to Motile programs. These programs are evaluated in the context of a binding environment allocated by the island on which they run. This decision maintains a sharp distinction between the fixed assets (primitives) provided by organizations engaging in a COAST ecosystem and the Motile code written to use those assets.</p>
+      
+      <p>Trusted islets also issue CURLs naming themselves, with the distinction that their CURLs are durable, therefore valid even after an island is restarted. Computations holding a CURL for a trusted islet <i>t</i> are permitted to send a closure to <i>t</i> to spawn a new COAST computation.</p>
+      
+      <p>Island is not implemented in Motile, but instead it is implemented in whichever host language the organization wishes to use. In our case, Island (and the Motile compiler) are implemented in the Racket language (<a href="http://racket-lang.org" target="blank">http://racket-lang.org</a>).</p>
+
+      <img src="img/islands.png" />
+
+      <p class="back-to-top"><a href="#top">Back to the top</a></p>
+
+      <hr />
+
+      <h2>Development with COAST</h2>
+      <h3 id="requirements">Motile/Island Requirements</h3>
+
+      <ul>
+        <li>Ubuntu 14.04 or newer</li>
+        <li>Racket 5.92 or newer</li>
+        <li><i>make</i> utility</li>
+        <li><i>sudo</i> utility (to install the library bindings)</li>
+      </ul>
+
+      <h3 id="download">Download Motile/Island</h3>
+
+      <p>Get the <a href="download/island.tar.gz">Motile/Island Platform</a> and the <a href="download/island-lib-bind.tar.gz">Racket Library Bindings</a>.</p>
+
+      <h3 id="setup">Setup your environment</h3>
+        <ol>
+          <li>Download the two links above</li>
+          <li>Run <i>tar -xvzf island-lib-bind.tar.gz</i></li>
+          <li>Run <i>make all-libs</i></li>
+          <li>Run <i>raco pkg install -t file island.tar.gz</i></li>
+        </ol>
+
+      <p>Happy coding! Probably <a href="gettingstarted.html#hello">these examples</a> will help you start working with COAST.
+
+      <p class="back-to-top"><a href="#top">Back to the top</a></p>
+
+      <hr>
+
+      <h2>Impact</h2>
+      <h3 id="publications">COAST Publications</h3>
+      <h4>Book Chapters</h4>
+      <ul>
+        <li>Michael M. Gorlick and Richard N. Taylor. <a href= "http://link.springer.com/chapter/10.1007%2F978-1-4614-9299-3_2">Communication and Capability URLs in COAST-based Decentralized Services.</a> In: <i>C. Pautasso et al. (eds.), REST: Advanced Research Topics and Practical Applications</i>, pp. 9-25, Springer, 2014. DOI 10.1007/978-1-4614-9299-3.</li>
+      </ul>
+
+      <h4>Conference Proceedings</h4>
+      <ul>
+        <li>A. Baquero, and Taylor, R.N. <a href="papers/baquero_fhies14.pdf">“Secure and Customizable EHR Management Services with COASTmed”</a> In <i>Proceedings of FHIES/SEHC 2014 : Symposium on Foundations of Health Information Engineering and Systems (FHIES) and the Software Engineering in Healthcare (SEHC)</i>, Washington, DC, July, 2014.</li>
+        <li>A. Baquero, <a href="http://dl.acm.org/citation.cfm?id=2591083">"COASTmed: software architectures for delivering customizable, policy-based differential web services"</a> <i>In Companion Proceedings of the 36th International Conference on Software Engineering (ICSE Companion 2014).</i> ACM, New York, NY, USA, 634-637.</li>
+        <li>M.M. Gorlick, K. Strasser, and R. N. Taylor, <a href="papers/wicsa.pdf">"COAST: Architectures for decentralized on-demand tailored services,"</a> in <i>Proceedings of the Joint 10th Working IEEE/IFIP Conference on Software Architecture &amp; 6th European Conference on Software Architecture (WICSA/ECSA)</i>, 2012.</li>
+        <li>A. Baquero and R.N. Taylor, <a href="papers/EC-Web.pdf">"Computational commerce: A vision for the future,"</a> in <i>Proc. 13th International Conference on Electronic Commerce and Web Technologies</i>, 2012, 124-136.</li>
+      
+      </ul>
+
+      <h4>Posters</h4>
+      <ul>
+        <li>M.M. Gorlick, K. Strasser, A. Baquero, R.N. Taylor, <a href="papers/splash.pdf">"CREST: principled foundations for decentralized systems,"</a> <i>SPLASH Proceedings</i>, 2011, 193-194</li>
+      </ul>
+
+      <h4>Technical Reports</h4>
+      <ul>
+        <li>Matias Giorgio, Richard N. Taylor, <a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-15-2.pdf">"Accountability Through Architecture for Decentralized Systems: A Preliminary Assessment,"</a> UCI-ISR-15-2, October 2015.</li>
+        <li>Michael M. Gorlick, Richard N. Taylor, <a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-13-1.pdf">"Motile: Reflecting an Architectural Style in a Mobile Code Language,"</a> UCI-ISR-13-1, June 2013.</li>
+        <li>M.M. Gorlick, K. Strasser, R.N. Taylor, <a href="http://isr.uci.edu/sites/isr.uci.edu/files/techreports/UCI-ISR-12-3.pdf">"Motile: Mobile Code for Decentralized On-Demand Tailored Services,"</a> UCI-ISR-12-3, April 2012. Superseded by UCI-ISR-13-1.</li>
+
+      </ul>
+
+      <h4>Thesis/Dissertations</h4>
+      <ul>
+        <li>Mat&iacute;as Giorgio. <a href="papers/giorgio_thesis.pdf">Accountability Through Architecture for Decentralized Systems: A Preliminary Assessment.</a> (8/2015). Masters Thesis. University of California, Irvine.</li>
+        <li>Alegria Baquero. <a href="papers/baquero_thesis.pdf">COAST Services: Achieving Service Customization and Policy-Based Differential Access in Personal Information Systems.</a> (12/2014). Doctoral Dissertation. University of California, Irvine.</li>
+        <li>Justin R. Erenkrantz. <a href="http://www.erenkrantz.com/CREST/Erenkrantz-2009-CREST-Dissertation.pdf">Computational REST: A New Model for Decentralized, Internet-Scale Applications.</a> (6/13/09). Doctoral Dissertation. University of California, Irvine.</li>
+      </ul>
+
+      <h3 id="related_publications">Related Publications</h3>
+
+      <h4>Journals</h4>
+      <ul>
+        <li>Yongjie Zheng and Richard N. Taylor. A Classication and Rationalization of Model-Based Software Development. Invited "Expert's Voice." Software and Systems Modeling, 10.1007/s10270-013-0355-3; 12 pages, June 2013.</li>
+        <li>John C. Georgas, Andre van der Hoek, Richard N. Taylor (10/1/09). <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5280652&tag=1">Using Architectural Models at Runtime to Manage and Visualize Runtime Adaptation.</a> IEEE Computer. 42 (10), 52-60.</li>
+
+      </ul>
+
+      <h4>Conference Proceedings</h4>
+      <ul>
+        <li>Christoph Dorn and Richard N. Taylor. (11/28/12). <a href="http://link.springer.com/chapter/10.1007/978-3-642-35063-4_11">Architecture-Driven Modeling of Adaptive Collaboration Structures in Large-Scale Social Web Applications</a>. Proceedings of the 13th International Conference on Web Information System Engineering (WISE 2012). 7651 143-156.</li>  
+        <li>Yongjie Zheng and Richard N. Taylor (6/6/12). <a href="http://dl.acm.org/citation.cfm?id=2337453">xMapper: An Architecture-Implementation Mapping Tool" (Informal Research Demonstration)</a>. Proceedings of the 2012 International Conference on Software Engineering (ICSE 2012). 1461-1462.</li>
+        <li>Christoph Dorn and Richard N. Taylor (6/6/12). <a href="http://dl.acm.org/citation.cfm?id=2337394">Co-Adapting Human Collaborations and Software Architectures</a>. Proceedings of the 2012 International Conference on Software Engineering -- New Ideas and Emerging Results (NIER) track (ICSE 2012). 1277-1280.</li>
+        <li>Yongjie Zheng and Richard N. Taylor (6/6/12). <a href="http://dl.acm.org/citation.cfm?id=2337297">Enhancing Architecture-Implementation Conformance with Change Management and Support for Behavioral Mapping</a>. Proceedings of the 2012 International Conference on Software Engineering (ICSE 2012). 628-638.</li>
+        <li>Christoph Dorn and Richard N. Taylor (5/23/12). <a href="http://onlinelibrary.wiley.com/doi/10.1002/cpe.3438/full">Analyzing Runtime Adaptability of Collaboration Patterns</a>. Proceedings of the 2012 International Conference on Collaboration Technologies and Systems (CTS 2012). 551-558.</li>       
+        <li>Yongjie Zheng and Richard N. Taylor. (11/1/11). <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6100081">Taming Changes With 1.x-Way Architecture-Implementation Mapping</a>.  Proceedings of ASE 2011: 26th IEEE/ACM International Conference On Automated Software Engineering. 396-399.</li>
+        <li>Leyna C. Cotran and Richard N. Taylor (8/30/11). <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6043931">Developing Requirements in an Established Domain Using Tags and Metadata</a>. Proceedings of Requirements Engineering for Systems, Services, and Systems of Systems (Workshop at  RE'11). 24-27.</li>
+        <li>Richard N. Taylor, Nenad Medvidovic, Peyman Oreizy (9/1/09). <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5290803">Architectural Styles for Runtime Software Adaptation</a>. Proceedings of Joint Working IEEE/IFIP Conference on Software Architecture 2009 &amp; European Conference on Software  Architecture. 171-180.</li>       
+       <li>Hazeline Asuncion, Richard N. Taylor (5/1/09). <a href="http://dl.acm.org/citation.cfm?id=1557008">Capturing Custom Link Semantics among Heterogeneous Artifacts and Tools</a>. 5th Int'l Workshop on Traceability in Emerging Forms of Software Engineering.</li>
+      </ul>
+
+      <p class="back-to-top"><a href="#top">Back to the top</a></p>
+
+      <hr />
+
+      <h2>Contact Us</h2>
+      <h3 id="research_team">Research Team</h3>
+
+        <ul>
+          <li>Professor Richard N. Taylor (taylor@ics.uci.edu)</li>
+          <li>Michael M. Gorlick (mgorlick@acm.org)</li>
+          <li>Matías Giorgio (mgiorgio@uci.edu)</li>
+          <li>Kari Nies (kari@ics.uci.edu)</li>
+        </ul>
+    
+      <h4>Former Students</h4>
+        <ul>
+          <li>Kyle Strasser (kstrasse@ics.uci.edu)</li>
+          <li>Alegria Baquero (abaquero@ics.uci.edu)</li>
+        </ul>
+
+        <p class="back-to-top"><a href="#top">Back to the top</a></p>
+</section>
+<section class="vibrant centered">
+  <div class="">
+    This material is based upon work supported by the National Science Foundation under Grant Numbers  CNS-1449159, CCF-0820222 and 
+    CCF-0917129. Any opinions, findings, and conclusions or recommendations expressed in this material are those of 
+    the author(s) and do not necessarily reflect the views of the National Science Foundation.
+  </div>
+</section>
+<!--
+<footer>
+  <div class="">
+    <p> &copy; Copyright Frittt Templates. All Rights Reserved.</p>
+  </div>
+</footer>
+-->
+</div>
+<script src="js/jquery.min.js"></script> 
+<script src="js/layout.js"></script>
+</body>
+</html>

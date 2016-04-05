@@ -12,7 +12,21 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="wrapper">
+<div class="wrapper" id="top">
+
+<nav>
+    <div class="pull-left">
+        <h1><a href="index.html"><img src="img/home.png" />Home</a></h1>
+    </div>
+    <div class="pull-right">
+        <a href="about.html">What is COAST?</a>
+        <a href="gettingstarted.html">Getting Started</a>
+        <a href="about.html#what_is_Motile">Motile/Island</a>
+        <a href="https://github.com/mgiorgio/coast" target="_blank">Github</a>
+        <a href="" class="btn btn-download"><img src="img/download.png" width="25" alt="Download Motile/Island" />Download Motile/Island</a>
+    </div>
+</nav>
+
 <header>
   <div class="container">
     <h2 class="lone-header"><a href="index.html">COmputationAl State Transfer (COAST)</a></h2>
@@ -71,22 +85,27 @@
 	
 	<p><i>Gates</i> are attached to CURLs and define the conditions that must be fulfilled for a computation to be executed. For example, a <i>whitelist gate</i> lists all the islands that are authorized to send messages via a specific CURL, whereas a <i>blacklist gate</i> defines which islands are not authorized for that. Gates can also limit the number of times, frequency, valid dates or time ranges that a CURL can be exercised. In addition, gates can constrain computational resources in the execution site such as CPU cycles and memory available for a visiting computation.</p>
 
+    <hr>
 
-      <h2>Creating islands</h2>
+    <h2>Working with the following examples</h2>
 
-    (TODO: Add clarification about "COAST" and "Motile/Island")
-    (TODO: Prepare readers for what they are about to read: Explain that we include some basic info and links about Racket for people who aren't familiar with it.)
-    (TODO: Introduce Alice and Bob (didn't I do that already?))
-    (TODO: Add code practices for Racket or Scheme)
-    (TODO: Add link to https://github.com/mgiorgio/coast-examples)
+    <p>Because Motile/Island is implemented using Racket, we make extensive use of that language. For readers familiar with it, that will not be a problem. If understanding the examples becomes too difficult, you may want to take a look at the <a href="https://docs.racket-lang.org/guide/">Racket Guide</a>, <a href="https://learnxinyminutes.com/docs/racket/">Learn Racket in Y minutes</a> or <a href="http://www.scheme.com/tspl2d/intro.html">Scheme naming conventions</a> (Racket is a dialect of Scheme).</p>
 
-      <h3 id="hello">The "Hello World!" island</h3>
+    <p>All the examples presented in this page include a breakdown of the code as well as the entire source code. All the examples can be also found in our <a href="https://github.com/mgiorgio/coast-examples">Github repository</a>.</p>
 
-      This example shows how to print a "Hello World!" message using the Motile/Island infrastructure. In the example, we instantiate an island called Alice, start it up, and Alice will print a message. Notice that we are not using CURLs or any Motile code, it is only a single island printing a message.
+    <p class="back-to-top"><a href="#top">Back to the top</a></p>
 
-      <h4>1) Preparing Racket to work with Motile/Island</h4>
+    <hr>
 
-      <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file and name it <i>hello.rkt</i> and add the following code:</p>
+    <h2>Creating islands</h2>
+
+     <h3 id="hello">The "Hello World!" island</h3>
+
+     <p>This example shows how to print a "Hello World!" message using the Island infrastructure. It instantiates an island called Alice, starts it up, and Alice prints the message. Notice that, in this example, we are not using CURLs or any Motile code, it is only a single island printing a message.</p>
+
+     <h4>1) Preparing Racket to work with Island</h4>
+
+     <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file and name it <i>hello.rkt</i> and add the following code:</p>
 
 <pre><code class="language-scheme">#lang racket/base
 
@@ -170,6 +189,8 @@
 (define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre>
 </div>
 
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
+
 <hr />
 
 <h3 id="hello_two">"Hello World!" with two islands</h3>
@@ -238,6 +259,8 @@
 
 (define alice (island/new 'alice ALICE/CURVE/SECRET islet/hello))
 (define bob   (island/new 'bob   BOB/CURVE/SECRET   islet/hello))</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -408,6 +431,8 @@
   (spawn/sender))
 
 (define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -601,6 +626,8 @@ CURL
 
 (island/log/level/set 'warning)</code></pre></div>
 
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
+
 <hr />
 
 <h3 id="curls_promises">Specific duplets: Promises</h3>
@@ -752,6 +779,8 @@ CURL
 (island/keystore/set bob   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -913,6 +942,8 @@ CURL
 (island/keystore/set carol   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -1134,6 +1165,8 @@ CURL
 (island/keystore/set bob   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -1363,6 +1396,8 @@ CURL
 (island/keystore/set bob   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 </section>
 <section class="vibrant centered">
