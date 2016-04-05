@@ -481,3 +481,7 @@ input:focus {
     font-family: Gudea;
     font-size: 48px;
 }
+
+.back-to-top {
+    text-align: right;
+}

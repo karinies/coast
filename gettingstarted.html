@@ -7,13 +7,12 @@
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>COAST - Getting started</title>
-<link href="http://fonts.googleapis.com/css?family=Raleway:700,300" rel="stylesheet"
-        type="text/css">
+<link href="http://fonts.googleapis.com/css?family=Raleway:700,300" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="css/prism.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="wrapper">
+<div class="wrapper" id="top">
 
 <nav>
     <div class="pull-left">
@@ -73,24 +72,28 @@
 
     <p><i>Capability URLs (CURLs)</i> convey the ability to communicate between computations.
 
+    <hr>
 
-      <h2>Creating islands</h2>
+    <h2>Working with the following examples</h2>
 
-    (TODO: Add clarification about "COAST" and "Motile/Island")
-    (TODO: Prepare readers for what they are about to read: Explain that we include some basic info and links about Racket for people who aren't familiar with it.)
-    (TODO: Introduce Alice and Bob (didn't I do that already?))
-    (TODO: Add code practices for Racket or Scheme)
-    (TODO: Add link to https://github.com/mgiorgio/coast-examples)
+    <p>Because Motile/Island is implemented using Racket, we make extensive use of that language. For readers familiar with it, that will not be a problem. If understanding the examples becomes too difficult, you may want to take a look at the <a href="https://docs.racket-lang.org/guide/">Racket Guide</a>, <a href="https://learnxinyminutes.com/docs/racket/">Learn Racket in Y minutes</a> or <a href="http://www.scheme.com/tspl2d/intro.html">Scheme naming conventions</a> (Racket is a dialect of Scheme).</p>
 
-      <h3 id="hello">The "Hello World!" island</h3>
+    <p>All the examples presented in this page include a breakdown of the code as well as the entire source code. All the examples can be also found in our <a href="https://github.com/mgiorgio/coast-examples">Github repository</a>.</p>
 
-      This example shows how to print a "Hello World!" message using the Island infrastructure. It instantiates an island called Alice, starts it up, and Alice prints the message. Notice that, in this example, we are not using CURLs or any Motile code, it is only a single island printing a message.
+    <p class="back-to-top"><a href="#top">Back to the top</a></p>
 
-      <h4>1) Preparing Racket to work with Island</h4>
+    <hr>
 
-      <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file and name it <i>hello.rkt</i> and add the following code:</p>
+    <h2>Creating islands</h2>
 
-coast isr       
+     <h3 id="hello">The "Hello World!" island</h3>
+
+     This example shows how to print a "Hello World!" message using the Island infrastructure. It instantiates an island called Alice, starts it up, and Alice prints the message. Notice that, in this example, we are not using CURLs or any Motile code, it is only a single island printing a message.
+
+     <h4>1) Preparing Racket to work with Island</h4>
+
+     <p>First thing that we need for working with COAST is to create a Racket file and to add the proper libraries. Create a file and name it <i>hello.rkt</i> and add the following code:</p>
+
 <pre><code class="language-scheme">#lang racket/base
 
 ;; Basic require to work with Island
@@ -173,6 +176,8 @@ coast isr
 (define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre>
 </div>
 
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
+
 <hr />
 
 <h3 id="hello_two">"Hello World!" with two islands</h3>
@@ -241,6 +246,8 @@ coast isr
 
 (define alice (island/new 'alice ALICE/CURVE/SECRET islet/hello))
 (define bob   (island/new 'bob   BOB/CURVE/SECRET   islet/hello))</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -411,6 +418,8 @@ coast isr
   (spawn/sender))
 
 (define alice (island/new 'alice ALICE/CURVE/SECRET alice/boot))</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -604,6 +613,8 @@ CURL
 
 (island/log/level/set 'warning)</code></pre></div>
 
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
+
 <hr />
 
 <h3 id="curls_promises">Specific duplets: Promises</h3>
@@ -755,6 +766,8 @@ CURL
 (island/keystore/set bob   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -916,6 +929,8 @@ CURL
 (island/keystore/set carol   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -1139,6 +1154,8 @@ CURL
 (island/keystore/set bob   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 <hr />
 
@@ -1368,6 +1385,8 @@ CURL
 (island/keystore/set bob   KEYSTORE)
 
 (island/log/level/set 'warning)</code></pre></div>
+
+<p class="back-to-top"><a href="#top">Back to the top</a></p>
 
 </section>
 <section class="vibrant centered">
