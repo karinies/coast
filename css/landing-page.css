@@ -33,10 +33,9 @@ h6 {
 .intro-header {
     text-align: center;
     color: #f8f8f8;
-    /*background: url(../img/intro-bg.jpg) no-repeat center center;*/
     background: url(../img/2000px-TV-introduction-world-map.svg.png) no-repeat center center;
     
-    /*background-color: #04709F;*/
+    background-color: #04709F;
     background-size: cover;
 }
 
