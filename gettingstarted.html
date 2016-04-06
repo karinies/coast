@@ -37,10 +37,10 @@
     <ul class="docs-nav">
       <li><strong>Basics</strong></li>
       <li><a href="#basics-islands" class="cc-active">Islands and Islets</a></li>
-      <li><a href="#basics_curls" class="cc-active">CURLs, Duplets and Promises</a></li>
-      <li><a href="#basics_gates" class="cc-active">Gates</a></li>
-      <li><a href="#basics_motile" class="cc-active">Motile</a></li>
-      <li><a href="#basics_bind_env" class="cc-active">Binding Environments</a></li>
+      <li><a href="#basics-curls" class="cc-active">CURLs, Duplets and Promises</a></li>
+      <li><a href="#basics-gates" class="cc-active">Gates</a></li>
+      <li><a href="#basics-motile" class="cc-active">Motile</a></li>
+      <li><a href="#basics-bind_env" class="cc-active">Binding Environments</a></li>
       <li class="separator"></li>
       <li><strong>Creating islands</strong></li>
       <li><a href="#hello" class="cc-active">The "Hello World!" island</a></li>
@@ -52,7 +52,7 @@
       <li><a href="#curls_promises" class="cc-active">Specific duplets: Promises</a></li>
       <li><a href="#curls_gates" class="cc-active">Managing CURLs using Gates</a></li>
       <li class="separator"></li>
-      <li><strong>The Motile language</strong></li>
+      <li><strong>Using Motile</strong></li>
       <li><a href="#motile_simple" class="cc-active">A simple Motile computation</a></li>
       <li><a href="#motile_display_service" class="cc-active">A client-tailored Display Server</a></li>
     </ul>
@@ -85,11 +85,30 @@
 	
 	<p><i>Gates</i> are attached to CURLs and define the conditions that must be fulfilled for a computation to be executed. For example, a <i>whitelist gate</i> lists all the islands that are authorized to send messages via a specific CURL, whereas a <i>blacklist gate</i> defines which islands are not authorized for that. Gates can also limit the number of times, frequency, valid dates or time ranges that a CURL can be exercised. In addition, gates can constrain computational resources in the execution site such as CPU cycles and memory available for a visiting computation.</p>
 
+	<h3 id="basics-motile">Motile</h3>
+	
+	<p>Motile is a language for creating mobile computations. We use Motile to write the computations we send to be remotely executed, either within the same island or on a different one. Motile is a single-assignment dialect of Scheme expressly created for defining COAST computations and the messages and CURLs they exchange.</p>
+	
+	<p>For more information about Motile see <a href="about.html#what_is_Motile">What is Motile?</a>.
+	
+	<h3 id="basics-bind_env">Binding Environments</h3>
+	
+	<p>A binding environment is a structure that maps symbols to functions, and it is used in Motile/Island to (1) define the functions available for a visiting computation and (2) to specify implementations for such functions. Binding environments provide functional capabilities to computations in the sense that they define what a computation can do.</p>
+	
+	<p>Suppose Alice is a service provider offering image processing services. Bob needs to use Alice's services then it sends this computation:</p>
+	
+	<pre><code class="language-scheme">(let ([bob-image (image/download "http://bob-server.com/some_picture.jpg")])
+	  (image/rotate bob-image))</code></pre>
+	
+	<p>Here, <code class="language-scheme">(image/download)</code> and <code class="language-scheme">(image/rotate)</code> are functions provided by Alice. If Bob wants to use them, they need to be on the binding environment that Alice assigns to Bob's request. Without a binding environment, they are free variables with no particular meaning but with a binding environment, they get bound to a function implementation.</p>
+	
+	<p>Now, suppose the Alice has a Premium level that uses more faster algorithms. For clients paying for the Premium level, Alice defines a new binding environment in which the same <code class="language-scheme">(image/download)</code> and <code class="language-scheme">(image/rotate)</code> symbols are bound to other function implementations. That is, even though clients use those symbols, the actual implementation on Alice will differ.</p>
+	
     <hr>
 
     <h2>Working with the following examples</h2>
 
-    <p>Because Motile/Island is implemented using Racket, we make extensive use of that language. For readers familiar with it, that will not be a problem. If understanding the examples becomes too difficult, you may want to take a look at the <a href="https://docs.racket-lang.org/guide/">Racket Guide</a>, <a href="https://learnxinyminutes.com/docs/racket/">Learn Racket in Y minutes</a> or <a href="http://www.scheme.com/tspl2d/intro.html">Scheme naming conventions</a> (Racket is a dialect of Scheme).</p>
+    <p>Because Motile/Island is implemented using <a href="http://www.racket-lang.org">Racket</a>, we make extensive use of that language. For readers familiar with it, that will not be a problem. If understanding the examples becomes too difficult, you may want to take a look at the <a href="https://docs.racket-lang.org/guide/">Racket Guide</a>, <a href="https://learnxinyminutes.com/docs/racket/">Learn Racket in Y minutes</a> or <a href="http://www.scheme.com/tspl2d/intro.html">Scheme naming conventions</a> (Racket is a dialect of Scheme).</p>
 
     <p>All the examples presented in this page include a breakdown of the code as well as the entire source code. All the examples can be also found in our <a href="https://github.com/mgiorgio/coast-examples">Github repository</a>.</p>
 
@@ -947,9 +966,7 @@ CURL
 
 <hr />
 
-<h2>The Motile language</h2>
-
-<p>We previously briefly explained that Motile is a language for mobile computation. We use Motile to send computations to be remotely executed, either within the same island or on a different one. Motile is a single-assignment dialect of Scheme expressly created for defining COAST computations and the messages and CURLs they exchange.</p>
+<h2>Using Motile</h2>
 
 <h3 id="motile_simple">A simple Motile computation</h3>
 
@@ -1402,9 +1419,7 @@ CURL
 </section>
 <section class="vibrant centered">
   <div class="">
-    This material is based upon work supported by the National Science Foundation under Grant Numbers CNS-1449159, CCF-0820222 and 
-    CCF-0917129. Any opinions, findings, and conclusions or recommendations expressed in this material are those of 
-    the author(s) and do not necessarily reflect the views of the National Science Foundation.
+    This material is based upon work supported by the National Science Foundation under Grant Numbers CNS-1449159, CCF-0820222 and CCF-0917129. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
   </div>
 </section>
 </div>
