@@ -54,7 +54,7 @@
       <li class="separator"></li>
       <li><strong>Using Motile</strong></li>
       <li><a href="#motile_simple" class="cc-active">A simple Motile computation</a></li>
-      <li><a href="#motile_display_service" class="cc-active">A client-tailored Display Server</a></li>
+      <li><a href="#motile_display_service" class="cc-active">A client-tailored Echo Server</a></li>
     </ul>
     <div class="docs-content">
 
@@ -75,7 +75,7 @@
     <p><i>Capability URLs (CURLs)</i> convey the ability to communicate between computations. A CURL <i>u</i> is an unambiguous reference to a computation <i>x</i> that enables other computations holding <i>u</i> to send messages to <i>x</i>. CURLs are unguessable, unforgeable, and tamper-proof; they contain cryptographic material referencing the issuer computation, and are signed by the issuer's execution host.</p>
 	<p>In short, if you need to send a message to a computation, you must have a CURL issued by that computation.</p>
 	
-	<h4>Duplets and Promises</h4>
+	<h4 id="basics-duplets">Duplets and Promises</h4>
 	
 	<p>A <i>duplet</i> is a convenient structure to communicate with other computations and deal with CURLs. A duplet has a <i>resolver</i> and a <i>receiver</i>. The former is precisely a CURL that can be obtained from the duplet by using the <code class="language-scheme">(duplet/resolver)</code> function. The latter is a mechanism to receive messages via the duplet's CURL. It is not explicitely referenced by internally used by the <code class="language-scheme">(duplet/block)</code> and <code class="language-scheme">(duplet/wait)</code> functions to receive messages that were sent via the duplet's CURL.</p>
 	
@@ -285,7 +285,7 @@
 
   <h2>Introducing CURLs</h2>
 
-  <p>Islets use <a href="#">CURLs</a> to communicate with each other. Briefly, a CURL unambiguously identifies a service offered by an islet, and also provides addressability for such service. That is, when an islet exercises a CURL, the underlying platform will take care of delivering the message. If islet <i>x</i> wants to send a message to islet <i>y</i>, then <i>x</i> must hold a CURL issued by <i>y</i>.</p>
+  <p>Islets use <a href="#basics-curls">CURLs</a> to communicate with each other. Briefly, a CURL unambiguously identifies a service offered by an islet, and also provides addressability for such service. That is, when an islet exercises a CURL, the underlying platform will take care of delivering the message. If islet <i>x</i> wants to send a message to islet <i>y</i>, then <i>x</i> must hold a CURL issued by <i>y</i>.</p>
 
   <h3 id="curls_simple">Hello CURL!</h3>
 
@@ -371,7 +371,7 @@
   (sleep 1.0)
   (spawn/sender))</code></pre>
 
-<p>You may notice that there is a new concept here: <strong>duplet</strong>. In short, a duplet is an abstraction that wraps a CURL and the mechanism to receive messages through it. See the <a href="">duplet documentation</a> for a more detailed explanation. For now, it is enough to know that a duplet contains one CURL that can be obtained using the <code class="language-scheme">(duplet/resolver <i>your_duplet</i>)</code> function.</p>
+<p>You may notice that there is a new concept here: <a href="#basics-duplets">duplet</a>. In short, a duplet is an abstraction that wraps a CURL and the mechanism to receive messages through it. For now, it is enough to know that a duplet contains one CURL that can be obtained using the <code class="language-scheme">(duplet/resolver <i>your_duplet</i>)</code> function.</p>
 
 <p>Lastly, we define Alice and we are ready to go:</p>
 
@@ -457,9 +457,9 @@
 
 <h3 id="curls_realistic">CURLs getting real</h3>
 
-<p>As the reader must have imagined, there was a reason in the previous example to use a box to store a CURL globally, and that reason was to bypass a security mechanism in COAST called <a href="">communication by introduction</a>. In COAST, we like to think that politeness is paramount, therefore a person must be introduced to someone if that person wants to communicate with him or her. In the COAST terminology, if an islet <i>y wants to communicate with an islet x</i>, then <i>y</i> must be introduced to <i>x</i>.</p>
+<p>As the reader must have imagined, there was a reason in the previous example to use a box to store a CURL globally, and that reason was to bypass a security mechanism in COAST called communication by introduction. In COAST, we like to think that politeness is paramount, therefore a person must be introduced to someone if that person wants to communicate with him or her. In the COAST terminology, if an islet <i>y wants to communicate with an islet x</i>, then <i>y</i> must be introduced to <i>x</i>.</p>
 
-<p>Now, suppose that Janet wants to send a message to Joe, then Joe (or someone) should provide a CURL issued by him to Janet. However, if Joe was not previously introduced to Janet, how can he give her his CURL? For the sake of clarity, we decided to solve this chicken-and-egg problem using a box. Joe does not provide its CURL to Janet directly but puts it on a box where Janet can pack it up.</p>
+<p>Now, suppose that Janet wants to send a message to Joe, then Joe (or someone) should provide a CURL issued by him to Janet. However, if Joe was not previously introduced to Janet, how can he give her his CURL? For the sake of clarity, we decided to solve this chicken-and-egg problem using a box. Joe does not provide its CURL to Janet directly but puts it on a box where Janet can pack it up. By the way, keep in mind that we solved this problem that way because of clarity and simplicity but that is a pretty bad practice in functional programming.</p>
 
 <p>It is out of the scope of COAST how an islet receives the CURL of a service with which it needs to communicate; in the same way that, for example, REST does not define how a URL is distributed. In this example, an islet in Alice wants to send a message to an islet in Bob. Alice somehow received a textual representation of the CURL issued by Bob (perhaps by e-mail or written in a piece of paper). Let's see how our Display Service would work in this context.</p>
 
@@ -651,7 +651,7 @@ CURL
 
 <h3 id="curls_promises">Specific duplets: Promises</h3>
 
-<p>We will expand the last example to introduce a particular case of duplets: promises. A <a href="">promise</a> is a duplet that can only be used once.</p>
+<p>We will expand the last example to introduce a particular case of duplets: promises. A <a href="basics-duplets">promise</a> is a duplet that can only be used once.</p>
 
 <p>In order to show how promises work, we turn the previous Display Server into an Echo Server. For that, when the server receives a message, instead of printing it into the console, it will reply it back to the sender. In order to do so, a client must send a CURL that the Echo Server will use to send the response back.</p>
 
@@ -805,7 +805,7 @@ CURL
 
 <h3 id="curls_gates">Managing CURLs using Gates</h3>
 
-<p><A href="">Gates</A> let you constrain the conditions in which a CURL can be used. For example, an island can define who is authorized to exercise it, when, how many times, and also to impose limits at the Execution Site level such as the maximum allowed memory or CPU cycles to use by the visiting computation.</p>
+<p>Gates let you constrain the conditions in which a CURL can be used. For example, an island can define who is authorized to exercise it, when, how many times, and also to impose limits at the Execution Site level such as the maximum allowed memory or CPU cycles to use by the visiting computation.</p>
 
 <p>We will expand farther the previous example to include a third island, Carol, that attempts to use Alice's Echo Service but it will not be able to do it.</p>
 
