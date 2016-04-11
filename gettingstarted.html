@@ -1048,8 +1048,8 @@ CURL
   (define (service/execute)
     ; Create a duplet to receive messages via Alice's CURL.
     ; Notice the use of (islet/curl/known/new). We use this function because it is a known CURL, we are not creating a brand new CURL.
-    ; '(remote chirp) is the service path (it must be the same as the one in the textual representation)
-    ; 'access:send:chirp is the access id (it must be the same as the one in the textual representation)
+    ; '(service spawn) is the service path (it must be the same as the one in the textual representation)
+    ; 'access:send.service.spawn is the access id (it must be the same as the one in the textual representation)
     (let ([server/duplet (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)])
       (let loop ([m (duplet/block server/duplet)])
         ; Create a worker (i.e. an islet) to solve the incoming computation.
@@ -1151,8 +1151,8 @@ CURL
   (define (service/execute)
     ; Create a duplet to receive messages via Alice's CURL.
     ; Notice the use of (islet/curl/known/new). We use this function because it is a known CURL, we are not creating a brand new CURL.
-    ; '(remote chirp) is the service path (it must be the same as the one in the textual representation)
-    ; 'access:send:chirp is the access id (it must be the same as the one in the textual representation)
+    ; '(service spawn) is the service path (it must be the same as the one in the textual representation)
+    ; 'access:send.service.spawn is the access id (it must be the same as the one in the textual representation)
     (let ([server/duplet (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)])
       (let loop ([m (duplet/block server/duplet)])
         ; Create a worker (i.e. an islet) to solve the incoming computation.
@@ -1282,8 +1282,8 @@ CURL
   (define (service/execute)
     ; Create a duplet to receive messages via Alice's CURL.
     ; Notice the use of (islet/curl/known/new). We use this function because it is a known CURL, we are not creating a brand new CURL.
-    ; '(remote chirp) is the service path (it must be the same as the one in the textual representation)
-    ; 'access:send:chirp is the access id (it must be the same as the one in the textual representation)
+    ; '(service spawn) is the service path (it must be the same as the one in the textual representation)
+    ; 'access:send:service.spawn is the access id (it must be the same as the one in the textual representation)
     (let ([server/duplet (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)])
       (let loop ([m (duplet/block server/duplet)])
         ; Create a worker (i.e. an islet) to solve the incoming computation.
@@ -1384,8 +1384,8 @@ CURL
   (define (service/execute)
     ; Create a duplet to receive messages via Alice's CURL.
     ; Notice the use of (islet/curl/known/new). We use this function because it is a known CURL, we are not creating a brand new CURL.
-    ; '(remote chirp) is the service path (it must be the same as the one in the textual representation)
-    ; 'access:send:chirp is the access id (it must be the same as the one in the textual representation)
+    ; '(service spawn) is the service path (it must be the same as the one in the textual representation)
+    ; 'access:send:service.spawn is the access id (it must be the same as the one in the textual representation)
     (let ([server/duplet (islet/curl/known/new '(service spawn) 'access:send.service.spawn GATE/ALWAYS environ/null)])
       (let loop ([m (duplet/block server/duplet)])
         ; Create a worker (i.e. an islet) to solve the incoming computation.
