@@ -144,7 +144,7 @@ CURL
     (islet/log/info "Simulation thunk sent") 
     
     ; listen for curl on which to send thrust updates to sim server
-    (islet/log/info "Pilot waiting thruster curl")
+    (islet/log/info "Pilot waiting for thruster curl")
     (let ([m (duplet/block thruster/d)])
       (let ([thruster/c (murmur/payload m)])
         (islet/log/info "Pilot has received thruster curl")
