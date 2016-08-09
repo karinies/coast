@@ -83,7 +83,7 @@ CURL
                         (loop (duplet/try thruster-updates/d) state 0)
                         ]
                        [else
-                        (display "Setting thruster to ".new-thruster."\n")
+                        (display "Setting thruster to ") (display new-thruster)(newline)
                         (loop (duplet/try thruster-updates/d) state new-thruster) 
                         ])                                                                     
                    (else   
@@ -121,7 +121,6 @@ CURL
 (define (service/spawn/pilot-input thruster/c) ; An input reader service for the pilot
   (islet/log/info "Running Pilot's input reader service.")
   (let loop ([value (read)]) ; 
-    (islet/log/info "input value is: " . value ."\n")
     ; update on thruster curl
     (send thruster/c (cons 'THRUSTER value))
     (loop (read))))
