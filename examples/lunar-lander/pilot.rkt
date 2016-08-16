@@ -37,32 +37,36 @@ CURL
   ; This is Motile source.
   '(lambda (state/curl thrusterc/curl)
      (lambda () ; this will return a parameterless thunk with state/curl and thruster/curl embedded as variable values    
-       (letrec (
-                ; on this curl, the executing simulation will send back a curl on which the pilot can communicate thruster updates
-                [thrusterc/c thrusterc/curl] 
-                ; on this curl, the executing simulation will send state updates
-                [state/c state/curl]
-                ; create new curl for receiving pilot thruster updates, we will send to pilot below
-                [thruster-updates/d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTER)] 
-                
-                [GRAVITY 2]
-                ; Initial state is #(ALTITUDE FUEL VELOCITY).
-                [INITIAL-STATE (vector 1000 500 70)]
-                
-                ; define is not available in motile, use labmda functions instead
-                [altitude/get (lambda(v) (vector-ref v 0))] ; get altitude from state vector
-                [fuel/get (lambda (v) (vector-ref v 1))] ; get fuel from state vector
-                [velocity/get (lambda (v) (vector-ref v 2))] ; get velocity from state vector
-                [altitude/update (lambda (state) ; calculate new altitude
-                                   (let ([altitude (- (altitude/get state) (velocity/get state))])
-                                     (if (<= altitude 0) 0 altitude)))] ; don't allow altitute to go negative     
-                [state/calculate (lambda (state thruster) ; calculate new state, returns #(ALTITUDE FUEL VELOCITY)
-                                   (let ([altitude (altitude/update state)]
-                                         [fuel (- (fuel/get state) thruster)]
-                                         [velocity (/ (- (* (+ (velocity/get state) GRAVITY) 10) (* thruster 2)) 10)]) ; ((velocity + GRAVITY)*10 - (thruster*2)) / 10
-                                     (if (<= fuel 0) ; set thruster to 0 if we run out of fuel
-                                         (vector altitude 0 velocity)
-                                         (vector altitude fuel velocity))))])         
+       (let* (
+              ; on this curl, the executing simulation will send back a curl on which the pilot can communicate thruster updates
+              [thrusterc/c thrusterc/curl] 
+              ; on this curl, the executing simulation will send state updates
+              [state/c state/curl]
+              ; create new curl for receiving pilot thruster updates, we will send to pilot below
+              [thruster-updates/d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTER)] 
+              
+              [GRAVITY 2]
+              ; Initial state is #(ALTITUDE FUEL VELOCITY).
+              [INITIAL-STATE (vector 1000.0 500.0 70.0)]
+              
+              ; define is not available in motile, use labmda functions instead
+              [altitude/get (lambda(v) (vector-ref v 0))] ; get altitude from state vector
+              [fuel/get (lambda (v) (vector-ref v 1))] ; get fuel from state vector
+              [velocity/get (lambda (v) (vector-ref v 2))] ; get velocity from state vector   
+              [state/calculate (lambda (state thruster) ; calculate new state, returns #(ALTITUDE FUEL VELOCITY)
+                                 (let* (
+                                        [calc-altitude (- (altitude/get state) (velocity/get state))]
+                                        [altitude (if (<= calc-altitude 0) 0 calc-altitude)] ; don't allow altitute to go negative
+                                        [calc-fuel (- (fuel/get state) thruster)]
+                                        [fuel (if (<= calc-fuel 0) 0 calc-fuel)] ; don't allow fuel to go negative
+                                        [calc-velocity (/ (- (* (+ (velocity/get state) GRAVITY) 10) (* thruster 2)) 10)] ; ((velocity + GRAVITY)*10 - (thruster*2)) / 10
+                                        [velocity (if (<= calc-velocity 0) 0 calc-velocity)]) ; don't allow velocity to go negative
+                                   (cond 
+                                     [(and (= fuel 0) (> (fuel/get state) 0)) ; check if we just ran out of fuel   
+                                      (display "Fuel depleted.\n")
+                                      (send state/c "FUEL DEPLETED!")]) ; warn pilot]
+                                   (vector altitude fuel velocity)))])
+         
          (islet/log/info "Executing simulation")
          (islet/log/info "Sending pilot curl")   
          ; send pilot a curl on which this executing simulation will receive thruster updates
@@ -70,37 +74,39 @@ CURL
          (islet/log/info "Sent pilot curl")
          (sleep 1.0) ; allow pilot time to recieve curl
          
-         ; at each iteration of loop we send 1) murmur from the pilot, 2) the current state, and 3) the current thruster level
-         ; we check for murmurs using duplet/try, this is non-blocking
+         ; we check for murmurs from the pilot using duplet/try, this is non-blocking  
+         ; at each iteration of loop we pass 1) possible murmur from the pilot, 2) the current state, and 3) the current thruster level
          (let loop ([m (duplet/try thruster-updates/d)] [state INITIAL-STATE] [thruster 0]) 
-           ; check for pilot thruster adjustment
-           (cond                                                                                                                
+           (cond ; check for pilot thruster adjustment                                                                                                             
              [m ; got a murmur from the pilot                                                                                                                 
               (let ([command (murmur/payload m)]) ; command is  ('THRUSTER . N) 
                 (display "Got thruster update.\n")
                 (islet/log/info command)
                 (case (car command)                                                                                              
-                  ((THRUSTER) ; checking that first element is 'THRUSTER                                                                                                   
+                  [(THRUSTER) ; checking that first element is 'THRUSTER                                                                                                   
                    (let ([new-thruster (cdr command)]) ; get thruster value
                      (cond 
                        [(= (fuel/get state) 0) ; if fuel is empty, we cannot change thruster, must remain at 0
                         (display "Fuel depleted. Thruster not updated.\n")
-                        (send state/c "FUEL DEPLETED!")
-                        (loop (duplet/try thruster-updates/d) state 0) ; check for another murmur
-                        ]
+                        (send state/c "FUEL DEPLETED!") ; warn pilot
+                        (loop (duplet/try thruster-updates/d) state 0)] ; check for another murmur
                        [else ; change thruster value
                         (display "Setting thruster to ") (display new-thruster)(newline)
-                        (loop (duplet/try thruster-updates/d) state new-thruster) ; check for another murmur
-                        ])                                                                     
-                     (else   
+                        (loop (duplet/try thruster-updates/d) state new-thruster)]))] ; check for another murmur                                                                    
+                   [else   
                       (display "Invalid thruster update.\n")
-                      (loop (duplet/try thruster-updates/d) state thruster))))))] ; check for another murmur
+                      (loop (duplet/try thruster-updates/d) state thruster)]))] ; check for another murmu
              
              [else ; no murmurs, go ahead and recalculate state                                                                                              
               (sleep 1.0)
               (let ([state/new (state/calculate state thruster)]) ; calculate new state
                 (display state/new)(newline)
-                (send state/c state/new) ; send new state to pilot
+                ; send new state to pilot
+                (send state/c (format "Altitute = ~a, Fuel = ~a, Velocity = ~a" 
+                                 (round (altitude/get state/new))
+                                 (round (fuel/get state/new))
+                                 (round (velocity/get state/new))))
+                ;(send state/c state/new) 
                 (cond
                   [(= (altitude/get state/new) 0) ; check if we have touched ground
                    (cond 
@@ -112,14 +118,10 @@ CURL
                       (send state/c "You crashed! Try again.\n")]
                      )]
                   [else ; still falling
-                   (cond 
-                     [(= (fuel/get state/new) 0) ; check if we are out of fuel
-                      (display "Fuel depleted.")
-                      (send state/c "FUEL DEPLETED!")
-                      (loop (duplet/try thruster-updates/d) state/new 0)] ; set thruster to 0, check for another murmur
-                     [else
-                      (loop (duplet/try thruster-updates/d) state/new thruster)])]) ; check for another murmur   
-                )]))
+                   (if (= (fuel/get state/new) 0) ; check if we are out of fuel
+                       (loop (duplet/try thruster-updates/d) state/new 0) ; set thruster to 0, check for another murmur
+                       (loop (duplet/try thruster-updates/d) state/new thruster))]))])); check for another murmur   
+         
          (display "Game Over.\n")
          (display "Exiting Simulation...\n")))))
 
@@ -142,7 +144,7 @@ CURL
   (let* ([state/d (islet/curl/new '(state notif) GATE/ALWAYS #f 'INTER)]  ; pilot will receive state updates on this curl.
          ;[thruster/p (promise/new)] ; pilot will recieve curl on which to send thrust modifications on this promise.
          ; MICHAEL, COULD NOT GET WORKING WITH PROMISE, HAD TO USE DUPLET
-         [thrusterc/d (islet/curl/new '(thrustercurl pass) GATE/ALWAYS #f 'INTER)] ; pilot will receive a curl on which it can send thruster updates on this curl
+         [thrusterc/d (islet/curl/new '(thrustercurl pass) GATE/ALWAYS #f 'INTER)] ; This curl will be used to send the pilot another curl on which it can send thruster updates.
          [THUNK/SIMULATION (motile/call (island/compile SIMULATION) environ/null (duplet/resolver state/d) (duplet/resolver thrusterc/d))]) ; creates a compiled thunk to send to the simulation server
     (islet/log/info "Sending simulation thunk to Simulation Server...")
     (send server/u THUNK/SIMULATION)
