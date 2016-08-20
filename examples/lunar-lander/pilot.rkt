@@ -6,7 +6,7 @@
   [only-in "../../curl/base.rkt" curl/origin curl/path curl/metadata]
   "../../transport/gate.rkt"
   "../../uuid.rkt"
-  "../examples-base.rkt")
+  "coastapp-utils.rkt")
 
 (provide pilot)
 
@@ -45,9 +45,9 @@ CURL
               ; create new curl for receiving pilot thruster updates, we will send to pilot below
               [thruster-updates/d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTER)] 
               
-              [GRAVITY 2]
+              [GRAVITY 1.1]
               ; Initial state is #(ALTITUDE FUEL VELOCITY).
-              [INITIAL-STATE (vector 1000.0 500.0 70.0)]
+              [INITIAL-STATE (vector 1000.0 750.0 70.0)]
               
               ; define is not available in motile, use labmda functions instead
               [altitude/get (lambda(v) (vector-ref v 0))] ; get altitude from state vector
@@ -67,11 +67,11 @@ CURL
                                       (send state/c "FUEL DEPLETED!")]) ; warn pilot]
                                    (vector altitude fuel velocity)))])
          
-         (islet/log/info "Executing simulation")
-         (islet/log/info "Sending pilot curl")   
+         (display "Executing simulation\n")
+         (display "Sending pilot curl\n")   
          ; send pilot a curl on which this executing simulation will receive thruster updates
          (send thrusterc/c (duplet/resolver thruster-updates/d))
-         (islet/log/info "Sent pilot curl")
+         (display "Sent pilot curl\n")
          (sleep 1.0) ; allow pilot time to recieve curl
          
          ; we check for murmurs from the pilot using duplet/try, this is non-blocking  
@@ -81,7 +81,7 @@ CURL
              [m ; got a murmur from the pilot                                                                                                                 
               (let ([command (murmur/payload m)]) ; command is  ('THRUSTER . N) 
                 (display "Got thruster update.\n")
-                (islet/log/info command)
+                (display command)(newline)
                 (case (car command)                                                                                              
                   [(THRUSTER) ; checking that first element is 'THRUSTER                                                                                                   
                    (let ([new-thruster (cdr command)]) ; get thruster value
@@ -98,7 +98,7 @@ CURL
                       (loop (duplet/try thruster-updates/d) state thruster)]))] ; check for another murmu
              
              [else ; no murmurs, go ahead and recalculate state                                                                                              
-              (sleep 1.0)
+              (sleep 4.0) ; slow game to allow pilot time to respond to state changes
               (let ([state/new (state/calculate state thruster)]) ; calculate new state
                 (display state/new)(newline)
                 ; send new state to pilot
@@ -127,7 +127,7 @@ CURL
 
 
 (define (service/listen/pilot-input thruster/c) ; An input reader service for the pilot
-  (islet/log/info "Running Pilot's input reader service.")
+  (display "Running Pilot's input reader service.\n")
   (let loop ([value (read)]) ; promp pilot for thruster update
     (send thruster/c (cons 'THRUSTER value)) ; send new thrust value to executing simulation
     (loop (read))))
@@ -135,26 +135,24 @@ CURL
 ;; Code for a pilot island.
 ;; server/u - CURL for spawn service on Sim Server.
 (define (pilot/boot server/u)
-  (islet/log/info "Pilot is booting...")
+  (display "Pilot is booting...\n")
   
-  (islet/log/info "Waiting for Simulation Server...")
+  (display "Waiting for Simulation Server...\n")
   (island/enter/wait (curl/origin server/u))
-  (islet/log/info "Simulation Server has been seen.")
+  (display "Simulation Server has been seen.\n")
   
   (let* ([state/d (islet/curl/new '(state notif) GATE/ALWAYS #f 'INTER)]  ; pilot will receive state updates on this curl.
-         ;[thruster/p (promise/new)] ; pilot will recieve curl on which to send thrust modifications on this promise.
-         ; MICHAEL, COULD NOT GET WORKING WITH PROMISE, HAD TO USE DUPLET
-         [thrusterc/d (islet/curl/new '(thrustercurl pass) GATE/ALWAYS #f 'INTER)] ; This curl will be used to send the pilot another curl on which it can send thruster updates.
-         [THUNK/SIMULATION (motile/call (island/compile SIMULATION) environ/null (duplet/resolver state/d) (duplet/resolver thrusterc/d))]) ; creates a compiled thunk to send to the simulation server
-    (islet/log/info "Sending simulation thunk to Simulation Server...")
+         [thrusterc/p (promise/new)] ; pilot will recieve curl on which to send thrust modifications on this promise.
+         [THUNK/SIMULATION (motile/call (island/compile SIMULATION) environ/null (duplet/resolver state/d) (duplet/resolver thrusterc/p))]) ; creates a compiled thunk to send to the simulation server
+    (display "Sending simulation thunk to Simulation Server...\n")
     (send server/u THUNK/SIMULATION)
-    (islet/log/info "Simulation thunk sent") 
+    (display "Simulation thunk sent\n") 
     
     ; listen for curl on which to send thrust updates to sim server
-    (islet/log/info "Pilot waiting for thruster curl")
-    (let ([m (duplet/block thrusterc/d)]) ; listen for the curl
+    (display "Pilot waiting for thruster curl\n")
+    (let ([m (duplet/block thrusterc/p)]) ; listen for the curl
       (let ([thruster/c (murmur/payload m)]) ; extract curl from the payload
-        (islet/log/info "Pilot has received thruster curl")
+        (display "Pilot has received thruster curl\n")
         
         ; fire up islet to get input events from the pilot
         (define (pilot/input) ; This function creates an islet that will listen for thruster updates as keyboard input.
