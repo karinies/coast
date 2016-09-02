@@ -36,7 +36,8 @@ CURL
 (define SIMULATION
   ; This is Motile source.
   '(lambda (state/curl thrusterc/curl)
-     (lambda () ; this will return a parameterless thunk with state/curl and thruster/curl embedded as variable values    
+     (lambda () ; this will return a parameterless thunk with state/curl and thruster/curl embedded as variable values          
+       
        (let* (
               ; on this curl, the executing simulation will send back a curl on which the pilot can communicate thruster updates
               [thrusterc/c thrusterc/curl] 
@@ -45,27 +46,27 @@ CURL
               ; create new curl for receiving pilot thruster updates, we will send to pilot below
               [thruster-updates/d (islet/curl/new '(comp notif) GATE/ALWAYS #f 'INTER)] 
               
-              [GRAVITY 1.1]
+              [GRAVITY 1.0]
               ; Initial state is #(ALTITUDE FUEL VELOCITY).
-              [INITIAL-STATE (vector 1000.0 750.0 70.0)]
-              
-              ; define is not available in motile, use labmda functions instead
-              [altitude/get (lambda(v) (vector-ref v 0))] ; get altitude from state vector
-              [fuel/get (lambda (v) (vector-ref v 1))] ; get fuel from state vector
-              [velocity/get (lambda (v) (vector-ref v 2))] ; get velocity from state vector   
-              [state/calculate (lambda (state thruster) ; calculate new state, returns #(ALTITUDE FUEL VELOCITY)
-                                 (let* (
-                                        [calc-altitude (- (altitude/get state) (velocity/get state))]
-                                        [altitude (if (<= calc-altitude 0) 0 calc-altitude)] ; don't allow altitute to go negative
-                                        [calc-fuel (- (fuel/get state) thruster)]
-                                        [fuel (if (<= calc-fuel 0) 0 calc-fuel)] ; don't allow fuel to go negative
-                                        [calc-velocity (/ (- (* (+ (velocity/get state) GRAVITY) 10) (* thruster 2)) 10)] ; ((velocity + GRAVITY)*10 - (thruster*2)) / 10
-                                        [velocity (if (<= calc-velocity 0) 0 calc-velocity)]) ; don't allow velocity to go negative
-                                   (cond 
-                                     [(and (= fuel 0) (> (fuel/get state) 0)) ; check if we just ran out of fuel   
-                                      (display "Fuel depleted.\n")
-                                      (send state/c "FUEL DEPLETED!")]) ; warn pilot]
-                                   (vector altitude fuel velocity)))])
+              [INITIAL-STATE (vector 1000.0 750.0 70.0)])
+           
+         (define (altitude/get v) (vector-ref v 0)); get altitude from state vector
+         (define (fuel/get v) (vector-ref v 1)); get fuel from state vector
+         (define (velocity/get v) (vector-ref v 2)); get velocity from state vector   
+         
+         (define (state/calculate state thruster) ; calculate new state, returns #(ALTITUDE FUEL VELOCITY)
+           (let* (
+                  [calc-altitude (- (altitude/get state) (velocity/get state))]
+                  [altitude (if (<= calc-altitude 0) 0 calc-altitude)] ; don't allow altitute to go negative
+                  [calc-fuel (- (fuel/get state) thruster)]
+                  [fuel (if (<= calc-fuel 0) 0 calc-fuel)] ; don't allow fuel to go negative
+                  [calc-velocity (/ (- (* (+ (velocity/get state) GRAVITY) 10) (* thruster 2)) 10)] ; ((velocity + GRAVITY)*10 - (thruster*2)) / 10
+                  [velocity (if (<= calc-velocity 0) 0 calc-velocity)]) ; don't allow velocity to go negative
+             (cond 
+               [(and (= fuel 0) (> (fuel/get state) 0)) ; check if we just ran out of fuel   
+                (display "Fuel depleted.\n")
+                (send state/c "FUEL DEPLETED!")]) ; warn pilot]
+             (vector altitude fuel velocity)))
          
          (display "Executing simulation\n")
          (display "Sending pilot curl\n")   
@@ -93,9 +94,9 @@ CURL
                        [else ; change thruster value
                         (display "Setting thruster to ") (display new-thruster)(newline)
                         (loop (duplet/try thruster-updates/d) state new-thruster)]))] ; check for another murmur                                                                    
-                   [else   
-                      (display "Invalid thruster update.\n")
-                      (loop (duplet/try thruster-updates/d) state thruster)]))] ; check for another murmu
+                  [else   
+                   (display "Invalid thruster update.\n")
+                   (loop (duplet/try thruster-updates/d) state thruster)]))] ; check for another murmu
              
              [else ; no murmurs, go ahead and recalculate state                                                                                              
               (sleep 4.0) ; slow game to allow pilot time to respond to state changes
@@ -103,9 +104,9 @@ CURL
                 (display state/new)(newline)
                 ; send new state to pilot
                 (send state/c (format "Altitute = ~a, Fuel = ~a, Velocity = ~a" 
-                                 (round (altitude/get state/new))
-                                 (round (fuel/get state/new))
-                                 (round (velocity/get state/new))))
+                                      (round (altitude/get state/new))
+                                      (round (fuel/get state/new))
+                                      (round (velocity/get state/new))))
                 ;(send state/c state/new) 
                 (cond
                   [(= (altitude/get state/new) 0) ; check if we have touched ground
