@@ -549,7 +549,7 @@
            [ordered/boxed ; Box all cycle objects and serialize all shared objects.
             (vector/map ordered (lambda (v) (if (hash-ref cycle v #f) (box (serial/wrap v)) (value/flatten v share #f))))]
            [fixups ; Serialize all cycle objects.
-            (hash-map cycle (lambda (v n) (cons n (value/flatten v share #f #f))))]
+            (hash-map cycle (lambda (v n) (cons n (value/flatten v share #f))))]
            [final (value/flatten root share #t)])           
       (motile/flat
        (motile/serialize/version) ; Version of serialization format.
