@@ -29,8 +29,8 @@ Motile/Island is a reference implementation of the COAST architectural style. Mo
 
 ## Start working the Motile/Island Platform
 
-Learn the [basics](http://mgiorgio.github.io/coast/gettingstarted.html#basics) of COAST, [download the Motile/Island Platform](http://mgiorgio.github.io/coast/about.html#download), and take a look at the [examples](http://mgiorgio.github.io/coast/gettingstarted.html#hello) we created.
+Learn the [basics](http://isr.uci.edu/projects/coast/gettingstarted.html#basics) of COAST, [download the Motile/Island Platform](http://isr.uci.edu/projects/coast/about.html#download), and take a look at the [examples](http://isr.uci.edu/projects/coast/gettingstarted.html#hello) we created.
 
 # Impact of COAST
 
-Our research team has published several papers, journal articles, and other reports about COAST and other related technologies. Take a look at the [complete list of publications](http://mgiorgio.github.io/coast/about.html#publications).
+Our research team has published several papers, journal articles, and other reports about COAST and other related technologies. Take a look at the [complete list of publications](http://isr.uci.edu/projects/coast/about.html#publications).
