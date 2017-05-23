@@ -13,7 +13,6 @@
 
 (provide SIMULATOR/ENVIRON)
 
-;; Still incomplete: time, date, gates.
 (define SIMULATOR/ENVIRON
   (pairs-to-environ
    BASELINE/SPAWN 
