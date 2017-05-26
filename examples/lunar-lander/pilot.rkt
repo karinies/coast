@@ -39,12 +39,12 @@ CURL
     (define (touchdown? state) (= (altitude/get state) 0))
     (define (landing/soft? state)
       (<= (velocity/get state) MAX_LANDING_VELOCITY))
-   (define (command/thruster? command)
-     (and
-      (pair? command)
-      (eq? (car command) 'THRUSTER)
-      (integer? (cdr command))
-      (>= (cdr command) 0)))
+    (define (command/thruster? command)
+      (and
+        (pair? command)
+        (eq? (car command) 'THRUSTER)
+        (integer? (cdr command))
+        (>= (cdr command) 0)))
      
     (define (state/summary state)
       (format "Altitude: ~a Fuel: ~a Velocity: ~a" 
@@ -58,7 +58,7 @@ CURL
     (define GRAVITY 1.4)  ; Gravitational constant.
     (define MAX_LANDING_VELOCITY 5) ; Upper bound for a soft landing.
     
-    ;; Given a state viector and a thruster value
+    ;; Given a state tuple and a thruster value
     ;; (the number of units of fuel to burn)
     ;; calculate and return a successor state tuple.
     (define (state/recalculate state thruster)
@@ -71,7 +71,7 @@ CURL
         ; Check if we just ran out of fuel.
         (when (and (= fuel+ 0) (> (fuel/get state) 0))
           (display "Fuel depleted\n")      ; Issue a notice on the simulation side.
-          (send state/c "FUEL DEPLETED"))  ; Warn the pilot.
+          (send state@ "FUEL DEPLETED"))  ; Warn the pilot.
         
         ; Return successor state tuple.
         (tuple altitude+ fuel+ velocity+)))
